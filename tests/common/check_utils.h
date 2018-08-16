@@ -1,4 +1,4 @@
-#include <libswiftnav/common.h>
+#include <swiftnav/common.h>
 
 u8 within_epsilon(double a, double b);
 u8 arr_within_epsilon(u32 n, const double *a, const double *b);

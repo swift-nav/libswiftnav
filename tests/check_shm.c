@@ -10,13 +10,13 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#include <check.h>
 #include <limits.h>
 #include <stdio.h>
+#include <inttypes.h>
+#include <check.h>
 
-#include  <libswiftnav/constants.h>
-#include  <libswiftnav/shm.h>
-
+#include  <swiftnav/constants.h>
+#include  <swiftnav/shm.h>
 #include "check_suites.h"
 
 START_TEST(test_shm_gps_decode_shi_ephemeris)

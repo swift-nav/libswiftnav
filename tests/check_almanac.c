@@ -1,8 +1,6 @@
-
 #include <check.h>
 
-#include  <libswiftnav/almanac.h>
-
+#include  <swiftnav/almanac.h>
 #include "check_suites.h"
 
 START_TEST(test_almanac_equal)

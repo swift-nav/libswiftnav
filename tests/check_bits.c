@@ -1,11 +1,8 @@
-
-#include <check.h>
-
-#include <libswiftnav/bits.h>
-
 #include <stdio.h>
 #include <inttypes.h>
+#include <check.h>
 
+#include <swiftnav/bits.h>
 #include "check_suites.h"
 
 START_TEST(test_parity)
