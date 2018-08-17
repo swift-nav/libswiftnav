@@ -11,32 +11,6 @@
  */
 #include <swiftnav/glonass_phase_biases.h>
 
-void unpack_glonass_biases_content(const msg_glo_biases_t msg,
-                                   glo_biases_t *glonass_biases) {
-  glonass_biases->mask = ((u8)msg.mask);
-  glonass_biases->l1of_bias_m =
-      ((double)msg.l1ca_bias / MSG_GLO_BIASES_MULTIPLIER);
-  glonass_biases->l1p_bias_m =
-      ((double)msg.l1p_bias / MSG_GLO_BIASES_MULTIPLIER);
-  glonass_biases->l2of_bias_m =
-      ((double)msg.l2ca_bias / MSG_GLO_BIASES_MULTIPLIER);
-  glonass_biases->l2p_bias_m =
-      ((double)msg.l2p_bias / MSG_GLO_BIASES_MULTIPLIER);
-}
-
-void pack_glonass_biases_content(const glo_biases_t glonass_biases,
-                                 msg_glo_biases_t *msg) {
-  msg->mask = ((u8)glonass_biases.mask);
-  msg->l1ca_bias =
-      (s16)round(glonass_biases.l1of_bias_m * MSG_GLO_BIASES_MULTIPLIER);
-  msg->l1p_bias =
-      (s16)round(glonass_biases.l1p_bias_m * MSG_GLO_BIASES_MULTIPLIER);
-  msg->l2ca_bias =
-      (s16)round(glonass_biases.l2of_bias_m * MSG_GLO_BIASES_MULTIPLIER);
-  msg->l2p_bias =
-      (s16)round(glonass_biases.l2p_bias_m * MSG_GLO_BIASES_MULTIPLIER);
-}
-
 bool glonass_biases_are_equal(const glo_biases_t biases1,
                               const glo_biases_t biases2) {
   if (biases1.mask != biases2.mask) {

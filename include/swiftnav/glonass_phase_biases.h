@@ -17,7 +17,6 @@
 #include <swiftnav/common.h>
 #include <swiftnav/signal.h>
 #include <swiftnav/constants.h>
-#include <swiftnav/observation.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,12 +52,6 @@ static const glo_biases_t piksi_glonass_biases = {.mask = 255,
                                                   .l1p_bias_m = 0.,
                                                   .l2of_bias_m = 0.,
                                                   .l2p_bias_m = 0.};
-
-void unpack_glonass_biases_content(const msg_glo_biases_t msg,
-                                   glo_biases_t *glonass_biases);
-
-void pack_glonass_biases_content(const glo_biases_t glonass_biases,
-                                 msg_glo_biases_t *msg);
 
 double get_glonass_bias(const code_t code, const glo_biases_t biases);
 
