@@ -1,11 +1,9 @@
 #include <math.h>
 #include <stdlib.h>
-
 #include <check.h>
 
-#include <libswiftnav/coord_system.h>
-#include <libswiftnav/constants.h>
-
+#include <swiftnav/coord_system.h>
+#include <swiftnav/constants.h>
 #include "check_utils.h"
 #include "check_suites.h"
 

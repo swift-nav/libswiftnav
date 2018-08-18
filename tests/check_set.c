@@ -1,11 +1,9 @@
-
 #include <check.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
-#include <libswiftnav/set.h>
-
+#include <swiftnav/set.h>
 #include "check_utils.h"
 #include "check_suites.h"
 

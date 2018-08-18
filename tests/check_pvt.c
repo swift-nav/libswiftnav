@@ -2,10 +2,9 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <libswiftnav/single_epoch_solver.h>
-#include <libswiftnav/constants.h>
-#include <libswiftnav/coord_system.h>
-
+#include <swiftnav/single_epoch_solver.h>
+#include <swiftnav/constants.h>
+#include <swiftnav/coord_system.h>
 #include "check_utils.h"
 #include "check_suites.h"
 

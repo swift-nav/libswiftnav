@@ -5,7 +5,7 @@
 #include "check_utils.h"
 #include "check_suites.h"
 
-#include <libswiftnav/sid_set.h>
+#include <swiftnav/sid_set.h>
 
 START_TEST(test_sid_set_empty)
 {

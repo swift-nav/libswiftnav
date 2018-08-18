@@ -5,14 +5,14 @@
 #include "check_utils.h"
 #include "check_suites.h"
 
-#include <libswiftnav/signal.h>
-#include <libswiftnav/constants.h>
+#include <swiftnav/signal.h>
+#include <swiftnav/constants.h>
 
 /* Include singal.c here to have a chance to turn off asserts.
    Otherwise the code lines with asserts cannot be covered by
    tests and it will lower test coverage statistics. */
 #define NDEBUG
-#include <signal.c>
+#include <../src/signal.c>
 
 #define ARRAY_COUNT(arr) ((sizeof(arr) / sizeof(arr[0])))
 

@@ -1,11 +1,9 @@
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <check.h>
 
-#include <stdio.h>
-
-#include <libswiftnav/linear_algebra.h>
-
+#include <swiftnav/linear_algebra.h>
 #include "check_utils.h"
 #include "check_suites.h"
 

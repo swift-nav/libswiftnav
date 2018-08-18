@@ -52,7 +52,7 @@ set(SRCS
 # Enumerate targets and tests.
 ################################################################################
 add_executable(test-swiftnav-common ${HDRS} ${SRCS})
-target_link_libraries(test-swiftnav-common swiftnav-common check-utils 
+target_link_libraries(test-swiftnav-common swiftnav check-utils 
                       ${CHECK_LIBRARIES} m pthread)
 
 # Add a target for running the tests. 
