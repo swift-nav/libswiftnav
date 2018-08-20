@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016 Swift Navigation Inc.
- * Contact: Pasi Miettinen <pasi.miettinen@exafore.com>
+ * Contact: Swift Navigation <dev@swiftnav.com>
  *
  * This source is subject to the license found in the file 'LICENSE' which must
  * be distributed together with this source. All other rights reserved.
@@ -17,4 +17,3 @@
 #define MAX_CHANNELS 63
 
 #endif /* CONFIG_H */
-

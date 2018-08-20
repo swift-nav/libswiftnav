@@ -37,7 +37,7 @@ typedef enum nav_data_health_indicator_e {
 
 /* Possible SHM health states */
 typedef enum {
-  SHM_STATE_UNKNOWN,  /* For signals without full support, e.g. GPS L5 */
+  SHM_STATE_UNKNOWN, /* For signals without full support, e.g. GPS L5 */
   SHM_STATE_UNHEALTHY,
   SHM_STATE_HEALTHY,
 } shm_state_t;
@@ -46,21 +46,21 @@ typedef enum {
  * Reference: IS-GPS-200D
  */
 typedef struct {
-  bool shi_ephemeris_set;       /* LNAV EPHEMERIS SV HEALTH (SHI1 in SHM doc)
-                                   6 bits, subframe 1, word 3 */
+  bool shi_ephemeris_set; /* LNAV EPHEMERIS SV HEALTH (SHI1 in SHM doc)
+                             6 bits, subframe 1, word 3 */
   u8 shi_ephemeris;
 
-  bool shi_page25_set;          /* LNAV PAGE#25 SV HEALTH (SHI3 in SHM doc)
-                                   6 bits, subframes 4 & 5, page 25 */
+  bool shi_page25_set; /* LNAV PAGE#25 SV HEALTH (SHI3 in SHM doc)
+                          6 bits, subframes 4 & 5, page 25 */
   u8 shi_page25;
   u32 shi_page25_timetag_s;
 
-  bool shi_lnav_how_alert_set;  /* LNAV alert flag (SHI4 in SHM doc)
-                                   HOW, bit 18 */
+  bool shi_lnav_how_alert_set; /* LNAV alert flag (SHI4 in SHM doc)
+                                  HOW, bit 18 */
   bool shi_lnav_how_alert;
 
-  bool shi_cnav_alert_set;      /* CNAV alert flag (SHI6 in SHM doc)
-                                   bit 38, each message */
+  bool shi_cnav_alert_set; /* CNAV alert flag (SHI6 in SHM doc)
+                              bit 38, each message */
   bool shi_cnav_alert;
 } gps_sat_health_indicators_t;
 

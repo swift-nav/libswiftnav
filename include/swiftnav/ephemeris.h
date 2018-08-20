@@ -167,22 +167,43 @@ typedef struct {
 
 /** \} */
 
-s8 calc_sat_state(const ephemeris_t *e, const gps_time_t *t, double pos[3],
-                  double vel[3], double acc[3], double *clock_err,
-                  double *clock_rate_err, u16 *iodc, u8 *iode);
-s8 calc_sat_state_n(const ephemeris_t *e, const gps_time_t *t, double pos[3],
-                    double vel[3], double acc[3], double *clock_err,
-                    double *clock_rate_err, u16 *iodc, u8 *iode);
-s8 calc_sat_az_el(const ephemeris_t *e, const gps_time_t *t,
-                  const double ref[3], double *az, double *el, bool check_e);
-s8 calc_sat_doppler(const ephemeris_t *e, const gps_time_t *t,
-                    const double ref_pos[3], const double ref_vel[3],
+s8 calc_sat_state(const ephemeris_t *e,
+                  const gps_time_t *t,
+                  double pos[3],
+                  double vel[3],
+                  double acc[3],
+                  double *clock_err,
+                  double *clock_rate_err,
+                  u16 *iodc,
+                  u8 *iode);
+s8 calc_sat_state_n(const ephemeris_t *e,
+                    const gps_time_t *t,
+                    double pos[3],
+                    double vel[3],
+                    double acc[3],
+                    double *clock_err,
+                    double *clock_rate_err,
+                    u16 *iodc,
+                    u8 *iode);
+s8 calc_sat_az_el(const ephemeris_t *e,
+                  const gps_time_t *t,
+                  const double ref[3],
+                  double *az,
+                  double *el,
+                  bool check_e);
+s8 calc_sat_doppler(const ephemeris_t *e,
+                    const gps_time_t *t,
+                    const double ref_pos[3],
+                    const double ref_vel[3],
                     double *doppler);
 
 u8 ephemeris_valid(const ephemeris_t *e, const gps_time_t *t);
-u8 ephemeris_params_valid(const gps_time_t *bgn, const gps_time_t *end,
-                          const gps_time_t *toc, const gps_time_t *t);
-void decode_ephemeris(const u32 frame_words[3][8], ephemeris_t *e,
+u8 ephemeris_params_valid(const gps_time_t *bgn,
+                          const gps_time_t *end,
+                          const gps_time_t *toc,
+                          const gps_time_t *t);
+void decode_ephemeris(const u32 frame_words[3][8],
+                      ephemeris_t *e,
                       double tot_tow);
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b);
 bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code);

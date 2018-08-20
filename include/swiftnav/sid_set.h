@@ -20,7 +20,9 @@
 extern "C" {
 #endif
 
-typedef struct { u64 sats[CODE_COUNT]; } gnss_sid_set_t;
+typedef struct {
+  u64 sats[CODE_COUNT];
+} gnss_sid_set_t;
 
 void sid_set_init(gnss_sid_set_t *sid_set);
 void sid_set_add(gnss_sid_set_t *sid_set, gnss_signal_t sid);

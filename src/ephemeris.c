@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2010, 2016 Swift Navigation Inc.
  * Contact: Swift Navigation <dev@swiftnav.com>
- *          Fergus Noble <fergus@swift-nav.com>
  *
  * This source is subject to the license found in the file 'LICENSE' which must
  * be distributed together with this source. All other rights reserved.
@@ -12,10 +11,10 @@
  */
 
 #include <assert.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
 
 #include <swiftnav/bits.h>
 #include <swiftnav/constants.h>
@@ -88,10 +87,15 @@ static inline s32 sign_extend24(u32 arg) {
  * \return  0 on success,
  *         -1 if ephemeris is not valid or too old
  */
-static s8 calc_sat_state_xyz(const ephemeris_t *e, const gps_time_t *t,
-                             double pos[3], double vel[3], double acc[3],
-                             double *clock_err, double *clock_rate_err,
-                             u16 *iodc, u8 *iode) {
+static s8 calc_sat_state_xyz(const ephemeris_t *e,
+                             const gps_time_t *t,
+                             double pos[3],
+                             double vel[3],
+                             double acc[3],
+                             double *clock_err,
+                             double *clock_rate_err,
+                             u16 *iodc,
+                             u8 *iode) {
   /* TODO should t be in GPS or SBAS time? */
   /* TODO what is the SBAS valid ttime interval? */
 
@@ -134,8 +138,10 @@ static s8 calc_sat_state_xyz(const ephemeris_t *e, const gps_time_t *t,
  * \param vel Pointer to velocity input array (ECEF)
  * \param acc Pointer to acceleration input array (ECI)
  */
-static void calc_ecef_vel_acc(double vel_acc[6], const double pos[3],
-                              const double vel[3], const double acc[3]) {
+static void calc_ecef_vel_acc(double vel_acc[6],
+                              const double pos[3],
+                              const double vel[3],
+                              const double acc[3]) {
   double r = sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
 
   double m_r3 = GLO_GM / (r * r * r);
@@ -172,10 +178,15 @@ static void calc_ecef_vel_acc(double vel_acc[6], const double pos[3],
  *                       clock error [s/s]
  *
  */
-static s8 calc_sat_state_glo(const ephemeris_t *e, const gps_time_t *t,
-                             double pos[3], double vel[3], double acc[3],
-                             double *clock_err, double *clock_rate_err,
-                             u16 *iodc, u8 *iode) {
+static s8 calc_sat_state_glo(const ephemeris_t *e,
+                             const gps_time_t *t,
+                             double pos[3],
+                             double vel[3],
+                             double acc[3],
+                             double *clock_err,
+                             double *clock_rate_err,
+                             u16 *iodc,
+                             u8 *iode) {
   assert(e != NULL);
   assert(t != NULL);
   assert(pos != NULL);
@@ -266,10 +277,15 @@ static s8 calc_sat_state_glo(const ephemeris_t *e, const gps_time_t *t,
  * \return  0 on success,
  *         -1 if ephemeris is not valid or too old
  */
-static s8 calc_sat_state_kepler(const ephemeris_t *e, const gps_time_t *t,
-                                double pos[3], double vel[3], double acc[3],
-                                double *clock_err, double *clock_rate_err,
-                                u16 *iodc, u8 *iode) {
+static s8 calc_sat_state_kepler(const ephemeris_t *e,
+                                const gps_time_t *t,
+                                double pos[3],
+                                double vel[3],
+                                double acc[3],
+                                double *clock_err,
+                                double *clock_rate_err,
+                                u16 *iodc,
+                                u8 *iode) {
   const ephemeris_kepler_t *k = &e->kepler;
 
   /* Calculate satellite clock terms */
@@ -478,9 +494,15 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e, const gps_time_t *t,
  * \return  0 on success,
  *         -1 if ephemeris is invalid
  */
-s8 calc_sat_state(const ephemeris_t *e, const gps_time_t *t, double pos[3],
-                  double vel[3], double acc[3], double *clock_err,
-                  double *clock_rate_err, u16 *iodc, u8 *iode) {
+s8 calc_sat_state(const ephemeris_t *e,
+                  const gps_time_t *t,
+                  double pos[3],
+                  double vel[3],
+                  double acc[3],
+                  double *clock_err,
+                  double *clock_rate_err,
+                  u16 *iodc,
+                  u8 *iode) {
   assert(pos != NULL);
   assert(vel != NULL);
   assert(clock_err != NULL);
@@ -491,13 +513,17 @@ s8 calc_sat_state(const ephemeris_t *e, const gps_time_t *t, double pos[3],
     log_error_sid(e->sid,
                   "Using invalid or too old ephemeris in calc_sat_state"
                   " (v:%d, fi:%d, [%d, %f]), [%d, %f]",
-                  (int)e->valid, (int)e->fit_interval, (int)e->toe.wn,
-                  e->toe.tow, (int)t->wn, t->tow);
+                  (int)e->valid,
+                  (int)e->fit_interval,
+                  (int)e->toe.wn,
+                  e->toe.tow,
+                  (int)t->wn,
+                  t->tow);
     return -1;
   }
 
-  return calc_sat_state_n(e, t, pos, vel, acc, clock_err, clock_rate_err, iodc,
-                          iode);
+  return calc_sat_state_n(
+      e, t, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
 }
 
 /** Calculate satellite position, velocity and clock offset from ephemeris
@@ -520,9 +546,15 @@ s8 calc_sat_state(const ephemeris_t *e, const gps_time_t *t, double pos[3],
  * \return  0 on success,
  *         -1 if ephemeris is invalid
  */
-s8 calc_sat_state_n(const ephemeris_t *e, const gps_time_t *t, double pos[3],
-                    double vel[3], double acc[3], double *clock_err,
-                    double *clock_rate_err, u16 *iodc, u8 *iode) {
+s8 calc_sat_state_n(const ephemeris_t *e,
+                    const gps_time_t *t,
+                    double pos[3],
+                    double vel[3],
+                    double acc[3],
+                    double *clock_err,
+                    double *clock_rate_err,
+                    u16 *iodc,
+                    u8 *iode) {
   assert(pos != NULL);
   assert(vel != NULL);
   assert(clock_err != NULL);
@@ -534,14 +566,14 @@ s8 calc_sat_state_n(const ephemeris_t *e, const gps_time_t *t, double pos[3],
     case CONSTELLATION_BDS:
     case CONSTELLATION_GAL:
     case CONSTELLATION_QZS:
-      return calc_sat_state_kepler(e, t, pos, vel, acc, clock_err,
-                                   clock_rate_err, iodc, iode);
+      return calc_sat_state_kepler(
+          e, t, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
     case CONSTELLATION_SBAS:
-      return calc_sat_state_xyz(e, t, pos, vel, acc, clock_err, clock_rate_err,
-                                iodc, iode);
+      return calc_sat_state_xyz(
+          e, t, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
     case CONSTELLATION_GLO:
-      return calc_sat_state_glo(e, t, pos, vel, acc, clock_err, clock_rate_err,
-                                iodc, iode);
+      return calc_sat_state_glo(
+          e, t, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
     case CONSTELLATION_INVALID:
     case CONSTELLATION_COUNT:
     default:
@@ -565,8 +597,12 @@ s8 calc_sat_state_n(const ephemeris_t *e, const gps_time_t *t, double pos[3],
  * \return  0 on success,
  *         -1 if almanac is not valid or too old
  */
-s8 calc_sat_az_el(const ephemeris_t *e, const gps_time_t *t,
-                  const double ref[3], double *az, double *el, bool check_e) {
+s8 calc_sat_az_el(const ephemeris_t *e,
+                  const gps_time_t *t,
+                  const double ref[3],
+                  double *az,
+                  double *el,
+                  bool check_e) {
   double sat_pos[3];
   double sat_vel[3];
   double sat_acc[3];
@@ -575,11 +611,25 @@ s8 calc_sat_az_el(const ephemeris_t *e, const gps_time_t *t,
   double clock_err, clock_rate_err;
   s8 ret;
   if (check_e)
-    ret = calc_sat_state(e, t, sat_pos, sat_vel, sat_acc, &clock_err,
-                         &clock_rate_err, &iodc, &iode);
+    ret = calc_sat_state(e,
+                         t,
+                         sat_pos,
+                         sat_vel,
+                         sat_acc,
+                         &clock_err,
+                         &clock_rate_err,
+                         &iodc,
+                         &iode);
   else
-    ret = calc_sat_state_n(e, t, sat_pos, sat_vel, sat_acc, &clock_err,
-                           &clock_rate_err, &iodc, &iode);
+    ret = calc_sat_state_n(e,
+                           t,
+                           sat_pos,
+                           sat_vel,
+                           sat_acc,
+                           &clock_err,
+                           &clock_rate_err,
+                           &iodc,
+                           &iode);
   if (ret != 0) {
     return ret;
   }
@@ -601,8 +651,10 @@ s8 calc_sat_az_el(const ephemeris_t *e, const gps_time_t *t,
  * \return  0 on success,
  *         -1 if ephemeris is not valid or too old
  */
-s8 calc_sat_doppler(const ephemeris_t *e, const gps_time_t *t,
-                    const double ref_pos[3], const double ref_vel[3],
+s8 calc_sat_doppler(const ephemeris_t *e,
+                    const gps_time_t *t,
+                    const double ref_pos[3],
+                    const double ref_vel[3],
                     double *doppler) {
   double sat_pos[3];
   double sat_vel[3];
@@ -613,8 +665,15 @@ s8 calc_sat_doppler(const ephemeris_t *e, const gps_time_t *t,
   u16 iodc;
   u8 iode;
 
-  s8 ret = calc_sat_state(e, t, sat_pos, sat_vel, sat_acc, &clock_err,
-                          &clock_rate_err, &iodc, &iode);
+  s8 ret = calc_sat_state(e,
+                          t,
+                          sat_pos,
+                          sat_vel,
+                          sat_acc,
+                          &clock_err,
+                          &clock_rate_err,
+                          &iodc,
+                          &iode);
   if (ret != 0) {
     return ret;
   }
@@ -744,8 +803,10 @@ u8 ephemeris_valid(const ephemeris_t *e, const gps_time_t *t) {
  * \return 1 if the ephemeris is valid and not too old.
  *         0 otherwise.
  */
-u8 ephemeris_params_valid(const gps_time_t *bgn, const gps_time_t *end,
-                          const gps_time_t *toc, const gps_time_t *t) {
+u8 ephemeris_params_valid(const gps_time_t *bgn,
+                          const gps_time_t *end,
+                          const gps_time_t *toc,
+                          const gps_time_t *t) {
   assert(t != NULL);
   assert(bgn);
   assert(end);
@@ -772,17 +833,29 @@ u8 ephemeris_params_valid(const gps_time_t *bgn, const gps_time_t *end,
 #define URA_VALUE_TABLE_LEN 16
 
 static const float gps_ura_values[URA_VALUE_TABLE_LEN] = {
-        [0] = 2.0f,     [1] = 2.8f,     [2] = 4.0f,     [3] = 5.7f,
-        [4] = 8.0f,     [5] = 11.3f,    [6] = 16.0f,    [7] = 32.0f,
-        [8] = 64.0f,    [9] = 128.0f,   [10] = 256.0f,  [11] = 512.0f,
-        [12] = 1024.0f, [13] = 2048.0f, [14] = 4096.0f, [15] = 6144.0f,
+    [0] = 2.0f,
+    [1] = 2.8f,
+    [2] = 4.0f,
+    [3] = 5.7f,
+    [4] = 8.0f,
+    [5] = 11.3f,
+    [6] = 16.0f,
+    [7] = 32.0f,
+    [8] = 64.0f,
+    [9] = 128.0f,
+    [10] = 256.0f,
+    [11] = 512.0f,
+    [12] = 1024.0f,
+    [13] = 2048.0f,
+    [14] = 4096.0f,
+    [15] = 6144.0f,
 };
 
 /** Convert a GPS URA index into a value.
-*
-* \param index URA index.
-* \return the URA in meters.
-*/
+ *
+ * \param index URA index.
+ * \return the URA in meters.
+ */
 float decode_ura_index(const u8 index) {
   /* Invalid index */
   if (URA_VALUE_TABLE_LEN < index) return INVALID_URA_VALUE;
@@ -791,10 +864,10 @@ float decode_ura_index(const u8 index) {
 }
 
 /** Convert GPS URA into URA index.
-*
-* \param ura URA in meters.
-* \return URA index.
-*/
+ *
+ * \param ura URA in meters.
+ * \return URA index.
+ */
 u8 encode_ura(float ura) {
   /* Negative URA */
   if (0 > ura) return INVALID_GPS_URA_INDEX;
@@ -808,12 +881,12 @@ u8 encode_ura(float ura) {
 }
 
 /** Calculate the GPS ephemeris curve fit interval.
-*
-* \param fit_interval_flag The curve fit interval flag. 0 is 4 hours, 1 is >4
-* hours.
-* \param iodc The IODC value.
-* \return the curve fit interval in seconds.
-*/
+ *
+ * \param fit_interval_flag The curve fit interval flag. 0 is 4 hours, 1 is >4
+ * hours.
+ * \param iodc The IODC value.
+ * \return the curve fit interval in seconds.
+ */
 u32 decode_fit_interval(u8 fit_interval_flag, u16 iodc) {
   u8 fit_interval = 4; /* This is in hours */
 
@@ -852,7 +925,8 @@ u32 decode_fit_interval(u8 fit_interval_flag, u16 iodc) {
  * \param e Pointer to an ephemeris struct to fill in.
  * \param tot_tow TOW for time of transmission
  */
-void decode_ephemeris(const u32 frame_words[3][8], ephemeris_t *e,
+void decode_ephemeris(const u32 frame_words[3][8],
+                      ephemeris_t *e,
                       double tot_tow) {
   assert(frame_words != NULL);
   assert(e != NULL);
@@ -889,7 +963,8 @@ void decode_ephemeris(const u32 frame_words[3][8], ephemeris_t *e,
     log_warn_sid(e->sid,
                  "Latest ephemeris has faulty TOE: wn %d, tow %f."
                  " Invalidating ephemeris.",
-                 e->toe.wn, e->toe.tow);
+                 e->toe.wn,
+                 e->toe.tow);
   }
 
   k->toc.wn = e->toe.wn;
@@ -1009,9 +1084,12 @@ void decode_ephemeris(const u32 frame_words[3][8], ephemeris_t *e,
                (GPS_LNAV_EPH_SF_IDOT * GPS_PI);
 
   /* Both IODEs and IODC (8 LSBs) must match */
-  log_debug_sid(e->sid, "Check ephemeris. IODC = 0x%03" PRIX16
-                        " IODE = 0x%02" PRIX8 " and 0x%02" PRIX16 ".",
-                k->iodc, iode_sf2, k->iode);
+  log_debug_sid(e->sid,
+                "Check ephemeris. IODC = 0x%03" PRIX16 " IODE = 0x%02" PRIX8
+                " and 0x%02" PRIX16 ".",
+                k->iodc,
+                iode_sf2,
+                k->iode);
 
   bool iode_valid = (iode_sf2 == k->iode) && (k->iode == (k->iodc & 0xFF));
   if (!iode_valid) {
@@ -1023,7 +1101,8 @@ void decode_ephemeris(const u32 frame_words[3][8], ephemeris_t *e,
   e->valid = iode_valid && toe_valid;
 }
 
-static bool tgd_equal(const ephemeris_kepler_t *a, const ephemeris_kepler_t *b,
+static bool tgd_equal(const ephemeris_kepler_t *a,
+                      const ephemeris_kepler_t *b,
                       const code_t code) {
   bool eq = false;
   constellation_t con = code_to_constellation(code);

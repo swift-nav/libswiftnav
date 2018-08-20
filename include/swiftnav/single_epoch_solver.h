@@ -103,10 +103,14 @@ typedef struct __attribute__((packed)) {
   u8 n_sigs_used;
 } gnss_solution;
 
-s8 calc_PVT(const u8 n_used, const navigation_measurement_t nav_meas[],
-            const gps_time_t *tor, const bool disable_raim,
-            const bool disable_velocity, enum processing_strategy_t strategy,
-            gnss_solution *soln, dops_t *dops,
+s8 calc_PVT(const u8 n_used,
+            const navigation_measurement_t nav_meas[],
+            const gps_time_t *tor,
+            const bool disable_raim,
+            const bool disable_velocity,
+            enum processing_strategy_t strategy,
+            gnss_solution *soln,
+            dops_t *dops,
             gnss_sid_set_t *raim_removed_sids);
 
 #ifdef __cplusplus

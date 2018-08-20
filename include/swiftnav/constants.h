@@ -275,8 +275,8 @@ extern "C" {
 #define GLO_L2_LAMBDA (GPS_C / GLO_L2_HZ)
 
 /** GLO semi-major axis of Earth
-  * \note there is define WGS84_A which is 6378137, differ than defined
-  * in GLO ICD, refer A.3.1.2. */
+ * \note there is define WGS84_A which is 6378137, differ than defined
+ * in GLO ICD, refer A.3.1.2. */
 #define GLO_A_E 6378136.0
 
 /** Second zonal harmonic of the geopotential */
@@ -366,7 +366,7 @@ extern "C" {
 #define SBAS_L1CA_PSYMBOL_LENGTH_MS 1
 
 /** SBAS L1 maximum Doppler value [Hz], see SDCM ICD section 5.2.7
-  * http://www.sdcm.ru/smglo/ICD_SDCM_1dot0_Eng.pdf */
+ * http://www.sdcm.ru/smglo/ICD_SDCM_1dot0_Eng.pdf */
 #define SBAS_L1_DOPPLER_MAX_HZ (+210.f)
 
 /** SBAS L5 maximum Doppler value [Hz] */

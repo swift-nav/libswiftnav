@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2010, 2016 Swift Navigation Inc.
  * Contact: Swift Navigation <dev@swiftnav.com>
- *          Matt Peddie <peddie@alum.mit.edu>
  *
  * This source is subject to the license found in the file 'LICENSE' which must
  * be distributed together with this source. All other rights reserved.
@@ -12,18 +11,18 @@
  */
 
 #include <assert.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <inttypes.h>
 
+#include <swiftnav/config.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
 #include <swiftnav/linear_algebra.h>
 #include <swiftnav/logging.h>
 #include <swiftnav/memcpy_s.h>
 #include <swiftnav/single_epoch_solver.h>
-#include <swiftnav/config.h>
 
 /* Measurement noise model parameters */
 #define PSEUDORANGE_CN0_COEFFICIENT 780
@@ -106,7 +105,7 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
 
   double pseudorange_var = 0.0;
 
-  switch ((s8) nav_meas->sid.code) {
+  switch ((s8)nav_meas->sid.code) {
     case CODE_GPS_L1CA:
     case CODE_GPS_L1P:
       pseudorange_var = GPS_L1CA_PSEUDORANGE_VARIANCE +
@@ -185,7 +184,7 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
      *               and 1.0        when lock_time == THRESHOLD
      * and interpolates linearly in between */
     double coef = SHORT_TRACK_TIME_MULTIPLIER -
-                  (SHORT_TRACK_TIME_MULTIPLIER - 1) * nav_meas->lock_time/
+                  (SHORT_TRACK_TIME_MULTIPLIER - 1) * nav_meas->lock_time /
                       TRACK_TIME_THRESHOLD_S;
     pseudorange_var *= coef;
     doppler_var *= coef;
@@ -206,7 +205,8 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
  * \param tau               Time of flight in seconds
  * \param[out] sat_pos_new  Corrected satellite position vector
  */
-static void sagnac_rotation(const double sat_pos[3], const double tau,
+static void sagnac_rotation(const double sat_pos[3],
+                            const double tau,
                             double sat_pos_new[3]) {
   /* Rotation of Earth during time of flight in radians. */
   double wEtau = GPS_OMEGAE_DOT * tau;
@@ -261,7 +261,8 @@ static double compute_predicted_doppler(
  */
 static s8 vel_solve(const u8 n_used,
                     const navigation_measurement_t *nav_meas[n_used],
-                    const double G[n_used][N_STATE], lsq_data_t *lsq_data) {
+                    const double G[n_used][N_STATE],
+                    lsq_data_t *lsq_data) {
   /* Velocity Solution
    *
    * G matrix already exists from the position
@@ -270,7 +271,7 @@ static s8 vel_solve(const u8 n_used,
    * prediction-error least-squares thing, but we do only one step.
    *
    * Output the covariance matrix V of the velocity-drift solution
-  */
+   */
 
   double pdot_pred;
   double w[n_used];
@@ -313,9 +314,13 @@ static s8 vel_solve(const u8 n_used,
   }
 
   /* Solve the velocity update and its covariance matrix */
-  int ret = matrix_wlsq_solve(
-      n_used, N_STATE, (double *)G, (double *)lsq_data->omp_doppler,
-      (double *)w, (double *)&lsq_data->rx_state[4], (double *)lsq_data->V_vel);
+  int ret = matrix_wlsq_solve(n_used,
+                              N_STATE,
+                              (double *)G,
+                              (double *)lsq_data->omp_doppler,
+                              (double *)w,
+                              (double *)&lsq_data->rx_state[4],
+                              (double *)lsq_data->V_vel);
 
   /* Update the residuals with the solved velocity and drift */
   for (u8 j = 0; j < n_used; j++) {
@@ -327,7 +332,8 @@ static s8 vel_solve(const u8 n_used,
   return ret;
 }
 
-static void compute_dops(const double H[4][4], const double pos_ecef[3],
+static void compute_dops(const double H[4][4],
+                         const double pos_ecef[3],
                          dops_t *dops) {
   /* PDOP is the norm of the position elements of tr(H) */
   double pdop_sq = H[0][0] + H[1][1] + H[2][2];
@@ -366,7 +372,8 @@ static void compute_dops(const double H[4][4], const double pos_ecef[3],
  * \return predicted pseudorange in meters
  */
 static double compute_predicted_pseudorange(
-    const double rx_state[8], const navigation_measurement_t *nav_meas,
+    const double rx_state[8],
+    const navigation_measurement_t *nav_meas,
     double line_of_sight[3]) {
   const double *user_pos = &rx_state[0];
   const double clock_bias_m = rx_state[3];
@@ -421,7 +428,8 @@ static double compute_predicted_pseudorange(
  *     vel_solve) and do some bookkeeping to pass the solution back
  *     out.
  */
-static s8 pvt_solve(const u8 n_used, const bool disable_velocity,
+static s8 pvt_solve(const u8 n_used,
+                    const bool disable_velocity,
                     const navigation_measurement_t *nav_meas[n_used],
                     lsq_data_t *lsq_data) {
   /* G is a geometry matrix tells us how our pseudoranges relate to
@@ -482,9 +490,13 @@ static s8 pvt_solve(const u8 n_used, const bool disable_velocity,
    */
 
   /* Solve the state update and its covariance matrix */
-  int ret = matrix_wlsq_solve(n_used, N_STATE, (double *)G,
-                              (double *)lsq_data->omp_range, (double *)w,
-                              (double *)correction, (double *)lsq_data->V);
+  int ret = matrix_wlsq_solve(n_used,
+                              N_STATE,
+                              (double *)G,
+                              (double *)lsq_data->omp_range,
+                              (double *)w,
+                              (double *)correction,
+                              (double *)lsq_data->V);
   if (ret < 0) {
     log_warn("Under-determined system, n_used = %u", n_used);
     return -1;
@@ -523,8 +535,12 @@ static s8 pvt_solve(const u8 n_used, const bool disable_velocity,
   /* H is the inverted square of the Jacobian matrix; it tells us the shape of
      our error (or, if you prefer, the direction in which we need to
      move to get a better solution) in terms of the receiver state. */
-  if (matrix_wlsq_solve(n_used, N_STATE, (double *)G,
-                        (double *)lsq_data->omp_range, NULL, NULL,
+  if (matrix_wlsq_solve(n_used,
+                        N_STATE,
+                        (double *)G,
+                        (double *)lsq_data->omp_range,
+                        NULL,
+                        NULL,
                         (double *)lsq_data->H) < 0) {
     log_warn("Under-determined system computing DOP, n_used = %u", n_used);
     return -1;
@@ -567,7 +583,8 @@ static s8 filter_solution(gnss_solution *soln, dops_t *dops) {
  *
  * \return true if metric < scaled RAIM metric threshold
  */
-static bool residual_test(const u8 n_used, const bool disable_velocity,
+static bool residual_test(const u8 n_used,
+                          const bool disable_velocity,
                           const lsq_data_t *lsq_data,
                           const navigation_measurement_t *nav_meas[n_used],
                           double *p_metric) {
@@ -628,7 +645,8 @@ static bool residual_test(const u8 n_used, const bool disable_velocity,
  * */
 static bool flag_outliers(const u8 n_used,
                           const navigation_measurement_t nav_meas[n_used],
-                          const double rx_state[8], const bool disable_velocity,
+                          const double rx_state[8],
+                          const bool disable_velocity,
                           const gnss_sid_set_t *exclude_sids,
                           gnss_sid_set_t *removed_sids) {
   assert(exclude_sids != NULL);
@@ -680,7 +698,8 @@ static bool flag_outliers(const u8 n_used,
     if (fabs(range_residual[i]) > RANGE_RESIDUAL_THRESHOLD_M) {
       if (0 == signals_flagged) {
         /* log only the first flagged signal */
-        log_info_sid(sid, "Flagging too large pseudorange residual (%.1f m)",
+        log_info_sid(sid,
+                     "Flagging too large pseudorange residual (%.1f m)",
                      range_residual[i]);
       }
       sid_set_add(removed_sids, sid);
@@ -694,7 +713,8 @@ static bool flag_outliers(const u8 n_used,
       if (fabs(doppler_residual) > DOPPLER_RESIDUAL_THRESHOLD_M_S) {
         if (0 == signals_flagged) {
           /* log only the first flagged signal */
-          log_info_sid(sid, "Flagging too large Doppler residual (%.1f m/s)",
+          log_info_sid(sid,
+                       "Flagging too large Doppler residual (%.1f m/s)",
                        doppler_residual);
         }
         sid_set_add(removed_sids, sid);
@@ -716,7 +736,8 @@ static bool flag_outliers(const u8 n_used,
  *
  *  Results stored in lsq_data
  */
-static s8 pvt_iter(const u8 n_used, const bool disable_velocity,
+static s8 pvt_iter(const u8 n_used,
+                   const bool disable_velocity,
                    const navigation_measurement_t *nav_meas[n_used],
                    lsq_data_t *lsq_data) {
   /* Reset state to zero */
@@ -751,10 +772,12 @@ static s8 pvt_iter(const u8 n_used, const bool disable_velocity,
  *
  *  Results stored in lsq_data, metric
  */
-static s8 pvt_iter_masked(const u8 n_meas, const bool disable_velocity,
+static s8 pvt_iter_masked(const u8 n_meas,
+                          const bool disable_velocity,
                           const navigation_measurement_t *nav_meas[n_meas],
                           const gnss_sid_set_t *removed_sids,
-                          lsq_data_t *lsq_data, double *metric) {
+                          lsq_data_t *lsq_data,
+                          double *metric) {
   const navigation_measurement_t *nav_meas_subset[n_meas];
   gnss_sid_set_t used_sids;
   sid_set_init(&used_sids);
@@ -781,8 +804,8 @@ static s8 pvt_iter_masked(const u8 n_meas, const bool disable_velocity,
   }
 
   /* return success if the residual test passes */
-  if (residual_test(n_used, disable_velocity, lsq_data, nav_meas_subset,
-                    metric)) {
+  if (residual_test(
+          n_used, disable_velocity, lsq_data, nav_meas_subset, metric)) {
     return 0;
   } else {
     return -1;
@@ -790,20 +813,21 @@ static s8 pvt_iter_masked(const u8 n_meas, const bool disable_velocity,
 }
 
 /** PVT solution with only GPS measurements
-*
-* Return values:
-*    `2`: solution ok, but RAIM check was not used
-*    `1`: repaired solution, using fewer observations
-*    `0`: solution ok and passed RAIM check
-*   - `-4`: repair failed
-*   - `-5`: not enough satellites to attempt repair
-*   - `-6`: pvt_iter didn't converge
-*
-*  Results stored in the lsq_data, removed_sid
-*/
+ *
+ * Return values:
+ *    `2`: solution ok, but RAIM check was not used
+ *    `1`: repaired solution, using fewer observations
+ *    `0`: solution ok and passed RAIM check
+ *   - `-4`: repair failed
+ *   - `-5`: not enough satellites to attempt repair
+ *   - `-6`: pvt_iter didn't converge
+ *
+ *  Results stored in the lsq_data, removed_sid
+ */
 static s8 pvt_solve_gps_only(const u8 n_meas,
                              const navigation_measurement_t *nav_meas[n_meas],
-                             const bool disable_velocity, lsq_data_t *lsq_data,
+                             const bool disable_velocity,
+                             lsq_data_t *lsq_data,
                              double original_metric,
                              gnss_sid_set_t *removed_sids) {
   double new_metric = original_metric;
@@ -821,15 +845,22 @@ static s8 pvt_solve_gps_only(const u8 n_meas,
     log_info(
         "RAIM failed: %d measurements not enough for constellation RAIM, "
         "metric %.1g",
-        n_used, original_metric);
+        n_used,
+        original_metric);
     return PVT_RAIM_REPAIR_IMPOSSIBLE;
-  } else if (0 == pvt_iter_masked(n_meas, disable_velocity, nav_meas,
-                                  removed_sids, lsq_data, &new_metric)) {
+  } else if (0 == pvt_iter_masked(n_meas,
+                                  disable_velocity,
+                                  nav_meas,
+                                  removed_sids,
+                                  lsq_data,
+                                  &new_metric)) {
     /* success */
     log_info("RAIM excluded all non-GPS measurements (%" PRIu32
              " out of %d), metric %.1g "
              "-> %.1f",
-             sid_set_get_sig_count(removed_sids), n_meas, original_metric,
+             sid_set_get_sig_count(removed_sids),
+             n_meas,
+             original_metric,
              new_metric);
     return PVT_CONVERGED_RAIM_REPAIR;
   } else {
@@ -839,14 +870,17 @@ static s8 pvt_solve_gps_only(const u8 n_meas,
                " measurement(s) out of %d, "
                "metric %"
                ".1g -> %.1f",
-               sid_set_get_sig_count(removed_sids), n_meas, original_metric,
+               sid_set_get_sig_count(removed_sids),
+               n_meas,
+               original_metric,
                new_metric);
     } else {
       log_info(
           "RAIM failed: all exclusion candidates out of %d measurements "
           "failed, "
           "metric %.1g",
-          n_meas, original_metric);
+          n_meas,
+          original_metric);
     }
     return PVT_RAIM_REPAIR_FAILED;
   }
@@ -860,9 +894,11 @@ static s8 pvt_solve_gps_only(const u8 n_meas,
  *
  *   - `-1`: no reasonable solution possible
  */
-static s8 pvt_repair(const u8 n_used, const bool disable_velocity,
+static s8 pvt_repair(const u8 n_used,
+                     const bool disable_velocity,
                      const navigation_measurement_t *nav_meas[n_used],
-                     lsq_data_t *lsq_data, gnss_sid_set_t *removed_sids) {
+                     lsq_data_t *lsq_data,
+                     gnss_sid_set_t *removed_sids) {
   /* If removed_sids is null, point it to a local variable */
   gnss_sid_set_t local_removed_sids;
   if (!removed_sids) {
@@ -900,13 +936,18 @@ static s8 pvt_repair(const u8 n_used, const bool disable_velocity,
       /* try removing this signal */
       sid_set_add(removed_sids, nav_meas[i]->sid);
       /* compute solution and perform residual test with a subset of signals */
-      s8 solution_flag = pvt_iter_masked(n_used, disable_velocity, nav_meas,
-                                         removed_sids, lsq_data, &metric[i]);
+      s8 solution_flag = pvt_iter_masked(n_used,
+                                         disable_velocity,
+                                         nav_meas,
+                                         removed_sids,
+                                         lsq_data,
+                                         &metric[i]);
       if (0 == solution_flag) {
         /* at least one exclusion is successful */
         successful_exclusion_found = true;
         log_debug_sid(nav_meas[i]->sid,
-                      "RAIM exclusion successful, metric %.2g", metric[i]);
+                      "RAIM exclusion successful, metric %.2g",
+                      metric[i]);
       } else {
         log_debug_sid(nav_meas[i]->sid,
                       "RAIM failed to exclude measurement, metric %.2g",
@@ -928,8 +969,8 @@ static s8 pvt_repair(const u8 n_used, const bool disable_velocity,
         /* Compute the residual of the removed signal against the repaired
          * position for logging */
         double los[3];
-        double p_pred = compute_predicted_pseudorange(lsq_data->rx_state,
-                                                      nav_meas[bad_sat], los);
+        double p_pred = compute_predicted_pseudorange(
+            lsq_data->rx_state, nav_meas[bad_sat], los);
 
         residual = nav_meas[bad_sat]->pseudorange - p_pred;
 
@@ -955,21 +996,28 @@ static s8 pvt_repair(const u8 n_used, const bool disable_velocity,
     /* keep the best found removal from this round */
     sid_set_add(removed_sids, nav_meas[bad_sat]->sid);
     if (disable_velocity) {
-      log_info_sid(nav_meas[bad_sat]->sid, "RAIM exclusion, residual %.0f m",
-                   residual);
+      log_info_sid(
+          nav_meas[bad_sat]->sid, "RAIM exclusion, residual %.0f m", residual);
     } else {
       log_info_sid(nav_meas[bad_sat]->sid,
-                   "RAIM exclusion, residuals %.0f m, %.0f m/s", residual,
+                   "RAIM exclusion, residuals %.0f m, %.0f m/s",
+                   residual,
                    vel_residual);
     }
     if (successful_exclusion_found) {
       /* Successful exclusion found. Recalculate that solution. */
-      s8 flag = pvt_iter_masked(n_used, disable_velocity, nav_meas,
-                                removed_sids, lsq_data, &metric[bad_sat]);
+      s8 flag = pvt_iter_masked(n_used,
+                                disable_velocity,
+                                nav_meas,
+                                removed_sids,
+                                lsq_data,
+                                &metric[bad_sat]);
       assert(0 <= flag);
       log_info("RAIM excluded %" PRIu32
                " measurement(s) out of %d, metric %.1g -> %.1f",
-               sid_set_get_sig_count(removed_sids), n_used, original_metric,
+               sid_set_get_sig_count(removed_sids),
+               n_used,
+               original_metric,
                metric[bad_sat]);
       return PVT_CONVERGED_RAIM_REPAIR;
     }
@@ -984,8 +1032,12 @@ static s8 pvt_repair(const u8 n_used, const bool disable_velocity,
 
   /* Loop exhausted, cannot remove any more measurements. As a last-ditch
    * effort, try removing all but GPS signals */
-  return pvt_solve_gps_only(n_used, nav_meas, disable_velocity, lsq_data,
-                            original_metric, removed_sids);
+  return pvt_solve_gps_only(n_used,
+                            nav_meas,
+                            disable_velocity,
+                            lsq_data,
+                            original_metric,
+                            removed_sids);
 }
 
 /** Calculate pvt solution, perform RAIM check, attempt to repair if needed.
@@ -1018,8 +1070,10 @@ static s8 pvt_repair(const u8 n_used, const bool disable_velocity,
  */
 static s8 pvt_solve_raim(const u8 n_used,
                          const navigation_measurement_t *nav_meas_ptrs[n_used],
-                         const bool disable_raim, const bool disable_velocity,
-                         lsq_data_t *lsq_data, gnss_sid_set_t *removed_sids,
+                         const bool disable_raim,
+                         const bool disable_velocity,
+                         lsq_data_t *lsq_data,
+                         gnss_sid_set_t *removed_sids,
                          double *metric) {
   assert(n_used <= MAX_CHANNELS);
 
@@ -1054,8 +1108,8 @@ static s8 pvt_solve_raim(const u8 n_used,
   }
 
   /* Otherwise, try RAIM repair */
-  return pvt_repair(n_used, disable_velocity, nav_meas_ptrs, lsq_data,
-                    removed_sids);
+  return pvt_repair(
+      n_used, disable_velocity, nav_meas_ptrs, lsq_data, removed_sids);
 }
 
 /** Error strings for calc_PVT() negative (failure) return codes.
@@ -1105,10 +1159,14 @@ const char *pvt_err_msg[] = {
  *   - `-6`: pvt_iter didn't converge
  *   - `-7`: Not enough measurements for solution
  */
-s8 calc_PVT(const u8 n_used, const navigation_measurement_t nav_meas[],
-            const gps_time_t *tor, const bool disable_raim,
-            const bool disable_velocity, enum processing_strategy_t strategy,
-            gnss_solution *soln, dops_t *dops,
+s8 calc_PVT(const u8 n_used,
+            const navigation_measurement_t nav_meas[],
+            const gps_time_t *tor,
+            const bool disable_raim,
+            const bool disable_velocity,
+            enum processing_strategy_t strategy,
+            gnss_solution *soln,
+            dops_t *dops,
             gnss_sid_set_t *raim_removed_sids) {
   assert(tor != NULL);
   assert(soln != NULL);
@@ -1178,8 +1236,12 @@ s8 calc_PVT(const u8 n_used, const navigation_measurement_t nav_meas[],
 
   gnss_sid_set_t removed_sids;
   sid_set_init(&removed_sids);
-  s8 raim_flag = pvt_solve_raim(processed_signals, nav_meas_ptrs, disable_raim,
-                                disable_velocity, &lsq_data, &removed_sids,
+  s8 raim_flag = pvt_solve_raim(processed_signals,
+                                nav_meas_ptrs,
+                                disable_raim,
+                                disable_velocity,
+                                &lsq_data,
+                                &removed_sids,
                                 /* metric = */ NULL);
 
   if (raim_flag < 0) {
@@ -1273,8 +1335,12 @@ s8 calc_PVT(const u8 n_used, const navigation_measurement_t nav_meas[],
      * Compute the residual of the rest of the measurements against the
      * solution and mark outliers */
 
-    if (flag_outliers(n_used, nav_meas, lsq_data.rx_state, disable_velocity,
-                      &sid_set, &removed_sids)) {
+    if (flag_outliers(n_used,
+                      nav_meas,
+                      lsq_data.rx_state,
+                      disable_velocity,
+                      &sid_set,
+                      &removed_sids)) {
       raim_flag = PVT_CONVERGED_RAIM_REPAIR;
     }
   }

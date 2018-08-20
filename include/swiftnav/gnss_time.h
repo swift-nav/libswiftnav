@@ -13,8 +13,8 @@
 #ifndef LIBSWIFTNAV_GNSS_TIME_H
 #define LIBSWIFTNAV_GNSS_TIME_H
 
-#include <time.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include <swiftnav/common.h>
 
@@ -248,7 +248,8 @@ gps_time_t time2gps_t(const time_t t_unix);
 void gps2utc(const gps_time_t *t, utc_tm *u, const utc_params_t *p);
 void make_utc_tm(const gps_time_t *t, utc_tm *u);
 
-bool gpstime_in_range(const gps_time_t *begin, const gps_time_t *end,
+bool gpstime_in_range(const gps_time_t *begin,
+                      const gps_time_t *end,
                       const gps_time_t *t);
 double gpsdifftime(const gps_time_t *end, const gps_time_t *beginning);
 void add_secs(gps_time_t *time, double secs);
@@ -271,19 +272,34 @@ u16 gps2doy(const gps_time_t *t);
 bool decode_utc_parameters(const u32 words[8], utc_params_t *u);
 
 double date2mjd(s32 year, s32 month, s32 day, s32 hour, s32 min, double sec);
-void mjd2date(double mjd, s32 *year, s32 *month, s32 *day, s32 *hour, s32 *min,
+void mjd2date(double mjd,
+              s32 *year,
+              s32 *month,
+              s32 *day,
+              s32 *hour,
+              s32 *min,
               double *sec);
 utc_tm mjd2utc(double mjd);
 double utc2mjd(const utc_tm *utc_time);
 utc_tm date2utc(s32 year, s32 month, s32 day, s32 hour, s32 min, double sec);
-void utc2date(const utc_tm *utc_time, s32 *year, s32 *month, s32 *day,
-              s32 *hour, s32 *min, double *sec);
+void utc2date(const utc_tm *utc_time,
+              s32 *year,
+              s32 *month,
+              s32 *day,
+              s32 *hour,
+              s32 *min,
+              double *sec);
 gps_time_t mjd2gps(double mjd);
 double gps2mjd(const gps_time_t *gps_time);
-gps_time_t date2gps(s32 year, s32 month, s32 day, s32 hour, s32 min,
-                    double sec);
-void gps2date(const gps_time_t *gps_time, s32 *year, s32 *month, s32 *day,
-              s32 *hour, s32 *min, double *sec);
+gps_time_t date2gps(
+    s32 year, s32 month, s32 day, s32 hour, s32 min, double sec);
+void gps2date(const gps_time_t *gps_time,
+              s32 *year,
+              s32 *month,
+              s32 *day,
+              s32 *hour,
+              s32 *min,
+              double *sec);
 
 /* GPS-UTC time offset at given GPS time */
 double get_gps_utc_offset(const gps_time_t *t, const utc_params_t *p);

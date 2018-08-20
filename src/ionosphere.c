@@ -39,8 +39,12 @@
  *
  * \return Ionospheric delay distance for GPS L1 frequency [m]
  */
-double calc_ionosphere(const gps_time_t *t_gps, double lat_u, double lon_u,
-                       double a, double e, const ionosphere_t *i) {
+double calc_ionosphere(const gps_time_t *t_gps,
+                       double lat_u,
+                       double lon_u,
+                       double a,
+                       double e,
+                       const ionosphere_t *i) {
   /* Convert inputs from radians to semicircles */
   /* All calculations are in semicircles */
   lat_u = lat_u / M_PI;

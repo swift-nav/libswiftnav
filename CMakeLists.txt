@@ -3,6 +3,8 @@ project(libswiftnav)
 
 # Include any extra CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+include(ClangTools)
+include(FindCheck)
 # TODO: figure out why we are missing a defintion of log_ in the .a
 set(BUILD_SHARED_LIBS ON CACHE BOOL "If set, build shared libraries where possible.")
 
@@ -22,6 +24,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat=2")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wimplicit-function-declaration")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wredundant-decls")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat-security")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__")
 
 # Write configuration to a templated header file.
 set(MAX_CHANNELS "63" CACHE STRING "Maximum number of concurrent GNSS channels to support.")
@@ -43,13 +47,11 @@ set(HDRS
     include/swiftnav/glo_map.h
     include/swiftnav/glonass_phase_biases.h
     include/swiftnav/gnss_time.h
-    include/swiftnav/gnss.h
     include/swiftnav/ionosphere.h
     include/swiftnav/linear_algebra.h
     include/swiftnav/logging.h
     include/swiftnav/memcpy_s.h
     include/swiftnav/nav_meas.h
-    include/swiftnav/observation.h
     include/swiftnav/set.h
     include/swiftnav/shm.h
     include/swiftnav/sid_set.h

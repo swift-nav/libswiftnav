@@ -1,0 +1,69 @@
+# Copyright (C) 2018 Swift Navigation Inc.
+# Contact: Swift Navigation <dev@swiftnav.com>
+#
+# LSN Travis Build File.
+
+# **********************************************************************
+# PROJECT SETUP
+# **********************************************************************
+
+# Use the current Travis Ubuntu 14.04 (Trusty) image in a Docker container.
+dist:  trusty
+sudo:  false
+group: stable
+
+language: c
+
+cache:
+  apt: true
+  directories:
+
+before_install:
+  # Travis' version of CMake is too old for some reason, and the only
+  # PPA for Ubuntu trusty disappeared sometime around 3 October 2016.
+  # So instead, we install a reasonably recent version from a PPA for
+  # Ubuntu precise, and we have to do it manually, because
+  # apt-add-repository can't use other system specifiers.
+  - echo 'deb http://ppa.launchpad.net/george-edison55/precise-backports/ubuntu precise main' | sudo tee /etc/apt/sources.list.d/cmake.list
+  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 084ECFC5828AB726
+  - sudo apt-get update
+  - sudo apt-get install cmake
+
+# **********************************************************************
+# BUILD MATRIX:
+# **********************************************************************
+matrix:
+  # Non-critical matrix entries will not block build completion.
+  fast_finish: true
+
+  # Enumerate all builds and their dependencies.
+  include:
+    # ------------------------------------------------------------------
+    # Unit and integration test builds with GCC.
+    # ------------------------------------------------------------------
+
+    # GCC 6 / Unit Test.
+    - env: COMPILER=gcc-6 TEST_SUITE=unit
+      addons: { apt: { packages: ["g++-6", "check"],
+                       sources: ["ubuntu-toolchain-r-test"] } }
+    # ------------------------------------------------------------------
+    # Lint and check compilation builds with Clang
+    # ------------------------------------------------------------------
+
+    # CLANG / Lint
+    - env: COMPILER=clang-3.8 TEST_SUITE=lint
+      addons: { apt: { packages: ["clang-3.8",
+                                  "clang-tidy-3.8",
+                                  "clang-format-3.8",
+                                  "libc++-dev",
+                                  "libc++abi-dev"],
+                       sources: ["llvm-toolchain-trusty-3.8"] } }
+
+
+# **********************************************************************
+# INSTALL AND BUILD STEPS:
+# **********************************************************************
+
+# Build is handled by a shell script.
+script:
+  - bash ./travis.sh

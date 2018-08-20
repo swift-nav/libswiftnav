@@ -21,10 +21,13 @@
 extern "C" {
 #endif
 
-void correct_iono(const double *pos_ecef, const ionosphere_t *iono_params,
-                  u8 n_meas, navigation_measurement_t *nav_meas);
+void correct_iono(const double *pos_ecef,
+                  const ionosphere_t *iono_params,
+                  u8 n_meas,
+                  navigation_measurement_t *nav_meas);
 
-void correct_tropo(const double *pos_ecef, u8 n_meas,
+void correct_tropo(const double *pos_ecef,
+                   u8 n_meas,
                    navigation_measurement_t *nav_meas);
 
 #ifdef __cplusplus

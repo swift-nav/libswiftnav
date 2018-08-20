@@ -12,8 +12,8 @@
 
 #include <check.h>
 
-#include <swiftnav/logging.h>
 #include <swiftnav/glo_map.h>
+#include <swiftnav/logging.h>
 #include "check_suites.h"
 
 #define FCN_TEST_VAL 14
@@ -23,8 +23,7 @@
 static void glo_map_lock(void) {}
 static void glo_map_unlock(void) {}
 
-START_TEST(test_glo_map)
-{
+START_TEST(test_glo_map) {
   /* We do not test thread safety here.
      Therefore lock & unlock functions are just stubs. */
   glo_map_init(glo_map_lock, glo_map_unlock);
@@ -39,7 +38,8 @@ START_TEST(test_glo_map)
     u16 fcn = glo_map_get_fcn(glo_sid);
     fail_if(fcn != FCN_TEST_VAL,
             "Incorrect GLO FCN mapping (have, expected): %d, %d",
-            fcn, FCN_TEST_VAL);
+            fcn,
+            FCN_TEST_VAL);
 
     glo_map_clear_slot_id(i);
 
@@ -54,7 +54,9 @@ START_TEST(test_glo_map)
           "Number of slot ID (have, expected) %d, 0\n"
           "slot_id1 (have, expected): %d, 0\n"
           "slot_id2 (have, expected): %d, 0",
-          si_num, slot_id1, slot_id2);
+          si_num,
+          slot_id1,
+          slot_id2);
   glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
                       SLOT_ID_TEST_VAL_1);
   si_num = glo_map_get_slot_id(FCN_TEST_VAL, &slot_id1, &slot_id2);
@@ -63,19 +65,26 @@ START_TEST(test_glo_map)
           "Number of slot ID (have, expected) %d, 1\n"
           "slot_id1 (have, expected): %d, %d\n"
           "slot_id2 (have, expected): %d, 0",
-          si_num, slot_id1, SLOT_ID_TEST_VAL_1, slot_id2);
+          si_num,
+          slot_id1,
+          SLOT_ID_TEST_VAL_1,
+          slot_id2);
   glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
                       SLOT_ID_TEST_VAL_1);
   glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
                       SLOT_ID_TEST_VAL_2);
   si_num = glo_map_get_slot_id(FCN_TEST_VAL, &slot_id1, &slot_id2);
   fail_if(si_num != 2 || slot_id1 != SLOT_ID_TEST_VAL_1 ||
-          slot_id2 != SLOT_ID_TEST_VAL_2,
+              slot_id2 != SLOT_ID_TEST_VAL_2,
           "Incorrect number of slot ID or slot ID\n"
           "Number of slot ID (have, expected) %d, 2\n"
           "slot_id1 (have, expected): %d, %d\n,"
           "slot_id2 (have, expected): %d, %d",
-          si_num, slot_id1, SLOT_ID_TEST_VAL_1, slot_id2, SLOT_ID_TEST_VAL_2);
+          si_num,
+          slot_id1,
+          SLOT_ID_TEST_VAL_1,
+          slot_id2,
+          SLOT_ID_TEST_VAL_2);
   glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
                       SLOT_ID_TEST_VAL_1);
   glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
@@ -84,17 +93,20 @@ START_TEST(test_glo_map)
                       SLOT_ID_TEST_VAL_2 + 1);
   si_num = glo_map_get_slot_id(FCN_TEST_VAL, &slot_id1, &slot_id2);
   fail_if(si_num != 2 || slot_id1 != SLOT_ID_TEST_VAL_1 ||
-          slot_id2 != SLOT_ID_TEST_VAL_2,
+              slot_id2 != SLOT_ID_TEST_VAL_2,
           "Incorrect number of slot ID or slot ID\n"
           "Number of slot ID (have, expected) %d, 2\n"
           "slot_id1 (have, expected): %d, %d\n,"
           "slot_id2 (have, expected): %d, %d",
-          si_num, slot_id1, SLOT_ID_TEST_VAL_1, slot_id2, SLOT_ID_TEST_VAL_2);
+          si_num,
+          slot_id1,
+          SLOT_ID_TEST_VAL_1,
+          slot_id2,
+          SLOT_ID_TEST_VAL_2);
 }
 END_TEST
 
-Suite* glo_map_test_suite(void)
-{
+Suite *glo_map_test_suite(void) {
   Suite *s = suite_create("GLO FCN map");
   TCase *tc_core = tcase_create("Core");
   tcase_add_test(tc_core, test_glo_map);
@@ -102,4 +114,3 @@ Suite* glo_map_test_suite(void)
 
   return s;
 }
-

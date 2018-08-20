@@ -13,8 +13,8 @@
 #ifndef LIBSWIFTNAV_LOGGING_H
 #define LIBSWIFTNAV_LOGGING_H
 
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include <swiftnav/common.h>
 
@@ -46,13 +46,17 @@ extern "C" {
 extern void log_(u8 level, const char *msg, ...) __attribute__((weak))
 __attribute__((format(printf, 2, 3)));
 
-extern void detailed_log_(u8 level, const char *file_path,
-                          const int line_number, const char *msg, ...)
-    __attribute__((weak)) __attribute__((format(printf, 4, 5)));
+extern void detailed_log_(u8 level,
+                          const char *file_path,
+                          const int line_number,
+                          const char *msg,
+                          ...) __attribute__((weak))
+__attribute__((format(printf, 4, 5)));
 
 extern const char *truncate_path_(char *path);
 
-extern void event_(int fd, const char *msg, ...) __attribute__((weak));
+extern void event_(int fd, const char *msg, ...) __attribute__((weak))
+__attribute__((format(printf, 2, 3)));
 
 extern const char *level_string[];
 

@@ -56,8 +56,12 @@ static const ionosphere_t DEFAULT_IONO_PARAMS = {
     .b2 = 0.0,
     .b3 = 0.0};
 
-double calc_ionosphere(const gps_time_t *t_gps, double lat_u, double lon_u,
-                       double a, double e, const ionosphere_t *i);
+double calc_ionosphere(const gps_time_t *t_gps,
+                       double lat_u,
+                       double lon_u,
+                       double a,
+                       double e,
+                       const ionosphere_t *i);
 
 bool decode_iono_parameters(const u32 words[8], ionosphere_t *i);
 

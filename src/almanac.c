@@ -64,9 +64,12 @@ static inline s32 sign_extend11(u32 arg) {
  * \param clock_rate_err Pointer to where to store the calculated satellite
  *                       clock error [s/s]
  */
-static s8 calc_sat_state_xyz_almanac(const almanac_t *a, const gps_time_t *t,
-                                     double pos[3], double vel[3],
-                                     double acc[3], double *clock_err,
+static s8 calc_sat_state_xyz_almanac(const almanac_t *a,
+                                     const gps_time_t *t,
+                                     double pos[3],
+                                     double vel[3],
+                                     double acc[3],
+                                     double *clock_err,
                                      double *clock_rate_err) {
   ephemeris_t e;
   memset(&e, 0, sizeof(e));
@@ -82,8 +85,8 @@ static s8 calc_sat_state_xyz_almanac(const almanac_t *a, const gps_time_t *t,
   u8 iode;
   u16 iodc;
 
-  return calc_sat_state(&e, t, pos, vel, acc, clock_err, clock_rate_err, &iodc,
-                        &iode);
+  return calc_sat_state(
+      &e, t, pos, vel, acc, clock_err, clock_rate_err, &iodc, &iode);
 }
 
 /** Calculate satellite position, velocity and clock offset from GPS ephemeris.
@@ -103,9 +106,12 @@ static s8 calc_sat_state_xyz_almanac(const almanac_t *a, const gps_time_t *t,
  * \return  0 on success,
  *         -1 if almanac is not valid or too old
  */
-static s8 calc_sat_state_kepler_almanac(const almanac_t *a, const gps_time_t *t,
-                                        double pos[3], double vel[3],
-                                        double acc[3], double *clock_err,
+static s8 calc_sat_state_kepler_almanac(const almanac_t *a,
+                                        const gps_time_t *t,
+                                        double pos[3],
+                                        double vel[3],
+                                        double acc[3],
+                                        double *clock_err,
                                         double *clock_rate_err) {
   ephemeris_t e;
   memset(&e, 0, sizeof(e));
@@ -128,8 +134,8 @@ static s8 calc_sat_state_kepler_almanac(const almanac_t *a, const gps_time_t *t,
   u16 iodc;
   u8 iode;
 
-  return calc_sat_state(&e, t, pos, vel, acc, clock_err, clock_rate_err, &iodc,
-                        &iode);
+  return calc_sat_state(
+      &e, t, pos, vel, acc, clock_err, clock_rate_err, &iodc, &iode);
 }
 
 /** Calculate satellite position, velocity and clock offset from almanac.
@@ -149,16 +155,20 @@ static s8 calc_sat_state_kepler_almanac(const almanac_t *a, const gps_time_t *t,
  * \return  0 on success,
  *         -1 if almanac is not valid or too old
  */
-s8 calc_sat_state_almanac(const almanac_t *a, const gps_time_t *t,
-                          double pos[3], double vel[3], double acc[3],
-                          double *clock_err, double *clock_rate_err) {
+s8 calc_sat_state_almanac(const almanac_t *a,
+                          const gps_time_t *t,
+                          double pos[3],
+                          double vel[3],
+                          double acc[3],
+                          double *clock_err,
+                          double *clock_rate_err) {
   switch (sid_to_constellation(a->sid)) {
     case CONSTELLATION_GPS:
-      return calc_sat_state_kepler_almanac(a, t, pos, vel, acc, clock_err,
-                                           clock_rate_err);
+      return calc_sat_state_kepler_almanac(
+          a, t, pos, vel, acc, clock_err, clock_rate_err);
     case CONSTELLATION_SBAS:
-      return calc_sat_state_xyz_almanac(a, t, pos, vel, acc, clock_err,
-                                        clock_rate_err);
+      return calc_sat_state_xyz_almanac(
+          a, t, pos, vel, acc, clock_err, clock_rate_err);
       break;
     case CONSTELLATION_INVALID:
     case CONSTELLATION_COUNT:
@@ -185,14 +195,17 @@ s8 calc_sat_state_almanac(const almanac_t *a, const gps_time_t *t,
  * \return  0 on success,
  *         -1 if almanac is not valid or too old
  */
-s8 calc_sat_az_el_almanac(const almanac_t *a, const gps_time_t *t,
-                          const double ref[3], double *az, double *el) {
+s8 calc_sat_az_el_almanac(const almanac_t *a,
+                          const gps_time_t *t,
+                          const double ref[3],
+                          double *az,
+                          double *el) {
   double sat_pos[3];
   double sat_vel[3];
   double sat_acc[3];
   double clock_err, clock_rate_err;
-  s8 ret = calc_sat_state_almanac(a, t, sat_pos, sat_vel, sat_acc, &clock_err,
-                                  &clock_rate_err);
+  s8 ret = calc_sat_state_almanac(
+      a, t, sat_pos, sat_vel, sat_acc, &clock_err, &clock_rate_err);
   if (ret != 0) {
     return ret;
   }
@@ -213,16 +226,18 @@ s8 calc_sat_az_el_almanac(const almanac_t *a, const gps_time_t *t,
  * \return  0 on success,
  *         -1 if almanac is not valid or too old
  */
-s8 calc_sat_doppler_almanac(const almanac_t *a, const gps_time_t *t,
-                            const double ref[3], double *doppler) {
+s8 calc_sat_doppler_almanac(const almanac_t *a,
+                            const gps_time_t *t,
+                            const double ref[3],
+                            double *doppler) {
   double sat_pos[3];
   double sat_vel[3];
   double sat_acc[3];
   double clock_err, clock_rate_err;
   double vec_ref_sat[3];
 
-  s8 ret = calc_sat_state_almanac(a, t, sat_pos, sat_vel, sat_acc, &clock_err,
-                                  &clock_rate_err);
+  s8 ret = calc_sat_state_almanac(
+      a, t, sat_pos, sat_vel, sat_acc, &clock_err, &clock_rate_err);
   if (ret != 0) {
     return ret;
   }
@@ -295,8 +310,7 @@ u8 almanac_valid(const almanac_t *a, const gps_time_t *t) {
  */
 u8 almanac_healthy(const almanac_t *alm) {
   /* Check 3 MSB; TLM/HOW, ZCOUNT, SF123 errors don't effect almanac content */
-  u8 ignore = (1 << NAV_DHI_TLM_HOW_ERR) |
-              (1 << NAV_DHI_SUB123_ERR) |
+  u8 ignore = (1 << NAV_DHI_TLM_HOW_ERR) | (1 << NAV_DHI_SUB123_ERR) |
               (1 << NAV_DHI_ZCOUNT_ERR);
   if (!check_nav_dhi(alm->health_bits, ignore)) {
     return 0;
@@ -462,7 +476,8 @@ bool almanac_decode_health(const u32 words[8], almanac_health_t *alm_health) {
      *   Words 4-9 bits 1-6,7-12,13-18,19-24: 4x6-bit SV health for SV 1-24
      */
     for (u8 word = (4 - 3), sv_idx = (1 - 1);
-         word <= (9 - 3) || (assert(sv_idx == 25 - 1), false); ++word) {
+         word <= (9 - 3) || (assert(sv_idx == 25 - 1), false);
+         ++word) {
       for (u8 shift = (30 - 6); shift >= 30 - 24; shift -= 6, sv_idx++) {
         assert(/* sv_idx >= (1 - 1) && */ sv_idx <= (24 - 1));
         alm_health->health_bits[sv_idx] = words[word] >> shift & 0x3F;

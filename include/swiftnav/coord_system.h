@@ -69,15 +69,19 @@ void wgsllh2ecef(const double llh[3], double ecef[3]);
 void wgsecef2llh(const double ecef[3], double llh[3]);
 
 void wgsecef2ned(const double ecef[3], const double ref_ecef[3], double ned[3]);
-void wgsecef2ned_d(const double ecef[3], const double ref_ecef[3],
+void wgsecef2ned_d(const double ecef[3],
+                   const double ref_ecef[3],
                    double ned[3]);
 
 void wgsned2ecef(const double ned[3], const double ref_ecef[3], double ecef[3]);
-void wgsned2ecef_d(const double ned[3], const double ref_ecef[3],
+void wgsned2ecef_d(const double ned[3],
+                   const double ref_ecef[3],
                    double ecef[3]);
 
-void wgsecef2azel(const double ecef[3], const double ref_ecef[3],
-                  double* azimuth, double* elevation);
+void wgsecef2azel(const double ecef[3],
+                  const double ref_ecef[3],
+                  double* azimuth,
+                  double* elevation);
 
 void wgs_ecef2ned_matrix(const double llh[3], double M[3][3]);
 

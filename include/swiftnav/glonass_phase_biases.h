@@ -15,8 +15,8 @@
 #include <math.h>
 
 #include <swiftnav/common.h>
-#include <swiftnav/signal.h>
 #include <swiftnav/constants.h>
+#include <swiftnav/signal.h>
 
 #ifdef __cplusplus
 extern "C" {

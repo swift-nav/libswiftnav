@@ -37,9 +37,9 @@ extern "C" {
 #define NUM_SATS_GAL 50
 #define NUM_SATS_QZS 10
 
-#define NUM_SATS                                                 \
-  (NUM_SATS_GPS + NUM_SATS_SBAS + NUM_SATS_GLO + NUM_SATS_BDS + \
-   NUM_SATS_QZS + NUM_SATS_GAL)
+#define NUM_SATS                                                               \
+  (NUM_SATS_GPS + NUM_SATS_SBAS + NUM_SATS_GLO + NUM_SATS_BDS + NUM_SATS_QZS + \
+   NUM_SATS_GAL)
 
 #define MAX_NUM_SATS         \
   (MAX(NUM_SATS_GPS,         \
@@ -55,7 +55,7 @@ extern "C" {
 #define NUM_CODES_QZS 11
 #define NUM_CODES_GAL 16
 
-#define NUM_CODES                                                    \
+#define NUM_CODES                                                   \
   (NUM_CODES_GPS + NUM_CODES_SBAS + NUM_CODES_GLO + NUM_CODES_BDS + \
    NUM_CODES_GAL + NUM_CODES_QZS)
 
@@ -78,7 +78,7 @@ extern "C" {
 /* Number of signals in each code. */
 #define NUM_SIGNALS_GPS_L1CA (NUM_SATS_GPS)
 #define NUM_SIGNALS_GPS_L2C (NUM_SATS_GPS)
-#define NUM_SIGNALS_GPS_L5  (NUM_SATS_GPS)
+#define NUM_SIGNALS_GPS_L5 (NUM_SATS_GPS)
 #define NUM_SIGNALS_GPS_L1P (NUM_SATS_GPS)
 #define NUM_SIGNALS_GPS_L2P (NUM_SATS_GPS)
 #define NUM_SIGNALS_GPS_L1C (NUM_SATS_GPS)
@@ -114,25 +114,29 @@ extern "C" {
 #define NUM_FREQ_GLO_L2OF (GLO_MAX_FCN)
 
 /* Number of signals in each constellation. */
-#define NUM_SIGNALS_GPS                             \
-  (2 * NUM_SIGNALS_GPS_L1CA + 3 * NUM_SIGNALS_GPS_L2C + \
-   NUM_SIGNALS_GPS_L1P + NUM_SIGNALS_GPS_L2P +      \
-   3 * NUM_SIGNALS_GPS_L5 + 3 * NUM_SIGNALS_GPS_L1C)
+#define NUM_SIGNALS_GPS                                                       \
+  (2 * NUM_SIGNALS_GPS_L1CA + 3 * NUM_SIGNALS_GPS_L2C + NUM_SIGNALS_GPS_L1P + \
+   NUM_SIGNALS_GPS_L2P + 3 * NUM_SIGNALS_GPS_L5 + 3 * NUM_SIGNALS_GPS_L1C)
 
 #define NUM_SIGNALS_SBAS (2 * NUM_SIGNALS_SBAS_L1CA + 3 * NUM_SIGNALS_SBAS_L5)
 
-#define NUM_SIGNALS_GLO (NUM_SIGNALS_GLO_L1OF + NUM_SIGNALS_GLO_L2OF + NUM_SIGNALS_GLO_L1P + NUM_SIGNALS_GLO_L2P)
+#define NUM_SIGNALS_GLO                                                \
+  (NUM_SIGNALS_GLO_L1OF + NUM_SIGNALS_GLO_L2OF + NUM_SIGNALS_GLO_L1P + \
+   NUM_SIGNALS_GLO_L2P)
 
-#define NUM_SIGNALS_BDS (2 * NUM_SIGNALS_BDS2_B1 + NUM_SIGNALS_BDS2_B2 + 3 * NUM_SIGNALS_BDS3_B1C + \
-                         3 * NUM_SIGNALS_BDS3_B5 + 3 * NUM_SIGNALS_BDS3_B7 + 3 * NUM_SIGNALS_BDS3_B3)
+#define NUM_SIGNALS_BDS                                                       \
+  (2 * NUM_SIGNALS_BDS2_B1 + NUM_SIGNALS_BDS2_B2 + 3 * NUM_SIGNALS_BDS3_B1C + \
+   3 * NUM_SIGNALS_BDS3_B5 + 3 * NUM_SIGNALS_BDS3_B7 +                        \
+   3 * NUM_SIGNALS_BDS3_B3)
 #define NUM_SIGNALS_GAL                                                       \
   (4 * NUM_SIGNALS_GAL_E1 + 3 * NUM_SIGNALS_GAL_E6 + 3 * NUM_SIGNALS_GAL_E7 + \
    3 * NUM_SIGNALS_GAL_E8 + 3 * NUM_SIGNALS_GAL_E5)
 
-#define NUM_SIGNALS_QZS \
-  (2 * NUM_SIGNALS_QZS_L1 + 3 * NUM_SIGNALS_QZS_L1C + 3 * NUM_SIGNALS_QZS_L2C + 3 * NUM_SIGNALS_QZS_L5)
+#define NUM_SIGNALS_QZS                               \
+  (2 * NUM_SIGNALS_QZS_L1 + 3 * NUM_SIGNALS_QZS_L1C + \
+   3 * NUM_SIGNALS_QZS_L2C + 3 * NUM_SIGNALS_QZS_L5)
 
-#define NUM_SIGNALS                                                          \
+#define NUM_SIGNALS                                                         \
   (NUM_SIGNALS_GPS + NUM_SIGNALS_SBAS + NUM_SIGNALS_GLO + NUM_SIGNALS_BDS + \
    NUM_SIGNALS_GAL + NUM_SIGNALS_QZS)
 
@@ -194,13 +198,13 @@ static inline char constellation_to_char(constellation_t cons) {
 /** Code identifier. */
 typedef enum code_e {
   CODE_INVALID = -1,
-  CODE_GPS_L1CA = 0, /* GPS L1CA: BPSK(1) */
-  CODE_GPS_L2CM = 1, /* GPS L2C: 2 x BPSK(0.5) */
+  CODE_GPS_L1CA = 0,  /* GPS L1CA: BPSK(1) */
+  CODE_GPS_L2CM = 1,  /* GPS L2C: 2 x BPSK(0.5) */
   CODE_SBAS_L1CA = 2, /* SBAS L1: BPSK(1) */
-  CODE_GLO_L1OF = 3, /* GLONASS L1OF: FDMA BPSK(0.5) */
-  CODE_GLO_L2OF = 4, /* GLONASS L2OF: FDMA BPSK(0.5) */
-  CODE_GPS_L1P = 5,  /* GPS L1P(Y): encrypted BPSK(10) */
-  CODE_GPS_L2P = 6,  /* GPS L2P(Y): encrypted BPSK(10) */
+  CODE_GLO_L1OF = 3,  /* GLONASS L1OF: FDMA BPSK(0.5) */
+  CODE_GLO_L2OF = 4,  /* GLONASS L2OF: FDMA BPSK(0.5) */
+  CODE_GPS_L1P = 5,   /* GPS L1P(Y): encrypted BPSK(10) */
+  CODE_GPS_L2P = 6,   /* GPS L2P(Y): encrypted BPSK(10) */
   CODE_GPS_L2CL = 7,
   CODE_GPS_L2CX = 8,
   CODE_GPS_L5I = 9, /* GPS L5: QPSK(10) at 1150*f0 */
@@ -208,7 +212,7 @@ typedef enum code_e {
   CODE_GPS_L5X = 11,
   CODE_BDS2_B1 = 12, /* BDS2 B1I: BPSK(2) at 1526*f0 */
   CODE_BDS2_B2 = 13, /* BDS2 B2I: BPSK(2) at 1180*f0 */
-  CODE_GAL_E1B = 14,  /* Galileo E1: CASM CBOC(1,1) at 1540*f0 */
+  CODE_GAL_E1B = 14, /* Galileo E1: CASM CBOC(1,1) at 1540*f0 */
   CODE_GAL_E1C = 15,
   CODE_GAL_E1X = 16,
   CODE_GAL_E6B = 17, /* Galileo E6: CASM BPSK(5) at 1250*f0 */
@@ -223,8 +227,8 @@ typedef enum code_e {
   CODE_GAL_E5I = 26, /* Galileo E5a: QPSK(10) at 1150*f0 */
   CODE_GAL_E5Q = 27,
   CODE_GAL_E5X = 28,
-  CODE_GLO_L1P = 29, /* GLONASS L1P: encrypted */
-  CODE_GLO_L2P = 30, /* GLONASS L2P: encrypted */
+  CODE_GLO_L1P = 29,  /* GLONASS L1P: encrypted */
+  CODE_GLO_L2P = 30,  /* GLONASS L2P: encrypted */
   CODE_QZS_L1CA = 31, /* QZSS L1CA: BPSK(1) at 1540*f0 */
   CODE_QZS_L1CI = 32, /* QZSS L1C: TM-BOC at 1540*f0 */
   CODE_QZS_L1CQ = 33,
@@ -305,7 +309,7 @@ typedef bool (*sid_eq_fn)(const gnss_signal_t a);
  *
  * \param a     code a
  * \param b     code b
-  * \return  True if a and b are both in the same frequency band, but have
+ * \return  True if a and b are both in the same frequency band, but have
  *          different tracking modes.
  */
 static inline bool code_equiv(const code_t a, const code_t b) {
@@ -329,7 +333,7 @@ static inline bool code_equiv(const code_t a, const code_t b) {
  *
  * \param   code  Code to check.
  * \return  True if this is a GPS signal.
-*/
+ */
 static inline bool is_gps(const code_t code) {
   return (CODE_GPS_L1CA == code) || (CODE_GPS_L2CM == code) ||
          (CODE_GPS_L2CL == code) || (CODE_GPS_L2CX == code) ||
@@ -342,7 +346,7 @@ static inline bool is_gps(const code_t code) {
  *
  * \param   code  Code to check.
  * \return  True if this is an SBAS signal.
-*/
+ */
 static inline bool is_sbas(const code_t code) {
   return (CODE_SBAS_L1CA == code) || (CODE_SBAS_L5I == code) ||
          (CODE_SBAS_L5Q == code) || (CODE_SBAS_L5X == code) ||
@@ -353,7 +357,7 @@ static inline bool is_sbas(const code_t code) {
  *
  * \param   code  Code to check.
  * \return  True if this is a GLO signal.
-*/
+ */
 static inline bool is_glo(const code_t code) {
   return (CODE_GLO_L1OF == code) || (CODE_GLO_L2OF == code) ||
          (CODE_GLO_L1P == code) || (CODE_GLO_L2P == code);
@@ -363,7 +367,7 @@ static inline bool is_glo(const code_t code) {
  *
  * \param a ME GNSS signal identifier
  * \return  True if this is a Beidou generation 2 signal.
-*/
+ */
 static inline bool is_bds2(const code_t code) {
   return (CODE_BDS2_B1 == code) || (CODE_BDS2_B2 == code) ||
          (CODE_BDS3_B5I == code) || (CODE_BDS3_B5Q == code) ||
@@ -374,7 +378,7 @@ static inline bool is_bds2(const code_t code) {
  *
  * \param   code  Code to check.
  * \return  True if this is a Galileo signal.
-*/
+ */
 static inline bool is_gal(const code_t code) {
   return (CODE_GAL_E1B == code) || (CODE_GAL_E1C == code) ||
          (CODE_GAL_E1X == code) || (CODE_GAL_E6B == code) ||
@@ -391,7 +395,7 @@ static inline bool is_gal(const code_t code) {
  *
  * \param   code  Code to check.
  * \return  True if this is a QZSS signal.
-*/
+ */
 static inline bool is_qzss(const code_t code) {
   return (CODE_QZS_L1CA == code) || (CODE_QZS_L2CM == code) ||
          (CODE_QZS_L2CL == code) || (CODE_QZS_L2CX == code) ||
@@ -465,7 +469,7 @@ static inline int sid_compare(const gnss_signal_t a, const gnss_signal_t b) {
  *
  * \param a FLO frequency slot
  * \return  True if GLO frequency slot is in appropriate range.
-*/
+ */
 static inline bool glo_fcn_is_valid(u16 fcn) {
   return (fcn >= GLO_MIN_FCN) && (fcn <= GLO_MAX_FCN);
 }
@@ -474,7 +478,7 @@ static inline bool glo_fcn_is_valid(u16 fcn) {
  *
  * \param a GLO orbital slot
  * \return  True if GLO orbital slot is in appropriate range.
-*/
+ */
 static inline bool glo_slot_id_is_valid(u16 slot) {
   return (slot <= NUM_SATS_GLO) && (slot > 0);
 }
@@ -614,8 +618,8 @@ static inline bool mesid_is_equal(const me_gnss_signal_t a,
 gnss_signal_t construct_sid(code_t code, u16 sat);
 me_gnss_signal_t construct_mesid(code_t code, u16 sat);
 gnss_signal_t mesid2sid(const me_gnss_signal_t mesid, u16 glo_slot_id);
-int sat_code_to_string(char *str_buf, size_t suffix_len, const char *suffix,
-                       u16 sat, code_t code);
+int sat_code_to_string(
+    char *str_buf, size_t suffix_len, const char *suffix, u16 sat, code_t code);
 int sid_to_string(char *s, int n, const gnss_signal_t sid);
 int mesid_to_string(char *s, int n, const me_gnss_signal_t mesid);
 bool sid_valid(gnss_signal_t sid);

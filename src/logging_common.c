@@ -17,8 +17,14 @@
 #include <swiftnav/logging.h>
 
 const char *level_string[] = {
-    "EMERGENCY", "ALERT",  "CRITICAL", "ERROR",
-    "WARNING",   "NOTICE", "INFO",     "DEBUG",
+    "EMERGENCY",
+    "ALERT",
+    "CRITICAL",
+    "ERROR",
+    "WARNING",
+    "NOTICE",
+    "INFO",
+    "DEBUG",
 };
 
 /*
@@ -27,12 +33,14 @@ const char *level_string[] = {
  * `swiftnav` and `network-swiftnav`.
  */
 void log_(__attribute__((unused)) u8 level,
-          __attribute__((unused)) const char *msg, ...) {}
+          __attribute__((unused)) const char *msg,
+          ...) {}
 
 void detailed_log_(__attribute__((unused)) u8 level,
                    __attribute__((unused)) const char *file_path,
                    __attribute__((unused)) const int line_number,
-                   __attribute__((unused)) const char *msg, ...) {}
+                   __attribute__((unused)) const char *msg,
+                   ...) {}
 
 /** Shortens the full path to the filename only.
  *

@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2016 Swift Navigation Inc.
  * Contact: Swift Navigation <dev@swiftnav.com>
- *          Niilo Sirola <niilo.sirola@exafore.com>
  *
  * This source is subject to the license found in the file 'LICENSE' which must
  * be distributed together with this source. All other rights reserved.
@@ -22,8 +21,8 @@
  * \{ */
 
 /** Average barometric pressure lookup table [mbar] */
-static const double p_avg_lut[5] = {1013.25, 1017.25, 1015.75, 1011.75,
-                                    1013.00};
+static const double p_avg_lut[5] = {
+    1013.25, 1017.25, 1015.75, 1011.75, 1013.00};
 
 /** Average temperature lookup table [K] */
 static const double t_avg_lut[5] = {299.65, 294.15, 283.15, 272.15, 263.65};
@@ -65,28 +64,28 @@ static const double mhf_c_avg_lut[5] = {
     62.610505e-3, 62.837393e-3, 63.721774e-3, 63.824265e-3, 64.258455e-3};
 
 /** Amplitude hydrostatic mapping function A coeffcient lookup table */
-static const double mhf_a_amp_lut[5] = {0.0, 1.2709626e-5, 2.6523662e-5,
-                                        3.4000452e-5, 4.1202191e-5};
+static const double mhf_a_amp_lut[5] = {
+    0.0, 1.2709626e-5, 2.6523662e-5, 3.4000452e-5, 4.1202191e-5};
 
 /** Amplitude hydrostatic mapping function B coeffcient lookup table */
-static const double mhf_b_amp_lut[5] = {0.0, 2.1414979e-5, 3.0160779e-5,
-                                        7.2562722e-5, 11.723375e-5};
+static const double mhf_b_amp_lut[5] = {
+    0.0, 2.1414979e-5, 3.0160779e-5, 7.2562722e-5, 11.723375e-5};
 
 /** Amplitude hydrostatic mapping function C coeffcient lookup table */
-static const double mhf_c_amp_lut[5] = {0.0, 9.0128400e-5, 4.3497037e-5,
-                                        84.795348e-5, 170.37206e-5};
+static const double mhf_c_amp_lut[5] = {
+    0.0, 9.0128400e-5, 4.3497037e-5, 84.795348e-5, 170.37206e-5};
 
 /** Wet mapping function A coeffcient lookup table */
-static const double mwf_a_lut[5] = {5.8021897e-4, 5.6794847e-4, 5.8118019e-4,
-                                    5.9727542e-4, 6.1641693e-4};
+static const double mwf_a_lut[5] = {
+    5.8021897e-4, 5.6794847e-4, 5.8118019e-4, 5.9727542e-4, 6.1641693e-4};
 
 /** Wet mapping function B coeffcient lookup table */
-static const double mwf_b_lut[5] = {1.4275268e-3, 1.5138625e-3, 1.4572752e-3,
-                                    1.5007428e-3, 1.7599082e-3};
+static const double mwf_b_lut[5] = {
+    1.4275268e-3, 1.5138625e-3, 1.4572752e-3, 1.5007428e-3, 1.7599082e-3};
 
 /** Wet mapping function C coeffcient lookup table */
-static const double mwf_c_lut[5] = {4.3472961e-2, 4.6729510e-2, 4.3908931e-2,
-                                    4.4626982e-2, 5.4736038e-2};
+static const double mwf_c_lut[5] = {
+    4.3472961e-2, 4.6729510e-2, 4.3908931e-2, 4.4626982e-2, 5.4736038e-2};
 
 /** Compute tropo values by interpolation from look up table */
 static double lookup_param(double lat, const double *lut) {
@@ -107,7 +106,9 @@ static double lookup_param(double lat, const double *lut) {
   }
 }
 
-static double calc_param(double lat, double doy, const double *avg_lut,
+static double calc_param(double lat,
+                         double doy,
+                         const double *avg_lut,
                          const double *amp_lut) {
   /* Compute average surface tropo values by interpolation */
   double avg = lookup_param(lat, avg_lut);
@@ -139,7 +140,9 @@ static double calc_param(double lat, double doy, const double *avg_lut,
  *
  * \return Tropospheric delay distance [m]
  */
-double calc_troposphere(const gps_time_t *t_gps, double lat, double h,
+double calc_troposphere(const gps_time_t *t_gps,
+                        double lat,
+                        double h,
                         double el) {
   lat *= R2D;
   el *= R2D;

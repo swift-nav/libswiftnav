@@ -160,13 +160,22 @@ typedef struct {
 
 /** \} */
 
-s8 calc_sat_state_almanac(const almanac_t *a, const gps_time_t *t,
-                          double pos[3], double vel[3], double acc[3],
-                          double *clock_err, double *clock_rate_err);
-s8 calc_sat_az_el_almanac(const almanac_t *a, const gps_time_t *t,
-                          const double ref[3], double *az, double *el);
-s8 calc_sat_doppler_almanac(const almanac_t *a, const gps_time_t *t,
-                            const double ref[3], double *doppler);
+s8 calc_sat_state_almanac(const almanac_t *a,
+                          const gps_time_t *t,
+                          double pos[3],
+                          double vel[3],
+                          double acc[3],
+                          double *clock_err,
+                          double *clock_rate_err);
+s8 calc_sat_az_el_almanac(const almanac_t *a,
+                          const gps_time_t *t,
+                          const double ref[3],
+                          double *az,
+                          double *el);
+s8 calc_sat_doppler_almanac(const almanac_t *a,
+                            const gps_time_t *t,
+                            const double ref[3],
+                            double *doppler);
 
 u8 almanac_valid(const almanac_t *a, const gps_time_t *t);
 u8 almanac_healthy(const almanac_t *a);

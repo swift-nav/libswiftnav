@@ -1,10 +1,9 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "check_suites.h"
 
-int main(void)
-{
+int main(void) {
   int number_failed;
 
   Suite *s = edc_suite();

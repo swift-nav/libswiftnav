@@ -1,0 +1,9 @@
+# Complete list of style options can be found at:
+# http://clang.llvm.org/docs/ClangFormatStyleOptions.html
+---
+Language:      Cpp
+BasedOnStyle:  Google
+Standard:      Cpp11
+BinPackParameters: false
+BinPackArguments: false 
+...

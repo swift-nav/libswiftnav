@@ -33,15 +33,15 @@
  * \{ */
 
 /** Converts from an LLH coordinate in radians
-* into a LLH coordinate in decimal degrees
-*
-* Conversion from radians to degrees is done using
-* a simple direct conversion formula:
-* \f$degrees = \frac{radians *` 180}{\pi}\f$
-*
-* Safe to pass same pointer as input and output value, eg:
-*  llhrad2deg(arr1, arr1);
-*/
+ * into a LLH coordinate in decimal degrees
+ *
+ * Conversion from radians to degrees is done using
+ * a simple direct conversion formula:
+ * \f$degrees = \frac{radians *` 180}{\pi}\f$
+ *
+ * Safe to pass same pointer as input and output value, eg:
+ *  llhrad2deg(arr1, arr1);
+ */
 
 void llhrad2deg(const double llh_rad[3], double llh_deg[3]) {
   llh_deg[0] = llh_rad[0] * R2D;
@@ -50,15 +50,15 @@ void llhrad2deg(const double llh_rad[3], double llh_deg[3]) {
 }
 
 /** Converts from an LLH coordinate in decimal degrees
-* into a LLH coordinate in radians.
-*
-* Conversion from degrees to radians is done using
-* a simple direct conversion formula:
-* \f$radians = \frac{degrees * \pi}{180}\f$
-*
-* Safe to pass same pointer as input and output value, eg:
-*  llhdeg2rad(arr1, arr1);
-*/
+ * into a LLH coordinate in radians.
+ *
+ * Conversion from degrees to radians is done using
+ * a simple direct conversion formula:
+ * \f$radians = \frac{degrees * \pi}{180}\f$
+ *
+ * Safe to pass same pointer as input and output value, eg:
+ *  llhdeg2rad(arr1, arr1);
+ */
 
 void llhdeg2rad(const double llg_deg[3], double llh_rad[3]) {
   llh_rad[0] = llg_deg[0] * D2R;
@@ -272,7 +272,8 @@ void ecef2ned_matrix(const double ref_ecef[3], double M[3][3]) {
  * \param ned       The North, East, Down vector is written into this array as
  *                  [N, E, D], all in meters.
  */
-void wgsecef2ned(const double ecef[3], const double ref_ecef[3],
+void wgsecef2ned(const double ecef[3],
+                 const double ref_ecef[3],
                  double ned[3]) {
   double M[3][3];
 
@@ -294,7 +295,8 @@ void wgsecef2ned(const double ecef[3], const double ref_ecef[3],
  * \param ned       The North, East, Down vector is written into this array as
  *                  [N, E, D], all in meters.
  */
-void wgsecef2ned_d(const double ecef[3], const double ref_ecef[3],
+void wgsecef2ned_d(const double ecef[3],
+                   const double ref_ecef[3],
                    double ned[3]) {
   double tempv[3];
   vector_subtract(3, ecef, ref_ecef, tempv);
@@ -318,7 +320,8 @@ void wgsecef2ned_d(const double ecef[3], const double ref_ecef[3],
  * \param ecef      Cartesian coordinates of the point written into this array,
  *                  [X, Y, Z], all in meters.
  */
-void wgsned2ecef(const double ned[3], const double ref_ecef[3],
+void wgsned2ecef(const double ned[3],
+                 const double ref_ecef[3],
                  double ecef[3]) {
   double M[3][3], M_transpose[3][3];
   ecef2ned_matrix(ref_ecef, M);
@@ -340,7 +343,8 @@ void wgsned2ecef(const double ned[3], const double ref_ecef[3],
  * \param ecef      Cartesian coordinates of the point written into this array,
  *                  [X, Y, Z], all in meters.
  */
-void wgsned2ecef_d(const double ned[3], const double ref_ecef[3],
+void wgsned2ecef_d(const double ned[3],
+                   const double ref_ecef[3],
                    double ecef[3]) {
   double tempv[3];
   wgsned2ecef(ned, ref_ecef, tempv);
@@ -363,8 +367,10 @@ void wgsned2ecef_d(const double ned[3], const double ref_ecef[3],
  * \param azimuth   Pointer to where to store the calculated azimuth output.
  * \param elevation Pointer to where to store the calculated elevation output.
  */
-void wgsecef2azel(const double ecef[3], const double ref_ecef[3],
-                  double *azimuth, double *elevation) {
+void wgsecef2azel(const double ecef[3],
+                  const double ref_ecef[3],
+                  double *azimuth,
+                  double *elevation) {
   double ned[3];
 
   /* Calculate the vector from the reference point in the local North, East,

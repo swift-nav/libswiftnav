@@ -10,13 +10,15 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#include <string.h>
 #include <inttypes.h>
+#include <string.h>
 
 #include <swiftnav/logging.h>
 #include <swiftnav/memcpy_s.h>
 
-memcpy_s_t memcpy_s(void *dest, size_t destsize, const void *src,
+memcpy_s_t memcpy_s(void *dest,
+                    size_t destsize,
+                    const void *src,
                     size_t count) {
   if (NULL == dest) {
     log_error("memcpy_s error: destination NULL");
@@ -41,7 +43,8 @@ memcpy_s_t memcpy_s(void *dest, size_t destsize, const void *src,
   if (destsize < count) {
     log_error("memcpy_s error: src size %" PRIu64
               " greater than dest size %" PRIu64,
-              (u64)count, (u64)destsize);
+              (u64)count,
+              (u64)destsize);
     return MEMCPY_S_OVERSIZED;
   }
 

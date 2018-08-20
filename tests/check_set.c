@@ -1,16 +1,15 @@
 #include <check.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <swiftnav/set.h>
-#include "check_utils.h"
 #include "check_suites.h"
+#include "check_utils.h"
 
 #define LEN(x) (sizeof(x) / sizeof(x[0]))
 
-void test_map_f(void *context, u32 n, const void *a_, const void *b_)
-{
+void test_map_f(void *context, u32 n, const void *a_, const void *b_) {
   s32 *a = (s32 *)a_;
   s32 *b = (s32 *)b_;
   s32 *c = (s32 *)context;
@@ -20,46 +19,64 @@ void test_map_f(void *context, u32 n, const void *a_, const void *b_)
   c[n] = *a;
 }
 
-#define TEST_INTERSECTION(a, b, c) {                                           \
-  s32 c_result[LEN(c)];                                                        \
-                                                                               \
-  qsort(a, LEN(a), sizeof(a[0]), cmp_s32_s32);                                 \
-  qsort(b, LEN(b), sizeof(b[0]), cmp_s32_s32);                                 \
-  qsort(c, LEN(c), sizeof(c[0]), cmp_s32_s32);                                 \
-                                                                               \
-  s32 ret = intersection_map(LEN(a), sizeof(a[0]), a,                          \
-                             LEN(b), sizeof(b[0]), b,                          \
-                             cmp_s32_s32, c_result, test_map_f);               \
-                                                                               \
-  fail_unless(ret == LEN(c),                                                   \
-      "Intersection length does not match test data");                         \
-                                                                               \
-  fail_unless(memcmp(c, c_result, sizeof(c)) == 0,                             \
-      "Output of intersection does not match test data");                      \
-                                                                               \
-  ret = intersection(LEN(a), sizeof(a[0]), a, c_result,                        \
-                     LEN(b), sizeof(b[0]), b, NULL,                            \
-                     cmp_s32_s32);                                             \
-                                                                               \
-  fail_unless(ret == LEN(c),                                                   \
-      "Intersection length does not match test data (2)");                     \
-                                                                               \
-  fail_unless(memcmp(c, c_result, sizeof(c)) == 0,                             \
-      "Output of intersection does not match test data (2)");                  \
-                                                                               \
-  ret = intersection(LEN(a), sizeof(a[0]), a, NULL,                            \
-                     LEN(b), sizeof(b[0]), b, c_result,                        \
-                     cmp_s32_s32);                                             \
-                                                                               \
-  fail_unless(ret == LEN(c),                                                   \
-      "Intersection length does not match test data (3)");                     \
-                                                                               \
-  fail_unless(memcmp(c, c_result, sizeof(c)) == 0,                             \
-      "Output of intersection does not match test data (3)");                  \
-}
+#define TEST_INTERSECTION(a, b, c)                                      \
+  {                                                                     \
+    s32 c_result[LEN(c)];                                               \
+                                                                        \
+    qsort(a, LEN(a), sizeof(a[0]), cmp_s32_s32);                        \
+    qsort(b, LEN(b), sizeof(b[0]), cmp_s32_s32);                        \
+    qsort(c, LEN(c), sizeof(c[0]), cmp_s32_s32);                        \
+                                                                        \
+    s32 ret = intersection_map(LEN(a),                                  \
+                               sizeof(a[0]),                            \
+                               a,                                       \
+                               LEN(b),                                  \
+                               sizeof(b[0]),                            \
+                               b,                                       \
+                               cmp_s32_s32,                             \
+                               c_result,                                \
+                               test_map_f);                             \
+                                                                        \
+    fail_unless(ret == LEN(c),                                          \
+                "Intersection length does not match test data");        \
+                                                                        \
+    fail_unless(memcmp(c, c_result, sizeof(c)) == 0,                    \
+                "Output of intersection does not match test data");     \
+                                                                        \
+    ret = intersection(LEN(a),                                          \
+                       sizeof(a[0]),                                    \
+                       a,                                               \
+                       c_result,                                        \
+                       LEN(b),                                          \
+                       sizeof(b[0]),                                    \
+                       b,                                               \
+                       NULL,                                            \
+                       cmp_s32_s32);                                    \
+                                                                        \
+    fail_unless(ret == LEN(c),                                          \
+                "Intersection length does not match test data (2)");    \
+                                                                        \
+    fail_unless(memcmp(c, c_result, sizeof(c)) == 0,                    \
+                "Output of intersection does not match test data (2)"); \
+                                                                        \
+    ret = intersection(LEN(a),                                          \
+                       sizeof(a[0]),                                    \
+                       a,                                               \
+                       NULL,                                            \
+                       LEN(b),                                          \
+                       sizeof(b[0]),                                    \
+                       b,                                               \
+                       c_result,                                        \
+                       cmp_s32_s32);                                    \
+                                                                        \
+    fail_unless(ret == LEN(c),                                          \
+                "Intersection length does not match test data (3)");    \
+                                                                        \
+    fail_unless(memcmp(c, c_result, sizeof(c)) == 0,                    \
+                "Output of intersection does not match test data (3)"); \
+  }
 
-START_TEST(test_intersection_map_1)
-{
+START_TEST(test_intersection_map_1) {
   /* Empty first set */
   s32 a[] = {};
   s32 b[] = {1, 2, 3};
@@ -68,8 +85,7 @@ START_TEST(test_intersection_map_1)
 }
 END_TEST
 
-START_TEST(test_intersection_map_2)
-{
+START_TEST(test_intersection_map_2) {
   /* Empty second set */
   s32 a[] = {1, 2, 3};
   s32 b[] = {};
@@ -78,8 +94,7 @@ START_TEST(test_intersection_map_2)
 }
 END_TEST
 
-START_TEST(test_intersection_map_3)
-{
+START_TEST(test_intersection_map_3) {
   /* Beginning intersects */
   s32 a[] = {1, 2, 3, 4, 5, 6, 7};
   s32 b[] = {1, 2, 3};
@@ -88,8 +103,7 @@ START_TEST(test_intersection_map_3)
 }
 END_TEST
 
-START_TEST(test_intersection_map_4)
-{
+START_TEST(test_intersection_map_4) {
   /* End intersects */
   s32 a[] = {1, 2, 3, 4, 5, 6, 7};
   s32 b[] = {5, 6, 7};
@@ -98,8 +112,7 @@ START_TEST(test_intersection_map_4)
 }
 END_TEST
 
-START_TEST(test_intersection_map_5)
-{
+START_TEST(test_intersection_map_5) {
   /* Same set */
   s32 a[] = {1, 2, 3, 4, 5, 6, 7};
   s32 b[] = {1, 2, 3, 4, 5, 6, 7};
@@ -108,8 +121,7 @@ START_TEST(test_intersection_map_5)
 }
 END_TEST
 
-START_TEST(test_intersection_map_6)
-{
+START_TEST(test_intersection_map_6) {
   /* Disjoint */
   s32 a[] = {1, 2, 3, 4};
   s32 b[] = {5, 6, 7, 8};
@@ -118,8 +130,7 @@ START_TEST(test_intersection_map_6)
 }
 END_TEST
 
-START_TEST(test_intersection_map_7)
-{
+START_TEST(test_intersection_map_7) {
   /* Middle overlaps */
   s32 a[] = {1, 2, 3, 4, 5, 6, 7};
   s32 b[] = {5, 6};
@@ -128,8 +139,7 @@ START_TEST(test_intersection_map_7)
 }
 END_TEST
 
-START_TEST(test_intersection_map_8)
-{
+START_TEST(test_intersection_map_8) {
   /* Overlapping but not subset */
   s32 a[] = {1, 2, 3, 4, 5};
   s32 b[] = {4, 5, 6, 7, 8};
@@ -138,8 +148,7 @@ START_TEST(test_intersection_map_8)
 }
 END_TEST
 
-START_TEST(test_intersection_map_9)
-{
+START_TEST(test_intersection_map_9) {
   /* Alternating disjoint */
   s32 a[] = {2, 4, 6, 8, 10};
   s32 b[] = {1, 3, 7, 9, 11};
@@ -148,8 +157,7 @@ START_TEST(test_intersection_map_9)
 }
 END_TEST
 
-START_TEST(test_intersection_map_10)
-{
+START_TEST(test_intersection_map_10) {
   /* Alternating with overlap */
   s32 a[] = {2, 4, 6, 8, 9, 10};
   s32 b[] = {1, 3, 7, 8, 9, 11};
@@ -158,15 +166,18 @@ START_TEST(test_intersection_map_10)
 }
 END_TEST
 
-START_TEST(test_is_prn_set)
-{
-
-#define TEST_IS_SET(set, result) \
-  fail_unless(is_sid_set(sizeof(set)/sizeof(set[0]), set) == result, \
+START_TEST(test_is_prn_set) {
+#define TEST_IS_SET(set, result)                                       \
+  fail_unless(is_sid_set(sizeof(set) / sizeof(set[0]), set) == result, \
               "is_sid_set(" #set ") != " #result);
 
   /* Normal set. */
-  gnss_signal_t prns1[] = {{.sat = 0}, {.sat = 1}, {.sat = 2}, {.sat = 33}, {.sat = 44}, {.sat = 200}};
+  gnss_signal_t prns1[] = {{.sat = 0},
+                           {.sat = 1},
+                           {.sat = 2},
+                           {.sat = 33},
+                           {.sat = 44},
+                           {.sat = 200}};
   TEST_IS_SET(prns1, true);
 
   /* Empty set. */
@@ -181,27 +192,31 @@ START_TEST(test_is_prn_set)
   gnss_signal_t prns3[] = {{.sat = 22}, {.sat = 22}};
   TEST_IS_SET(prns3, false);
 
-  gnss_signal_t prns4[] = {{.sat = 0}, {.sat = 1}, {.sat = 2}, {.sat = 3}, {.sat = 3}};
+  gnss_signal_t prns4[] = {
+      {.sat = 0}, {.sat = 1}, {.sat = 2}, {.sat = 3}, {.sat = 3}};
   TEST_IS_SET(prns4, false);
 
-  gnss_signal_t prns5[] = {{.sat = 1}, {.sat = 1}, {.sat = 2}, {.sat = 3}, {.sat = 4}};
+  gnss_signal_t prns5[] = {
+      {.sat = 1}, {.sat = 1}, {.sat = 2}, {.sat = 3}, {.sat = 4}};
   TEST_IS_SET(prns5, false);
 
   /* Incorrectly sorted. */
 
-  gnss_signal_t prns6[] = {{.sat = 22}, {.sat = 1}, {.sat = 2}, {.sat = 3}, {.sat = 4}};
+  gnss_signal_t prns6[] = {
+      {.sat = 22}, {.sat = 1}, {.sat = 2}, {.sat = 3}, {.sat = 4}};
   TEST_IS_SET(prns6, false);
 
-  gnss_signal_t prns7[] = {{.sat = 0}, {.sat = 1}, {.sat = 2}, {.sat = 3}, {.sat = 1}};
+  gnss_signal_t prns7[] = {
+      {.sat = 0}, {.sat = 1}, {.sat = 2}, {.sat = 3}, {.sat = 1}};
   TEST_IS_SET(prns7, false);
 
-  gnss_signal_t prns8[] = {{.sat = 0}, {.sat = 1}, {.sat = 22}, {.sat = 3}, {.sat = 4}};
+  gnss_signal_t prns8[] = {
+      {.sat = 0}, {.sat = 1}, {.sat = 22}, {.sat = 3}, {.sat = 4}};
   TEST_IS_SET(prns8, false);
 }
 END_TEST
 
-Suite* set_suite(void)
-{
+Suite *set_suite(void) {
   Suite *s = suite_create("Set");
 
   TCase *tc_intersection = tcase_create("Intersection");

@@ -173,8 +173,8 @@ void bitshl(void *buf, u32 size, u32 shift) {
  * \todo This function can be optimized for copying aligned data and using
  *       proper native type like long.
  */
-void bitcopy(void *dst, u32 dst_index, const void *src, u32 src_index,
-             u32 count) {
+void bitcopy(
+    void *dst, u32 dst_index, const void *src, u32 src_index, u32 count) {
   u32 limit1 = count / 32;
   u32 limit2 = count % 32;
 

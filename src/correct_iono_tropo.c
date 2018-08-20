@@ -15,8 +15,10 @@
 #include <swiftnav/ionosphere.h>
 #include <swiftnav/troposphere.h>
 
-void correct_iono(const double *pos_ecef, const ionosphere_t *iono_params,
-                  u8 n_meas, navigation_measurement_t *nav_meas) {
+void correct_iono(const double *pos_ecef,
+                  const ionosphere_t *iono_params,
+                  u8 n_meas,
+                  navigation_measurement_t *nav_meas) {
   double pos_llh[3];
   wgsecef2llh(pos_ecef, pos_llh);
 
@@ -51,13 +53,16 @@ void correct_iono(const double *pos_ecef, const ionosphere_t *iono_params,
     /* calc iono correction if available */
     if (iono_params) {
       /* calculate iono correction */
-      iono_correction = calc_ionosphere(&nav_meas[i].tot, pos_llh[0],
-                                        pos_llh[1], az, el, iono_params);
+      iono_correction = calc_ionosphere(
+          &nav_meas[i].tot, pos_llh[0], pos_llh[1], az, el, iono_params);
 
       /* finite differences estimate of iono correction time derivative */
       iono_correction_delta =
-          (iono_correction - calc_ionosphere(&nav_meas[i].tot, pos_llh[0],
-                                             pos_llh[1], az0, el0,
+          (iono_correction - calc_ionosphere(&nav_meas[i].tot,
+                                             pos_llh[0],
+                                             pos_llh[1],
+                                             az0,
+                                             el0,
                                              iono_params)) /
           h;
 
@@ -83,7 +88,8 @@ void correct_iono(const double *pos_ecef, const ionosphere_t *iono_params,
   }
 }
 
-void correct_tropo(const double *pos_ecef, u8 n_meas,
+void correct_tropo(const double *pos_ecef,
+                   u8 n_meas,
                    navigation_measurement_t *nav_meas) {
   double pos_llh[3];
   wgsecef2llh(pos_ecef, pos_llh);

@@ -56,8 +56,12 @@
  *  Routines for working with matrices.
  * \{ */
 
-void submatrix(u32 new_rows, u32 new_cols, u32 old_cols, const double *old_mat,
-               const u32 *new_row_to_old, const u32 *new_col_to_old,
+void submatrix(u32 new_rows,
+               u32 new_cols,
+               u32 old_cols,
+               const double *old_mat,
+               const u32 *new_row_to_old,
+               const u32 *new_col_to_old,
                double *new_mat) {
   for (u32 i = 0; i < new_rows; i++) {
     for (u32 j = 0; j < new_cols; j++) {
@@ -75,8 +79,11 @@ void submatrix(u32 new_rows, u32 new_cols, u32 old_cols, const double *old_mat,
  *  \param old_mat      Input matrix A
  *  \param new_mat      Output matrix B
  */
-void submatrix_ul(u32 new_rows, u32 new_cols, u32 old_cols,
-                  const double *old_mat, double *new_mat) {
+void submatrix_ul(u32 new_rows,
+                  u32 new_cols,
+                  u32 old_cols,
+                  const double *old_mat,
+                  double *new_mat) {
   for (u32 i = 0; i < new_rows; i++) {
     for (u32 j = 0; j < new_cols; j++) {
       new_mat[i * new_cols + j] = old_mat[i * old_cols + j];
@@ -287,40 +294,30 @@ static inline int inv3(const double *a, double *b) {
  */
 static inline int inv4(const double *a, double *b) {
   double det =
-      (((a[4 * 1 + 0] *
-             -((a[4 * 2 + 1] *
-                    -(a[4 * 0 + 2] * a[4 * 3 + 3] -
-                      a[4 * 0 + 3] * a[4 * 3 + 2]) +
-                a[4 * 2 + 2] * (a[4 * 0 + 1] * a[4 * 3 + 3] -
-                                a[4 * 0 + 3] * a[4 * 3 + 1])) +
-               a[4 * 2 + 3] *
-                   -(a[4 * 0 + 1] * a[4 * 3 + 2] -
-                     a[4 * 0 + 2] * a[4 * 3 + 1])) +
-         a[4 * 1 + 1] *
-             ((a[4 * 2 + 0] *
-                   -(a[4 * 0 + 2] * a[4 * 3 + 3] -
-                     a[4 * 0 + 3] * a[4 * 3 + 2]) +
-               a[4 * 2 + 2] * (a[4 * 0 + 0] * a[4 * 3 + 3] -
-                               a[4 * 0 + 3] * a[4 * 3 + 0])) +
-              a[4 * 2 + 3] *
-                  -(a[4 * 0 + 0] * a[4 * 3 + 2] -
-                    a[4 * 0 + 2] * a[4 * 3 + 0]))) +
-        a[4 * 1 + 2] *
-            -((a[4 * 2 + 0] *
-                   -(a[4 * 0 + 1] * a[4 * 3 + 3] -
-                     a[4 * 0 + 3] * a[4 * 3 + 1]) +
-               a[4 * 2 + 1] * (a[4 * 0 + 0] * a[4 * 3 + 3] -
-                               a[4 * 0 + 3] * a[4 * 3 + 0])) +
-              a[4 * 2 + 3] *
-                  -(a[4 * 0 + 0] * a[4 * 3 + 1] -
-                    a[4 * 0 + 1] * a[4 * 3 + 0]))) +
-       a[4 * 1 + 3] *
-           ((a[4 * 2 + 0] *
-                 -(a[4 * 0 + 1] * a[4 * 3 + 2] - a[4 * 0 + 2] * a[4 * 3 + 1]) +
-             a[4 * 2 + 1] *
-                 (a[4 * 0 + 0] * a[4 * 3 + 2] - a[4 * 0 + 2] * a[4 * 3 + 0])) +
-            a[4 * 2 + 2] *
-                -(a[4 * 0 + 0] * a[4 * 3 + 1] - a[4 * 0 + 1] * a[4 * 3 + 0])));
+      (((a[4 * 1 + 0] * -((a[4 * 2 + 1] * -(a[4 * 0 + 2] * a[4 * 3 + 3] -
+                                            a[4 * 0 + 3] * a[4 * 3 + 2]) +
+                           a[4 * 2 + 2] * (a[4 * 0 + 1] * a[4 * 3 + 3] -
+                                           a[4 * 0 + 3] * a[4 * 3 + 1])) +
+                          a[4 * 2 + 3] * -(a[4 * 0 + 1] * a[4 * 3 + 2] -
+                                           a[4 * 0 + 2] * a[4 * 3 + 1])) +
+         a[4 * 1 + 1] * ((a[4 * 2 + 0] * -(a[4 * 0 + 2] * a[4 * 3 + 3] -
+                                           a[4 * 0 + 3] * a[4 * 3 + 2]) +
+                          a[4 * 2 + 2] * (a[4 * 0 + 0] * a[4 * 3 + 3] -
+                                          a[4 * 0 + 3] * a[4 * 3 + 0])) +
+                         a[4 * 2 + 3] * -(a[4 * 0 + 0] * a[4 * 3 + 2] -
+                                          a[4 * 0 + 2] * a[4 * 3 + 0]))) +
+        a[4 * 1 + 2] * -((a[4 * 2 + 0] * -(a[4 * 0 + 1] * a[4 * 3 + 3] -
+                                           a[4 * 0 + 3] * a[4 * 3 + 1]) +
+                          a[4 * 2 + 1] * (a[4 * 0 + 0] * a[4 * 3 + 3] -
+                                          a[4 * 0 + 3] * a[4 * 3 + 0])) +
+                         a[4 * 2 + 3] * -(a[4 * 0 + 0] * a[4 * 3 + 1] -
+                                          a[4 * 0 + 1] * a[4 * 3 + 0]))) +
+       a[4 * 1 + 3] * ((a[4 * 2 + 0] * -(a[4 * 0 + 1] * a[4 * 3 + 2] -
+                                         a[4 * 0 + 2] * a[4 * 3 + 1]) +
+                        a[4 * 2 + 1] * (a[4 * 0 + 0] * a[4 * 3 + 2] -
+                                        a[4 * 0 + 2] * a[4 * 3 + 0])) +
+                       a[4 * 2 + 2] * -(a[4 * 0 + 0] * a[4 * 3 + 1] -
+                                        a[4 * 0 + 1] * a[4 * 3 + 0])));
 
   if (fabs(det) < MATRIX_EPSILON) return -1;
 
@@ -640,8 +637,8 @@ int matrix_pseudoinverse(u32 n, u32 m, const double *a, double *b) {
  *
  *  \return     -1 if n <= m or singular; 0 otherwise
  */
-inline int matrix_atwaiat(u32 n, u32 m, const double *a, const double *w,
-                          double *b) {
+inline int matrix_atwaiat(
+    u32 n, u32 m, const double *a, const double *w, double *b) {
   u32 i, j, k;
   double c[m * m], inv[m * m];
   /* Check to make sure we're doing the right operation */
@@ -688,8 +685,8 @@ inline int matrix_atwaiat(u32 n, u32 m, const double *a, const double *w,
  *
  *  \return     -1 if n <= m or singular; 0 otherwise
  */
-inline int matrix_atawati(u32 n, u32 m, const double *a, const double *w,
-                          double *b) {
+inline int matrix_atawati(
+    u32 n, u32 m, const double *a, const double *w, double *b) {
   u32 i, j, k;
   double c[m * m], inv[m * m];
   /* Check to make sure we're doing the right operation */
@@ -773,8 +770,8 @@ inline int matrix_ataati(u32 n, u32 m, const double *a, double *b) {
  *  \param b            Second matrix to multiply
  *  \param c            Output matrix
  */
-inline void matrix_multiply(u32 n, u32 m, u32 p, const double *a,
-                            const double *b, double *c) {
+inline void matrix_multiply(
+    u32 n, u32 m, u32 p, const double *a, const double *b, double *c) {
   u32 i, j, k;
   for (i = 0; i < n; i++)
     for (j = 0; j < p; j++) {
@@ -783,8 +780,8 @@ inline void matrix_multiply(u32 n, u32 m, u32 p, const double *a,
     }
 }
 
-inline void matrix_multiply_i(u32 n, u32 m, u32 p, const s32 *a, const s32 *b,
-                              s32 *c) {
+inline void matrix_multiply_i(
+    u32 n, u32 m, u32 p, const s32 *a, const s32 *b, s32 *c) {
   u32 i, j, k;
   for (i = 0; i < n; i++)
     for (j = 0; j < p; j++) {
@@ -793,8 +790,8 @@ inline void matrix_multiply_i(u32 n, u32 m, u32 p, const s32 *a, const s32 *b,
     }
 }
 
-inline void matrix_multiply_s64(u32 n, u32 m, u32 p, const s64 *a, const s64 *b,
-                                s64 *c) {
+inline void matrix_multiply_s64(
+    u32 n, u32 m, u32 p, const s64 *a, const s64 *b, s64 *c) {
   u32 i, j, k;
   for (i = 0; i < n; i++)
     for (j = 0; j < p; j++) {
@@ -814,7 +811,9 @@ inline void matrix_multiply_s64(u32 n, u32 m, u32 p, const s64 *a, const s64 *b,
  *  \param a            Matrix to multiply, output written in-place
  *  \param d            The diagonal elements of the second matrix
  */
-inline void matrix_multiply_diag_right(u32 n, u32 m, double *a,
+inline void matrix_multiply_diag_right(u32 n,
+                                       u32 m,
+                                       double *a,
                                        const double *d) {
   u32 i, j;
   for (i = 0; i < n; i++) {
@@ -848,8 +847,13 @@ inline void matrix_multiply_diag_right(u32 n, u32 m, double *a,
  *  \return     -1 if A is underdetermined; 0 otherwise.
  */
 
-int matrix_wlsq_solve(u32 n, u32 m, const double *A, const double *b,
-                      const double *w, double *x, double *V) {
+int matrix_wlsq_solve(u32 n,
+                      u32 m,
+                      const double *A,
+                      const double *b,
+                      const double *w,
+                      double *x,
+                      double *V) {
   /* The system must not be underdetermined */
   if (n < m) {
     return -1;
@@ -994,7 +998,9 @@ void matrix_udu(u32 n, double *M, double *U, double *D) {
  * \param D Pointer to the diagonal vector.
  * \param M Pointer to the output matrix.
  */
-void matrix_reconstruct_udu(const u32 n, const double *U, const double *D,
+void matrix_reconstruct_udu(const u32 n,
+                            const double *U,
+                            const double *D,
                             double *M) {
   memset(M, 0, n * n * sizeof(double));
   /* TODO: M will be symmetric, only need to bother populating part of it */
@@ -1024,8 +1030,8 @@ void matrix_reconstruct_udu(const u32 n, const double *U, const double *D,
  *  \param gamma        Coefficient for second matrix
  *  \param c            Output (sum) matrix
  */
-void matrix_add_sc(u32 n, u32 m, const double *a, const double *b, double gamma,
-                   double *c) {
+void matrix_add_sc(
+    u32 n, u32 m, const double *a, const double *b, double gamma, double *c) {
   u32 i, j;
   for (i = 0; i < n; i++)
     for (j = 0; j < m; j++) c[m * i + j] = a[m * i + j] + gamma * b[m * i + j];
@@ -1141,8 +1147,8 @@ void vector_normalize(u32 n, double *a) {
  *  \param gamma        Coefficient for b
  *  \param c            Output vector
  */
-void vector_add_sc(u32 n, const double *a, const double *b, double gamma,
-                   double *c) {
+void vector_add_sc(
+    u32 n, const double *a, const double *b, double gamma, double *c) {
   u32 i;
   for (i = 0; i < n; i++) c[i] = a[i] + gamma * b[i];
 }

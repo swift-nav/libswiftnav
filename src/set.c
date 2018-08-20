@@ -91,10 +91,16 @@ bool is_set(u8 n, size_t sz, const void *set, cmp_fn cmp) {
  *         -1 if A is not a valid set,
  *         -2 if B is not a valid set
  */
-s32 intersection_map(u32 na, size_t sa, const void *as, u32 nb, size_t sb,
-                     const void *bs, cmp_fn cmp, void *context,
-                     void (*f)(void *context, u32 n, const void *a,
-                               const void *b)) {
+s32 intersection_map(
+    u32 na,
+    size_t sa,
+    const void *as,
+    u32 nb,
+    size_t sb,
+    const void *bs,
+    cmp_fn cmp,
+    void *context,
+    void (*f)(void *context, u32 n, const void *a, const void *b)) {
   assert(sa != 0);
   assert(sb != 0);
   assert(as != NULL);
@@ -126,7 +132,9 @@ struct intersection_context {
   size_t sb;
 };
 
-static void intersection_function(void *context, u32 n, const void *a,
+static void intersection_function(void *context,
+                                  u32 n,
+                                  const void *a,
                                   const void *b) {
   (void)n;
   struct intersection_context *ctxt = (struct intersection_context *)context;
@@ -164,13 +172,20 @@ static void intersection_function(void *context, u32 n, const void *a,
  *         -1 if A is not a valid set,
  *         -2 if B is not a valid set
  */
-s32 intersection(u32 na, size_t sa, const void *as, void *a_out, u32 nb,
-                 size_t sb, const void *bs, void *b_out, cmp_fn cmp) {
+s32 intersection(u32 na,
+                 size_t sa,
+                 const void *as,
+                 void *a_out,
+                 u32 nb,
+                 size_t sb,
+                 const void *bs,
+                 void *b_out,
+                 cmp_fn cmp) {
   struct intersection_context ctxt = {
       .a_out = a_out, .sa = sa, .b_out = b_out, .sb = sb};
 
-  return intersection_map(na, sa, as, nb, sb, bs, cmp, &ctxt,
-                          intersection_function);
+  return intersection_map(
+      na, sa, as, nb, sb, bs, cmp, &ctxt, intersection_function);
 }
 
 /** Given set and element, returns index where the element should be inserted.
@@ -202,8 +217,8 @@ u32 insertion_index(u32 na, size_t sa, const void *as, void *b, cmp_fn cmp) {
  *
  * \return      Old index of removed element
  */
-u32 remove_element(u32 na, size_t sa, const void *as, void *a_out, void *b,
-                   cmp_fn cmp) {
+u32 remove_element(
+    u32 na, size_t sa, const void *as, void *a_out, void *b, cmp_fn cmp) {
   /* Index of first element that isn't less than b.
    * This element will be removed.
    * If b is larger than all of as, the last element of as will be removed. */
@@ -227,8 +242,8 @@ u32 remove_element(u32 na, size_t sa, const void *as, void *a_out, void *b,
  * \return      Index of inserted element in as
  *              (may point past end of as)
  */
-u32 insert_element(u32 na, size_t sa, const void *as, void *a_out, void *b,
-                   cmp_fn cmp) {
+u32 insert_element(
+    u32 na, size_t sa, const void *as, void *a_out, void *b, cmp_fn cmp) {
   u32 index = insertion_index(na, sa, as, b, cmp);
 
   memcpy(a_out, as, index * sa);

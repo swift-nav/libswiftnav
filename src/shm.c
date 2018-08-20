@@ -147,7 +147,8 @@ bool check_alma_page25_health_word(const u8 health_bits, const code_t code) {
  */
 static shm_state_t check_6bit_health(const u8 health_bits, const code_t code) {
   /* Check NAV data health summary */
-  if (((CODE_GPS_L1CA == code) || (CODE_AUX_GPS == code) ||  (CODE_GPS_L1P == code)) &&
+  if (((CODE_GPS_L1CA == code) || (CODE_AUX_GPS == code) ||
+       (CODE_GPS_L1P == code)) &&
       !gps_nav_data_health_summary(health_bits)) {
     return SHM_STATE_UNHEALTHY;
   }
@@ -163,7 +164,7 @@ static shm_state_t check_6bit_health(const u8 health_bits, const code_t code) {
   }
 
   /* Check code specific issues */
-  switch ((s8) code) {
+  switch ((s8)code) {
     case CODE_GPS_L1CA:
     case CODE_AUX_GPS:
       if (b == L1_C_SIGNAL_WEAK || b == L1_C_SIGNAL_DEAD ||
@@ -227,10 +228,10 @@ static shm_state_t check_6bit_health(const u8 health_bits, const code_t code) {
  * \returns false if signal health of specified signal is SHM_STATE_UNHEALTHY,
  *          true otherwise
  */
- bool check_6bit_health_word(const u8 health_bits, const code_t code) {
-   /* Currently check_6bit_health() will return SHM_STATE_UNKNOWN for GPS L5
-    * signals only, until proper health status support is implemented. */
-   return (SHM_STATE_UNHEALTHY != check_6bit_health(health_bits, code));
+bool check_6bit_health_word(const u8 health_bits, const code_t code) {
+  /* Currently check_6bit_health() will return SHM_STATE_UNKNOWN for GPS L5
+   * signals only, until proper health status support is implemented. */
+  return (SHM_STATE_UNHEALTHY != check_6bit_health(health_bits, code));
 }
 
 /** Check NAV data health indications

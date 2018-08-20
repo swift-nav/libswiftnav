@@ -10,44 +10,43 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+#include <check.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <stdio.h>
-#include <inttypes.h>
-#include <check.h>
 
-#include  <swiftnav/constants.h>
-#include  <swiftnav/shm.h>
+#include <swiftnav/constants.h>
+#include <swiftnav/shm.h>
 #include "check_suites.h"
 
-START_TEST(test_shm_gps_decode_shi_ephemeris)
-{
+START_TEST(test_shm_gps_decode_shi_ephemeris) {
   u32 sf1w3 = 0x3f122c34;
   u8 shi_ephemeris;
 
   shm_gps_decode_shi_ephemeris(sf1w3, &shi_ephemeris);
 
   fail_unless(shi_ephemeris == 0x2c,
-      "shm_gps_decode_shi_ephemeris() returns 0x%x for 0x%x\n",
-      shi_ephemeris, sf1w3);
+              "shm_gps_decode_shi_ephemeris() returns 0x%x for 0x%x\n",
+              shi_ephemeris,
+              sf1w3);
 }
 END_TEST
 
-START_TEST(test_check_nav_dhi)
-{
+START_TEST(test_check_nav_dhi) {
   for (u8 dhi = 0; dhi < NAV_DHI_COUNT; ++dhi) {
     for (u16 ignored = 0; ignored <= UCHAR_MAX; ++ignored) {
       bool res = check_nav_dhi((dhi << 5), ignored);
       bool expected = (NAV_DHI_OK == dhi) || (ignored & 1 << dhi);
       fail_unless(res == expected,
-          "check_nav_dhi(%"PRIu8", %"PRIu8") failed",
-          (dhi << 5), ignored);
+                  "check_nav_dhi(%" PRIu8 ", %" PRIu8 ") failed",
+                  (dhi << 5),
+                  ignored);
     }
   }
 }
 END_TEST
 
-Suite* shm_suite(void)
-{
+Suite *shm_suite(void) {
   Suite *s = suite_create("SHM");
 
   TCase *tc_core = tcase_create("Core");
