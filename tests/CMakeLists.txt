@@ -1,30 +1,10 @@
-################################################################################
-# Find dependencies.
-################################################################################
 find_package(Check)
 if(NOT CHECK_FOUND)
     message(STATUS "'Check' unit test library not found. Skipping unit tests.")
     return()
 endif(NOT CHECK_FOUND)
 
-################################################################################
-# Modify Compiler Flags.
-################################################################################
-set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS}   -Wno-missing-prototypes")
-set(CMAKE_CXXFLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-prototypes")
-
-################################################################################
-# Get Subdirectory Targets.
-################################################################################
-# This gets us the check-utils target.
 add_subdirectory(common)
-
-################################################################################
-# Enumerate source files.
-################################################################################
-
-# Some of the tests directly include the source code.
-include_directories("${PROJECT_SOURCE_DIR}/libswiftnav")
 
 set(HDRS
     check_suites.h)
@@ -48,15 +28,15 @@ set(SRCS
     check_pvt.c
     check_troposphere.c)
 
-################################################################################
-# Enumerate targets and tests.
-################################################################################
 add_executable(test-swiftnav-common ${HDRS} ${SRCS})
-target_link_libraries(test-swiftnav-common swiftnav check-utils 
+
+# need to undef __STRICT_ANSI__ or we lose M_PI and the like with c99
+target_compile_options(test-swiftnav-common PRIVATE "-std=c99")
+target_compile_options(test-swiftnav-common PRIVATE "-U__STRICT_ANSI__")
+target_link_libraries(test-swiftnav-common check-utils
                       ${CHECK_LIBRARIES} m pthread)
 
 # Add a target for running the tests. 
 add_custom_target(run-test-swiftnav-common COMMAND test-swiftnav-common)
 # And run them upon completion.
 add_custom_command(TARGET test-swiftnav-common POST_BUILD COMMAND test-swiftnav-common)
-

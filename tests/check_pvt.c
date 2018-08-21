@@ -6,7 +6,7 @@
 #include <swiftnav/coord_system.h>
 #include <swiftnav/single_epoch_solver.h>
 #include "check_suites.h"
-#include "check_utils.h"
+#include "common/check_utils.h"
 
 #define TOR_WN 1939
 #define TOR_TOW 42.0

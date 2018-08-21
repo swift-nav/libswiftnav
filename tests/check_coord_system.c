@@ -5,7 +5,7 @@
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
 #include "check_suites.h"
-#include "check_utils.h"
+#include "common/check_utils.h"
 
 /* Maximum allowable error in quantities with units of length (in meters). */
 #define MAX_DIST_ERROR_M 1e-6

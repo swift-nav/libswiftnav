@@ -5,7 +5,7 @@
 #include <swiftnav/constants.h>
 #include <swiftnav/gnss_time.h>
 #include "check_suites.h"
-#include "check_utils.h"
+#include "common/check_utils.h"
 
 START_TEST(test_gpsdifftime) {
   struct gpsdifftime_testcase {
