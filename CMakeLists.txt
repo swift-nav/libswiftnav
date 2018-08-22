@@ -23,6 +23,7 @@ set(HDRS
     include/swiftnav/correct_iono_tropo.h
     include/swiftnav/edc.h
     include/swiftnav/ephemeris.h
+    include/swiftnav/fifo_byte.h
     include/swiftnav/glo_map.h
     include/swiftnav/glonass_phase_biases.h
     include/swiftnav/gnss_time.h
@@ -45,6 +46,7 @@ set(SRCS
     src/correct_iono_tropo.c
     src/edc.c
     src/ephemeris.c
+    src/fifo_byte.c
     src/glo_map.c
     src/glonass_phase_biases.c
     src/gnss_time.c
