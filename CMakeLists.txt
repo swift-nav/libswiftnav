@@ -2,37 +2,16 @@ cmake_minimum_required(VERSION 3.0)
 project(libswiftnav)
 
 # Include any extra CMake modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
 include(ClangTools)
 include(FindCheck)
 # TODO: figure out why we are missing a defintion of log_ in the .a
 set(BUILD_SHARED_LIBS ON CACHE BOOL "If set, build shared libraries where possible.")
 
-# Set any mandatory compiler flags for this library.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-prototypes")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wimplicit")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wshadow")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wswitch-default")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wswitch-enum")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wundef")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wuninitialized")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wpointer-arith")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-align")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat=2")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wimplicit-function-declaration")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wredundant-decls")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat-security")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__")
-
 # Write configuration to a templated header file.
 set(MAX_CHANNELS "63" CACHE STRING "Maximum number of concurrent GNSS channels to support.")
 configure_file("include/swiftnav/config.h.in"
-  "${CMAKE_SOURCE_DIR}/include/swiftnav/config.h")
-
-include_directories(${CMAKE_SOURCE_DIR}/include)
+  "${PROJECT_SOURCE_DIR}/include/swiftnav/config.h")
 
 set(HDRS
     include/swiftnav/almanac.h
@@ -83,8 +62,27 @@ set(SRCS
     src/troposphere.c)
 
 add_library(swiftnav ${HDRS} ${SRCS})
-target_include_directories(swiftnav PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
 install(FILES ${HDRS} DESTINATION include)
+
+# Set any mandatory compiler flags for this library.
+target_compile_options(swiftnav PRIVATE "-Werror")
+target_compile_options(swiftnav PRIVATE "-Wmissing-prototypes")
+target_compile_options(swiftnav PRIVATE "-Wimplicit")
+target_compile_options(swiftnav PRIVATE "-Wshadow")
+target_compile_options(swiftnav PRIVATE "-Wswitch-default")
+target_compile_options(swiftnav PRIVATE "-Wswitch-enum")
+target_compile_options(swiftnav PRIVATE "-Wundef")
+target_compile_options(swiftnav PRIVATE "-Wuninitialized")
+target_compile_options(swiftnav PRIVATE "-Wpointer-arith")
+target_compile_options(swiftnav PRIVATE "-Wstrict-prototypes")
+target_compile_options(swiftnav PRIVATE "-Wcast-align")
+target_compile_options(swiftnav PRIVATE "-Wformat=2")
+target_compile_options(swiftnav PRIVATE "-Wimplicit-function-declaration")
+target_compile_options(swiftnav PRIVATE "-Wredundant-decls")
+target_compile_options(swiftnav PRIVATE "-Wformat-security")
+target_compile_options(swiftnav PRIVATE "-std=c99")
+target_compile_options(swiftnav PRIVATE "-U__STRICT_ANSI__")
 
 # unit tests
 if(NOT CMAKE_CROSSCOMPILING AND NOT PIKSI_MULTI_UNIT_TEST)

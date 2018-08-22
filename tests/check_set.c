@@ -5,7 +5,7 @@
 
 #include <swiftnav/set.h>
 #include "check_suites.h"
-#include "check_utils.h"
+#include "common/check_utils.h"
 
 #define LEN(x) (sizeof(x) / sizeof(x[0]))
 

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "check_suites.h"
-#include "check_utils.h"
+#include "common/check_utils.h"
 
 #include <swiftnav/constants.h>
 #include <swiftnav/signal.h>

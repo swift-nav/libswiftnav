@@ -5,7 +5,7 @@
 
 #include <swiftnav/linear_algebra.h>
 #include "check_suites.h"
-#include "check_utils.h"
+#include "common/check_utils.h"
 
 #define LINALG_TOL 1e-9
 #define LINALG_NUM 22
