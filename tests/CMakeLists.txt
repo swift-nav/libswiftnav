@@ -29,10 +29,6 @@ set(SRCS
     check_troposphere.c)
 
 add_executable(test-swiftnav-common ${HDRS} ${SRCS})
-
-# need to undef __STRICT_ANSI__ or we lose M_PI and the like with c99
-target_compile_options(test-swiftnav-common PRIVATE "-std=c99")
-target_compile_options(test-swiftnav-common PRIVATE "-U__STRICT_ANSI__")
 target_link_libraries(test-swiftnav-common check-utils
                       ${CHECK_LIBRARIES} m pthread)
 
