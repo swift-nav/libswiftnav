@@ -29,18 +29,9 @@ void correct_iono(const double *pos_ecef,
     double iono_correction_delta = 0;
     double az0, el0;
     double h = 1.0; /* length of the finite difference, seconds */
-    double doppler = 0.0;
-
-    /* use doppler to increase correction accuracy if available,
-     * otherwise just use the carrier frequency */
-    if (0 != (nav_meas[i].flags & NAV_MEAS_FLAG_COMP_DOPPLER_VALID)) {
-      doppler = nav_meas[i].computed_doppler;
-    } else if (0 != (nav_meas[i].flags & NAV_MEAS_FLAG_MEAS_DOPPLER_VALID)) {
-      doppler = nav_meas[i].measured_doppler;
-    }
 
     /* this signal's frequency */
-    double carrier_freq = sid_to_carr_freq(nav_meas[i].sid) + doppler;
+    double carrier_freq = sid_to_carr_freq(nav_meas[i].sid);
 
     /* calculate azimuth and elevation of SV */
     wgsecef2azel(nav_meas[i].sat_pos, pos_ecef, &az, &el);
@@ -66,12 +57,10 @@ void correct_iono(const double *pos_ecef,
                                              iono_params)) /
           h;
 
-      if (nav_meas[i].sid.code != CODE_GPS_L1CA) {
-        /* convert from L1CA Klobuchar correction */
-        iono_correction *= GPS_L1_HZ * GPS_L1_HZ / carrier_freq / carrier_freq;
-        iono_correction_delta *=
-            GPS_L1_HZ * GPS_L1_HZ / carrier_freq / carrier_freq;
-      }
+      /* convert from L1CA Klobuchar correction */
+      iono_correction *= GPS_L1_HZ * GPS_L1_HZ / carrier_freq / carrier_freq;
+      iono_correction_delta *=
+          GPS_L1_HZ * GPS_L1_HZ / carrier_freq / carrier_freq;
 
       /* correct pseudorange */
       nav_meas[i].pseudorange -= iono_correction;
@@ -101,18 +90,9 @@ void correct_tropo(const double *pos_ecef,
     double tropo_correction_delta = 0;
     double az0, el0;
     double h = 1.0; /* length of the finite difference, seconds */
-    double doppler = 0.0;
-
-    /* use doppler to increase correction accuracy if available,
-     * otherwise just use the carrier frequency */
-    if (0 != (nav_meas[i].flags & NAV_MEAS_FLAG_COMP_DOPPLER_VALID)) {
-      doppler = nav_meas[i].computed_doppler;
-    } else if (0 != (nav_meas[i].flags & NAV_MEAS_FLAG_MEAS_DOPPLER_VALID)) {
-      doppler = nav_meas[i].measured_doppler;
-    }
 
     /* this signal's frequency */
-    double carrier_freq = sid_to_carr_freq(nav_meas[i].sid) + doppler;
+    double carrier_freq = sid_to_carr_freq(nav_meas[i].sid);
 
     /* calculate azimuth and elevation of SV */
     wgsecef2azel(nav_meas[i].sat_pos, pos_ecef, &az, &el);
