@@ -13,8 +13,8 @@
 #ifndef LIBSWIFTNAV_PVT_ENGINE_PVT_RESULT_H_
 #define LIBSWIFTNAV_PVT_ENGINE_PVT_RESULT_H_
 
-#include <libswiftnav/common.h>
-#include <libswiftnav/gnss_time.h>
+#include <swiftnav/common.h>
+#include <swiftnav/gnss_time.h>
 
 #ifdef __cplusplus
 extern "C" {
