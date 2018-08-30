@@ -15,7 +15,9 @@ configure_file("include/swiftnav/config.h.in"
 
 set(HDRS
     include/swiftnav/almanac.h
+    include/swiftnav/array_tools.h
     include/swiftnav/bits.h
+    include/swiftnav/ch_meas.h
     include/swiftnav/common.h
     include/swiftnav/config.h
     include/swiftnav/constants.h
@@ -32,6 +34,8 @@ set(HDRS
     include/swiftnav/logging.h
     include/swiftnav/memcpy_s.h
     include/swiftnav/nav_meas.h
+    include/swiftnav/pvt_result.h
+    include/swiftnav/sbas_raw_data.h
     include/swiftnav/set.h
     include/swiftnav/shm.h
     include/swiftnav/sid_set.h
@@ -66,6 +70,7 @@ set(SRCS
 add_library(swiftnav ${HDRS} ${SRCS})
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
 install(FILES ${HDRS} DESTINATION include)
+install(TARGETS swiftnav DESTINATION lib)
 
 # Set any mandatory compiler flags for this library.
 target_compile_options(swiftnav PRIVATE "-Werror")
