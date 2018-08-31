@@ -69,7 +69,7 @@ set(SRCS
 
 add_library(swiftnav ${HDRS} ${SRCS})
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
-install(FILES ${HDRS} DESTINATION include)
+install(FILES ${HDRS} DESTINATION include/swiftnav)
 install(TARGETS swiftnav DESTINATION lib)
 
 # Set any mandatory compiler flags for this library.
