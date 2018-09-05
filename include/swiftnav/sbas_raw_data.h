@@ -13,9 +13,9 @@
 #ifndef LIBSWIFTNAV_SBAS_RAW_DATA_H
 #define LIBSWIFTNAV_SBAS_RAW_DATA_H
 
-#include <libswiftnav/common.h>
-#include <libswiftnav/gnss_time.h>
-#include <libswiftnav/signal.h>
+#include <swiftnav/common.h>
+#include <swiftnav/gnss_time.h>
+#include <swiftnav/signal.h>
 
 #ifdef __cplusplus
 extern "C" {
