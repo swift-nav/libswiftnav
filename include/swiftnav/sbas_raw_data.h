@@ -13,13 +13,13 @@
 #ifndef LIBSWIFTNAV_SBAS_RAW_DATA_H
 #define LIBSWIFTNAV_SBAS_RAW_DATA_H
 
-#include <libswiftnav/common.h>
-#include <libswiftnav/gnss_time.h>
-#include <libswiftnav/signal.h>
+#include <swiftnav/common.h>
+#include <swiftnav/gnss_time.h>
+#include <swiftnav/signal.h>
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #define SBAS_RAW_PAYLOAD_LENGTH 27
 
@@ -32,6 +32,6 @@ typedef struct {
 
 #ifdef __cplusplus
 } /* extern "C" */
-#endif /* __cplusplus */
+#endif
 
-#endif /* SBAS_RAW_DATA_H */
+#endif
