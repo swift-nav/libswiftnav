@@ -19,7 +19,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #define SBAS_RAW_PAYLOAD_LENGTH 27
 
@@ -32,6 +32,6 @@ typedef struct {
 
 #ifdef __cplusplus
 } /* extern "C" */
-#endif /* __cplusplus */
+#endif
 
-#endif /* SBAS_RAW_DATA_H */
+#endif
