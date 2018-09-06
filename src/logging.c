@@ -25,7 +25,7 @@
  * \param level Log level
  * \param msg Log contents
  */
-void log_(u8 level, const char *msg, ...) {
+__attribute__((weak)) void log_(u8 level, const char *msg, ...) {
   va_list ap;
 
   fprintf(stderr, "%s: ", level_string[level]);
@@ -42,11 +42,11 @@ void log_(u8 level, const char *msg, ...) {
  * \param line_number line number where this function was called
  * \param msg Log contents
  */
-void detailed_log_(u8 level,
-                   const char *file_path,
-                   const int line_number,
-                   const char *msg,
-                   ...) {
+__attribute__((weak)) void detailed_log_(u8 level,
+                                         const char *file_path,
+                                         const int line_number,
+                                         const char *msg,
+                                         ...) {
   va_list ap;
   fprintf(stderr, "(lsn::%s:%d) ", file_path, line_number);
   fprintf(stderr, "%s: ", level_string[level]);
@@ -64,7 +64,7 @@ void detailed_log_(u8 level,
  * \param fd Bogus file descriptor
  * \param msg Log string contents
  */
-void event_(int fd, const char *msg, ...) {
+__attribute__((weak)) void event_(int fd, const char *msg, ...) {
   va_list ap;
   fprintf(stderr, "fd: %d: ", fd);
   va_start(ap, msg);
