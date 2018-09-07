@@ -322,8 +322,8 @@ void gps_time_match_weeks(gps_time_t *t, const gps_time_t *ref) {
     t->wn++;
 
   if (!gps_time_valid(t)) {
-    log_info("t=(%lf,%d) ref=(%lf,%d)", t->tow, (int)t->wn, ref->tow,
-             (int)ref->wn);
+    log_info(
+        "t=(%lf,%d) ref=(%lf,%d)", t->tow, (int)t->wn, ref->tow, (int)ref->wn);
     assert(0);
   }
 }
