@@ -321,7 +321,11 @@ void gps_time_match_weeks(gps_time_t *t, const gps_time_t *ref) {
   else if (dt < -WEEK_SECS / 2)
     t->wn++;
 
-  assert(gps_time_valid(t));
+  if (!gps_time_valid(t)) {
+    log_info("t=(%lf,%d) ref=(%lf,%d)", t->tow, (int)t->wn, ref->tow,
+             (int)ref->wn);
+    assert(0);
+  }
 }
 
 /** Adjust the week number of wn_raw to correctly reflect the current week
