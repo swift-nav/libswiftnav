@@ -103,6 +103,11 @@ static s8 calc_sat_state_xyz(const ephemeris_t *e,
 
   double dt = gpsdifftime(t, &e->toe);
 
+  *clock_err = ex->a_gf0 + dt * ex->a_gf1;
+  *clock_rate_err = ex->a_gf1;
+
+  dt -= *clock_err;
+
   vel[0] = ex->vel[0] + ex->acc[0] * dt;
   vel[1] = ex->vel[1] + ex->acc[1] * dt;
   vel[2] = ex->vel[2] + ex->acc[2] * dt;
@@ -117,10 +122,7 @@ static s8 calc_sat_state_xyz(const ephemeris_t *e,
   acc[1] = ex->acc[1];
   acc[2] = ex->acc[2];
 
-  *clock_err = ex->a_gf0;
-  *clock_rate_err = ex->a_gf1;
-
-  // SBAS doesn't have an IODE so just set to 0.
+  /* SBAS doesn't have an IODE so just set to 0. */
   *iodc = 0;
   *iode = 0;
 
@@ -198,6 +200,11 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
   /* NOTE: toe should be in GPS time as well */
   double dt = gpsdifftime(t, &e->toe);
 
+  *clock_err = -e->glo.tau + e->glo.gamma * dt - get_tgd_correction(e, &e->sid);
+  *clock_rate_err = e->glo.gamma;
+
+  dt -= *clock_err;
+
   u32 num_steps = ceil(fabs(dt) / GLO_MAX_STEP_LENGTH);
   num_steps = MIN(num_steps, GLO_MAX_STEP_NUM);
 
@@ -241,14 +248,10 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
     memcpy(pos, e->glo.pos, sizeof(double) * 3);
     memcpy(vel, e->glo.vel, sizeof(double) * 3);
   }
-  // Here we compute the final acceleration (ECEF).
+  /* Here we compute the final acceleration (ECEF). */
   calc_ecef_vel_acc(ecef_vel_acc, pos, vel, e->glo.acc);
   memcpy(acc, &ecef_vel_acc[3], sizeof(double) * 3);
 
-  *clock_err = -e->glo.tau + e->glo.gamma * dt;
-  *clock_err -= get_tgd_correction(e, &e->sid);
-
-  *clock_rate_err = e->glo.gamma;
   *iodc = e->glo.iod;
   *iode = e->glo.iod;
 
@@ -302,7 +305,7 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
   *iodc = k->iodc;
 
   /* Seconds from the time from ephemeris reference epoch (toe) */
-  dt = gpsdifftime(t, &e->toe);
+  dt = gpsdifftime(t, &e->toe) - *clock_err;
 
   /* Gravitational Constant */
   double gm;
@@ -456,8 +459,8 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
   vel[1] = om_dot * pos[0] + x_dot * sin(om) + temp * cos(om);
   vel[2] = y * cos(inc) * inc_dot + y_dot * sin(inc);
 
-  // Note that there is a typo in the reference used for this equation.
-  // The reference uses  omega' * x which should be  omeaga' * x'.
+  /* Note that there is a typo in the reference used for this equation.
+     The reference uses  omega' * x which should be  omeaga' * x'. */
   double acc_common_1 = vel[2] * inc_dot - om_dot * x_dot +
                         y * inc_acc * sin(inc) - y_acc * cos(inc) +
                         inc_dot * y_dot * sin(inc);
@@ -465,8 +468,8 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
       x_acc + y * om_dot * inc_dot * sin(inc) - om_dot * y_dot * cos(inc);
   acc[0] = -om_dot * vel[1] + sin(om) * acc_common_1 + cos(om) * acc_common_2;
   acc[1] = om_dot * vel[0] - cos(om) * acc_common_1 + sin(om) * acc_common_2;
-  // Note that there is a typo in the reference used for this equation.
-  // The reference uses -y * inc^2 which should be -y * inc'^2.
+  /* Note that there is a typo in the reference used for this equation.
+     The reference uses -y * inc^2 which should be -y * inc'^2. */
   acc[2] = sin(inc) * (-y * inc_dot * inc_dot + y_acc) +
            cos(inc) * (y * inc_acc + 2 * inc_dot * y_dot);
 
