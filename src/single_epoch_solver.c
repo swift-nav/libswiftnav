@@ -16,13 +16,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <swiftnav/config.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
 #include <swiftnav/linear_algebra.h>
 #include <swiftnav/logging.h>
 #include <swiftnav/memcpy_s.h>
 #include <swiftnav/single_epoch_solver.h>
+#include "max_channels.h"
 
 /* Measurement noise model parameters */
 #define PSEUDORANGE_CN0_COEFFICIENT 780
@@ -1356,3 +1356,5 @@ s8 calc_PVT(const u8 n_used,
 
   return raim_flag;
 }
+
+u8 get_max_channels(void) { return MAX_CHANNELS; }
