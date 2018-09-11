@@ -6,8 +6,7 @@ include(ClangTools)
 include(FindCheck)
 
 set(MAX_CHANNELS "63" CACHE STRING "Maximum number of concurrent GNSS channels to support.")
-configure_file("include/swiftnav/config.h.in"
-  "${PROJECT_SOURCE_DIR}/include/swiftnav/config.h")
+configure_file(src/max_channels.h.in max_channels.h)
 
 set(HDRS
     include/swiftnav/almanac.h
@@ -15,7 +14,6 @@ set(HDRS
     include/swiftnav/bits.h
     include/swiftnav/ch_meas.h
     include/swiftnav/common.h
-    include/swiftnav/config.h
     include/swiftnav/constants.h
     include/swiftnav/coord_system.h
     include/swiftnav/correct_iono_tropo.h
@@ -65,6 +63,7 @@ set(SRCS
 
 add_library(swiftnav ${HDRS} ${SRCS})
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 install(FILES ${HDRS} DESTINATION include/swiftnav)
 install(TARGETS swiftnav DESTINATION lib)
 
