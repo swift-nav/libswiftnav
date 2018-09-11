@@ -34,11 +34,11 @@
 
 /* Nominal variances for the other signals/constellations, large enough to
  * account also for the unmodeled inter-signal biases */
-#define GPS_L2CM_PSEUDORANGE_VARIANCE 7.0
+#define GPS_L2CM_PSEUDORANGE_VARIANCE 1.0
 #define GLO_PSEUDORANGE_VARIANCE 8.0
-#define BDS2_PSEUDORANGE_VARIANCE 1.0
-#define GAL_PSEUDORANGE_VARIANCE 2.0
-#define QZS_PSEUDORANGE_VARIANCE 2.0
+#define BDS2_PSEUDORANGE_VARIANCE 0.5
+#define GAL_PSEUDORANGE_VARIANCE 0.4
+#define QZS_PSEUDORANGE_VARIANCE 1.0
 
 /* Doppler noise model for to all constellations, variance in Hz^2 */
 #define DOPPLER_NOMINAL_VARIANCE 0.1
@@ -1190,7 +1190,7 @@ s8 calc_PVT(const u8 n_used,
         /* use all the GPS L1CA codes (that are sorted first in nav_meas), and
          * after those enough observations to be able to do full RAIM */
         use_this = (CODE_GPS_L1CA == nav_meas[i].sid.code) ||
-                   (sats_used < N_STATE + RAIM_MAX_EXCLUSIONS);
+                   (sats_used <= N_STATE + RAIM_MAX_EXCLUSIONS);
         break;
       default:
         break;
