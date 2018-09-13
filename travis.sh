@@ -45,7 +45,7 @@ function build() {
   cd ../
 }
 
-if [ "$TESTENV" == "lint" ]; then
+if [ "$TEST_SUITE" == "lint" ]; then
   ./travis-clang-format-check.sh
 else
   build
