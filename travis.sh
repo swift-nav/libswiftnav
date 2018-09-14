@@ -40,13 +40,11 @@ function build() {
   mkdir -p build && cd build
   cmake ../
   make -j4 VERBOSE=1
-  make clang-format-all && check_format_errors
-  make clang-tidy-all && check_tidy_errors
+  if [ "$TEST_SUITE" == "lint" ]; then
+    make clang-format-all && check_format_errors
+    make clang-tidy-all && check_tidy_errors
+  fi
   cd ../
 }
 
-if [ "$TEST_SUITE" == "lint" ]; then
-  ./travis-clang-format-check.sh
-else
-  build
-fi
+build
