@@ -71,22 +71,22 @@ static s8 calc_sat_state_xyz_almanac(const almanac_t *a,
                                      double acc[3],
                                      double *clock_err,
                                      double *clock_rate_err) {
-  ephemeris_t e;
-  memset(&e, 0, sizeof(e));
-  e.sid = a->sid;
-  e.toe = a->toa;
-  e.ura = a->ura;
-  e.fit_interval = a->fit_interval;
-  e.valid = a->valid;
-  e.health_bits = a->health_bits;
-  memcpy(e.xyz.pos, a->xyz.pos, sizeof(e.xyz.pos));
-  memcpy(e.xyz.vel, a->xyz.vel, sizeof(e.xyz.vel));
-  memcpy(e.xyz.acc, a->xyz.acc, sizeof(e.xyz.acc));
-  u8 iode;
-  u16 iodc;
+ephemeris_t e;
+memset(&e, 0, sizeof(e));
+e.sid = a->sid;
+e.toe = a->toa;
+e.ura = a->ura;
+e.fit_interval = a->fit_interval;
+e.valid = a->valid;
+e.health_bits = a->health_bits;
+memcpy(e.xyz.pos, a->xyz.pos, sizeof(e.xyz.pos));
+memcpy(e.xyz.vel, a->xyz.vel, sizeof(e.xyz.vel));
+memcpy(e.xyz.acc, a->xyz.acc, sizeof(e.xyz.acc));
+u8 iode;
+u16 iodc;
 
-  return calc_sat_state(
-      &e, t, pos, vel, acc, clock_err, clock_rate_err, &iodc, &iode);
+return calc_sat_state(
+&e, t, pos, vel, acc, clock_err, clock_rate_err, &iodc, &iode);
 }
 
 /** Calculate satellite position, velocity and clock offset from GPS ephemeris.
