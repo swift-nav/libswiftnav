@@ -16,14 +16,6 @@
 
 #define ARRAY_COUNT(arr) ((sizeof(arr) / sizeof(arr[0])))
 
-#define fail_unless_mic(cond, format, ...)    \
-  do {                                        \
-    if (!(cond)) {                            \
-      fprintf(stderr, format, ##__VA_ARGS__); \
-      fprintf(stderr, "\n");                  \
-    }                                         \
-  } while (0)
-
 static const struct code_data_element {
   code_t code;
   u16 sat_count;
@@ -121,28 +113,13 @@ START_TEST(test_signal_aggregates) {
 
   u16 constellation_code_counts[CONSTELLATION_COUNT];
   memset(constellation_code_counts, 0, sizeof(constellation_code_counts));
-  fprintf(stderr, "ARRAY_COUNT(code_data) %lu\n", ARRAY_COUNT(code_data));
   for (u32 i = 0; i < ARRAY_COUNT(code_data); i++) {
     const struct code_data_element *e = &code_data[i];
     constellation_t constellation = code_to_constellation(e->code);
     constellation_code_counts[constellation]++;
   }
-  for (u32 k = 0; k < ARRAY_COUNT(constellation_code_counts); k++) {
-    fprintf(stderr,
-            "  constellation_code_counts[%d] = %u\n",
-            k,
-            constellation_code_counts[k]);
-  }
-  fprintf(stderr,
-          "ARRAY_COUNT(constellation_data) %lu\n",
-          ARRAY_COUNT(constellation_data));
   for (u32 i = 0; i < ARRAY_COUNT(constellation_data); i++) {
     const struct constellation_data_element *e = &constellation_data[i];
-    fprintf(stderr,
-            "  e->code_count %d - constellation_code_counts[%d] = %u\n",
-            e->code_count,
-            i,
-            constellation_code_counts[i]);
     fail_unless(e->code_count == constellation_code_counts[e->constellation],
                 "invalid code count definition for code %d",
                 e->constellation);
@@ -157,12 +134,6 @@ START_TEST(test_signal_from_index) {
     u16 sat_count = e->sat_count;
     for (u16 code_index = 0; code_index < sat_count; code_index++) {
       gnss_signal_t sid = sid_from_code_index(code, code_index);
-      fprintf(stderr,
-              "  sid_from_code_index(%d, %d) = {%d, %d}\n",
-              code,
-              code_index,
-              sid.sat,
-              sid.code);
 
       fail_unless(sid_valid(sid),
                   "signal from code index not valid: "
@@ -291,14 +262,6 @@ START_TEST(test_signal_compare) {
     u16 sat_count = e->sat_count;
     for (u16 sat_index = 0; sat_index < sat_count; sat_index++) {
       gnss_signal_t sid = sid_from_code_index(code, sat_index);
-      fprintf(stderr,
-              "  sids[%d / %d] = sid_from_code_index(%d, %d) = {%d, %d}\n",
-              signal_index,
-              NUM_SIGNALS,
-              code,
-              sat_index,
-              sid.sat,
-              sid.code);
       sids[signal_index++] = sid;
     }
   }
