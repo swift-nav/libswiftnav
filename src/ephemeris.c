@@ -1318,14 +1318,16 @@ double get_tgd_correction(const ephemeris_t *eph, const gnss_signal_t *sid) {
           CODE_GAL_E5X == sid->code) {
         /* The first TGD correction is for the (E1,E5a) combination */
         return gamma * eph->kepler.tgd_gal_s[0];
-      } else if (CODE_GAL_E7I == sid->code || CODE_GAL_E7Q == sid->code ||
-                 CODE_GAL_E7X == sid->code) {
+      } else if (CODE_GAL_E1B == sid->code || CODE_GAL_E1C == sid->code ||
+                 CODE_GAL_E1X == sid->code || CODE_GAL_E7I == sid->code ||
+                 CODE_GAL_E7Q == sid->code || CODE_GAL_E7X == sid->code) {
         /* The clock corrections from INAV are for the (E1,E5b) combination, so
          * use the matching group delay correction for all the other signals */
         return gamma * eph->kepler.tgd_gal_s[1];
       } else {
         log_error_sid(*sid, "TGD not applied for the signal");
       }
+      return 0;
     case CONSTELLATION_INVALID:
     case CONSTELLATION_SBAS:
     case CONSTELLATION_COUNT:
