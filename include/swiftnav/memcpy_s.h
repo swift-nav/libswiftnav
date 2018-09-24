@@ -38,7 +38,7 @@ memcpy_s_t memcpy_s(void *dest, size_t destsize, const void *src, size_t count);
     memcpy_s_t memcpy_s_res = memcpy_s(d, ds, src, c);         \
     if (MEMCPY_S_OK != memcpy_s_res) {                         \
       log_error("MEMCPY_S failed with code %d", memcpy_s_res); \
-      assert(!"MEMCPY_S failed");                              \
+      assert(false);                                           \
     }                                                          \
   } while (false)
 
