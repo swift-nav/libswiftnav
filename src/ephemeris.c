@@ -19,6 +19,7 @@
 #include <swiftnav/bits.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
+#include <swiftnav/edc.h>
 #include <swiftnav/ephemeris.h>
 #include <swiftnav/linear_algebra.h>
 #include <swiftnav/logging.h>
@@ -1256,20 +1257,118 @@ bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code) {
   return ret;
 }
 
-/** Get the ephemeris iod. For GPS, returns IODE
+/* Based on the BNC implementation here:
+ * https://github.com/swift-nav/PPP_Wizard14/blob/
+ * b05025517fa3f5ee4334171b97ab7475db319215/RTRover/rtrover_broadcast.cpp#L391
+ */
+static u32 get_iodcrc(const ephemeris_t *eph) {
+  unsigned char buffer[80];
+  s32 numbits = 0;
+
+  setbits(buffer,
+          numbits,
+          14,
+          eph->kepler.inc_dot / M_PI * (double)(1 << 30) * (double)(1 << 13));
+  numbits += 14;
+  setbits(buffer,
+          numbits,
+          11,
+          eph->kepler.af2 * (double)(1 << 30) * (double)(1 << 30) *
+              (double)(1 << 6));
+  numbits += 11;
+  setbits(buffer,
+          numbits,
+          22,
+          eph->kepler.af1 * (double)(1 << 30) * (double)(1 << 20));
+  numbits += 22;
+  setbits(buffer,
+          numbits,
+          24,
+          eph->kepler.af0 * (double)(1 << 30) * (double)(1 << 3));
+  numbits += 24;
+  setbits(buffer, numbits, 18, eph->kepler.crs * (double)(1 << 6));
+  numbits += 18;
+  setbits(buffer,
+          numbits,
+          16,
+          eph->kepler.dn / M_PI * (double)(1 << 30) * (double)(1 << 13));
+  numbits += 16;
+  setbits(buffer,
+          numbits,
+          32,
+          eph->kepler.m0 / M_PI * (double)(1 << 30) * (double)(1 << 1));
+  numbits += 32;
+  setbits(buffer,
+          numbits,
+          18,
+          eph->kepler.cuc * (double)(1 << 30) * (double)(1 << 1));
+  numbits += 18;
+  setbitu(buffer,
+          numbits,
+          32,
+          eph->kepler.ecc * (double)(1 << 30) * (double)(1 << 3));
+  numbits += 32;
+  setbits(buffer,
+          numbits,
+          18,
+          eph->kepler.cus * (double)(1 << 30) * (double)(1 << 1));
+  numbits += 18;
+  setbitu(buffer, numbits, 32, eph->kepler.sqrta * (double)(1 << 19));
+  numbits += 32;
+  setbits(buffer,
+          numbits,
+          18,
+          eph->kepler.cic * (double)(1 << 30) * (double)(1 << 1));
+  numbits += 18;
+  setbits(buffer,
+          numbits,
+          32,
+          eph->kepler.omega0 / M_PI * (double)(1 << 30) * (double)(1 << 1));
+  numbits += 32;
+  setbits(buffer,
+          numbits,
+          18,
+          eph->kepler.cis * (double)(1 << 30) * (double)(1 << 1));
+  numbits += 18;
+  setbits(buffer,
+          numbits,
+          32,
+          eph->kepler.inc / M_PI * (double)(1 << 30) * (double)(1 << 1));
+  numbits += 32;
+  setbits(buffer, numbits, 18, eph->kepler.crc * (double)(1 << 6));
+  numbits += 18;
+  setbits(buffer,
+          numbits,
+          32,
+          eph->kepler.w / M_PI * (double)(1 << 30) * (double)(1 << 1));
+  numbits += 32;
+  setbits(buffer,
+          numbits,
+          24,
+          eph->kepler.omegadot / M_PI * (double)(1 << 30) * (double)(1 << 13));
+  numbits += 24;
+  setbits(buffer, numbits, 5, 0);
+  numbits += 5;
+
+  return crc24q(buffer, numbits / 8, 0);
+}
+
+/** Get the ephemeris iod. For BDS, returns a crc value uniquely identifying
+ *  the satellite ephemeris set; for all other constellations, returns the IODE
  *
  * \param a eph Ephemeris
  * \return Issue of Data
  */
-u8 get_ephemeris_iod(const ephemeris_t *eph) {
+u32 get_ephemeris_iod_or_iodcrc(const ephemeris_t *eph) {
   switch (sid_to_constellation(eph->sid)) {
-    case CONSTELLATION_GPS:
     case CONSTELLATION_BDS:
+      return get_iodcrc(eph);
+    case CONSTELLATION_GPS:
     case CONSTELLATION_GAL:
     case CONSTELLATION_QZS:
-      return eph->kepler.iode;
+      return (u32)eph->kepler.iode;
     case CONSTELLATION_GLO:
-      return eph->glo.iod;
+      return (u32)(eph->glo.iod);
     case CONSTELLATION_INVALID:
     case CONSTELLATION_SBAS:
     case CONSTELLATION_COUNT:

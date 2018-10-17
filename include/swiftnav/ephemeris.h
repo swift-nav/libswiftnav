@@ -210,7 +210,7 @@ bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code);
 u8 encode_ura(float ura);
 float decode_ura_index(const u8 index);
 
-u8 get_ephemeris_iod(const ephemeris_t *eph);
+u32 get_ephemeris_iod_or_iodcrc(const ephemeris_t *eph);
 s8 get_tgd_correction(const ephemeris_t *eph,
                       const gnss_signal_t *sid,
                       double *tgd);

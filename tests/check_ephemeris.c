@@ -708,6 +708,18 @@ START_TEST(test_6bit_health_word) {
 }
 END_TEST
 
+// BNC_IODE was calculated using the code in
+// https://github.com/swift-nav/PPP_Wizard14/blob/b05025517fa3f5ee4334171b97ab7475db319215/RTRover/rtrover_broadcast.cpp#L391
+START_TEST(test_bds_iode) {
+  ephemeris_t bds_eph = gps_eph;
+  bds_eph.sid.code = CODE_BDS2_B1;
+  u32 our_IODE = get_ephemeris_iod_or_iodcrc(&bds_eph);
+  u32 BNC_IODE = 14700972;
+  fail_unless(our_IODE == BNC_IODE, "test_bds_iode test failed");
+
+  END_TEST
+}
+
 Suite *ephemeris_suite(void) {
   Suite *s = suite_create("Ephemeris");
 
@@ -716,6 +728,7 @@ Suite *ephemeris_suite(void) {
   tcase_add_test(tc_core, test_ephemeris_equal);
   tcase_add_test(tc_core, test_ephemeris_health);
   tcase_add_test(tc_core, test_6bit_health_word);
+  tcase_add_test(tc_core, test_bds_iode);
   suite_add_tcase(s, tc_core);
 
   return s;
