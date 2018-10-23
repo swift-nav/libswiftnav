@@ -162,6 +162,15 @@ typedef struct {
   double s; /**< Seconds [0-60] */
 } glo_time_t;
 
+/** Enum for representing the quality of a time estimate. */
+typedef enum {
+  TIME_UNKNOWN = 0, /**< Time is completely unknown, estimate invalid. */
+  TIME_COARSE,      /**< Time is known roughly, within 10 ms. */
+  TIME_PROPAGATED,  /**< Time was known but is now propagated, accurate to 1000 ns. */
+  TIME_FINE,        /**< Time known precisely w.r.t. local clock, accurate to 100 ns. */ 
+  TIME_FINEST       /**< Time known precisely w.r.t. local clock, accurate to 10 ns. */ 
+} time_quality_t;
+
 #define GPS_TIME_UNKNOWN ((gps_time_t){TOW_UNKNOWN, WN_UNKNOWN})
 
 /** IS-GPS-200H Table 20-IX: 602112 [s] */
