@@ -200,7 +200,12 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
   /* NOTE: toe should be in GPS time as well */
   double dt = gpsdifftime(t, &e->toe);
 
-  *clock_err = -e->glo.tau + e->glo.gamma * dt - get_tgd_correction(e, &e->sid);
+  double tgd;
+  if (get_tgd_correction(e, &e->sid, &tgd) != 0) {
+    return -1;
+  }
+
+  *clock_err = -e->glo.tau + e->glo.gamma * dt - tgd;
   *clock_rate_err = e->glo.gamma;
 
   dt -= *clock_err;
@@ -296,11 +301,15 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
   /* Seconds from clock data reference time (toc) */
   double dt = gpsdifftime(t, &k->toc);
 
+  double tgd;
+  if (get_tgd_correction(e, &e->sid, &tgd) != 0) {
+    return -1;
+  }
+
   /* According to the GPS ICD the satellite clock is reported
    * in iono free form, which means that the clock errors for
    * L1 and L2 need to take the group delay into account */
-  *clock_err =
-      k->af0 + dt * (k->af1 + dt * k->af2) - get_tgd_correction(e, &e->sid);
+  *clock_err = k->af0 + dt * (k->af1 + dt * k->af2) - tgd;
   *clock_rate_err = k->af1 + 2.0 * dt * k->af2;
   *iodc = k->iodc;
 
@@ -1273,9 +1282,13 @@ u8 get_ephemeris_iod(const ephemeris_t *eph) {
 /** Get the time group delay to be applied to the satellite clock correction
  * \param eph Ephemeris
  * \param sid Sid of the signal to correct
- * \return Applied group delay correction
+ * \param tgd Applied group delay correction
+ * \return  0 on success,
+ *         -1 if tgd is not valid
  */
-double get_tgd_correction(const ephemeris_t *eph, const gnss_signal_t *sid) {
+s8 get_tgd_correction(const ephemeris_t *eph,
+                      const gnss_signal_t *sid,
+                      double *tgd) {
   double frequency, gamma;
   assert(sid_to_constellation(eph->sid) == sid_to_constellation(*sid));
   switch (sid_to_constellation(*sid)) {
@@ -1283,33 +1296,39 @@ double get_tgd_correction(const ephemeris_t *eph, const gnss_signal_t *sid) {
       /* sat_clock_error = iono_free_clock_error - (f_1 / f)^2 * TGD. */
       frequency = sid_to_carr_freq(*sid);
       gamma = GPS_L1_HZ * GPS_L1_HZ / (frequency * frequency);
-      return eph->kepler.tgd_gps_s * gamma;
+      *tgd = eph->kepler.tgd_gps_s * gamma;
+      return 0;
     case CONSTELLATION_BDS:
       if (CODE_BDS2_B1 == sid->code) {
-        return eph->kepler.tgd_bds_s[0];
+        *tgd = eph->kepler.tgd_bds_s[0];
+        return 0;
       } else if (CODE_BDS2_B2 == sid->code) {
-        return eph->kepler.tgd_bds_s[1];
+        *tgd = eph->kepler.tgd_bds_s[1];
+        return 0;
       } else {
         log_error_sid(*sid, "TGD not applied for the signal");
       }
-      return 0.0;
+      return -1;
     case CONSTELLATION_GLO:
       /* As per GLO ICD v5.1 2008:
          d_tau = t_f2 - t_f1 -> t_f1 = t_f2 - d_tau.
          As clock_err is added to pseudorange,
          d_tau has to be applied with negative sign. */
       if (CODE_GLO_L1OF == sid->code || CODE_GLO_L1P == sid->code) {
-        return 0.0;
+        *tgd = 0.0;
+        return 0;
       } else if (CODE_GLO_L2OF == sid->code || CODE_GLO_L2P == sid->code) {
-        return eph->glo.d_tau;
+        *tgd = eph->glo.d_tau;
+        return 0;
       } else {
         log_error_sid(*sid, "TGD not applied for the signal");
       }
-      return 0.0;
+      return -1;
     case CONSTELLATION_QZS:
       /* As per QZSS ICD draft 1.5, all signals use the same unscaled Tgd and
        * inter-signal biases are applied separately */
-      return eph->kepler.tgd_qzss_s;
+      *tgd = eph->kepler.tgd_qzss_s;
+      return 0;
     case CONSTELLATION_GAL:
       /* Galileo ICD chapter 5.1.5 */
       frequency = sid_to_carr_freq(*sid);
@@ -1317,23 +1336,25 @@ double get_tgd_correction(const ephemeris_t *eph, const gnss_signal_t *sid) {
       if (CODE_GAL_E5I == sid->code || CODE_GAL_E5Q == sid->code ||
           CODE_GAL_E5X == sid->code) {
         /* The first TGD correction is for the (E1,E5a) combination */
-        return gamma * eph->kepler.tgd_gal_s[0];
+        *tgd = gamma * eph->kepler.tgd_gal_s[0];
+        return 0;
       } else if (CODE_GAL_E1B == sid->code || CODE_GAL_E1C == sid->code ||
                  CODE_GAL_E1X == sid->code || CODE_GAL_E7I == sid->code ||
                  CODE_GAL_E7Q == sid->code || CODE_GAL_E7X == sid->code) {
         /* The clock corrections from INAV are for the (E1,E5b) combination, so
          * use the matching group delay correction for all the other signals */
-        return gamma * eph->kepler.tgd_gal_s[1];
+        *tgd = gamma * eph->kepler.tgd_gal_s[1];
+        return 0;
       } else {
         log_error_sid(*sid, "TGD not applied for the signal");
       }
-      return 0;
+      return -1;
     case CONSTELLATION_INVALID:
     case CONSTELLATION_SBAS:
     case CONSTELLATION_COUNT:
     default:
       assert(!"Unsupported constellation");
-      return 0;
+      return -1;
   }
 }
 

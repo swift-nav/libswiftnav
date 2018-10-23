@@ -211,7 +211,9 @@ u8 encode_ura(float ura);
 float decode_ura_index(const u8 index);
 
 u8 get_ephemeris_iod(const ephemeris_t *eph);
-double get_tgd_correction(const ephemeris_t *eph, const gnss_signal_t *sid);
+s8 get_tgd_correction(const ephemeris_t *eph,
+                      const gnss_signal_t *sid,
+                      double *tgd);
 
 #ifdef __cplusplus
 } /* extern "C" */
