@@ -1306,7 +1306,7 @@ s8 get_tgd_correction(const ephemeris_t *eph,
         *tgd = eph->kepler.tgd_bds_s[1];
         return 0;
       } else {
-        log_error_sid(*sid, "TGD not applied for the signal");
+        log_debug_sid(*sid, "TGD not applied for the signal");
       }
       return -1;
     case CONSTELLATION_GLO:
@@ -1321,7 +1321,7 @@ s8 get_tgd_correction(const ephemeris_t *eph,
         *tgd = eph->glo.d_tau;
         return 0;
       } else {
-        log_error_sid(*sid, "TGD not applied for the signal");
+        log_debug_sid(*sid, "TGD not applied for the signal");
       }
       return -1;
     case CONSTELLATION_QZS:
@@ -1346,7 +1346,7 @@ s8 get_tgd_correction(const ephemeris_t *eph,
         *tgd = gamma * eph->kepler.tgd_gal_s[1];
         return 0;
       } else {
-        log_error_sid(*sid, "TGD not applied for the signal");
+        log_debug_sid(*sid, "TGD not applied for the signal");
       }
       return -1;
     case CONSTELLATION_INVALID:
