@@ -64,6 +64,9 @@ extern "C" {
 /** Number of seconds in a week. */
 #define WEEK_SECS (WEEK_DAYS * DAY_SECS)
 
+/** Number of nanoseconds in a second. */
+#define SECS_NS 1e9
+
 /** Number of microseconds in a second. */
 #define SECS_US 1e6
 
