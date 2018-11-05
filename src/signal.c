@@ -1331,6 +1331,8 @@ bool code_requires_decoder(code_t code) {
   return code_table[code].requires_data_decoder;
 }
 
+const char *code_to_string(const code_t code) { return code_table[code].str; }
+
 /**
  * Returns number of SV belongs to a constellation
  * \param gnss GNSS constellation

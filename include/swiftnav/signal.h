@@ -633,6 +633,7 @@ double mesid_to_carr_freq(const me_gnss_signal_t mesid);
 constellation_t code_to_constellation(code_t code);
 double sid_to_carr_freq(gnss_signal_t sid);
 double sid_to_lambda(gnss_signal_t sid);
+const char *code_to_string(const code_t code);
 u32 code_to_chip_count(code_t code);
 double code_to_chip_rate(code_t code);
 double mesid_to_carr_to_code(const me_gnss_signal_t mesid);
