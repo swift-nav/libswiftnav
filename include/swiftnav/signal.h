@@ -645,6 +645,7 @@ bool code_requires_decoder(code_t code);
 u16 constellation_to_sat_count(constellation_t gnss);
 const u8 *get_sbas_prn_list(sbas_system_t sbas_system);
 sbas_system_t get_sbas_system(const gnss_signal_t sid);
+float code_to_phase_alignment(code_t code);
 
 #ifdef __cplusplus
 } /* extern "C" */

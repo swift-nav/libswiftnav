@@ -34,10 +34,14 @@ typedef struct {
   u16 prn_period_ms;
   double carr_to_code;
   float sv_doppler_max;
+  float phase_alignment_cycles;
   bool requires_data_decoder;
 } code_table_element_t;
 
-/** Table of useful data for each code. */
+/** Table of useful data for each code.
+ *  [1] RINEX3.03 Table A23
+ *      "Reference code and phase alignment by constellation and frequency band"
+ */
 static const code_table_element_t code_table[CODE_COUNT] = {
     /** GPS */
     [CODE_GPS_L1CA] = {CONSTELLATION_GPS,
@@ -52,6 +56,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_L1CA_PRN_PERIOD_MS,
                        GPS_L1CA_CARR_TO_CODE,
                        GPS_L1_DOPPLER_MAX_HZ,
+                       0.f, /* reference signal (see L1C in [1]) */
                        true},
     [CODE_AUX_GPS] = {CONSTELLATION_GPS,
                       NUM_SATS_GPS,
@@ -65,6 +70,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GPS_L1CA_PRN_PERIOD_MS,
                       GPS_L1CA_CARR_TO_CODE,
                       GPS_L1_DOPPLER_MAX_HZ,
+                      0.f, /* assuming CODE_GPS_L1CA */
                       false},
     [CODE_GPS_L1CI] = {CONSTELLATION_GPS,
                        NUM_SATS_GPS,
@@ -78,6 +84,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_L1C_PRN_PERIOD_MS,
                        GPS_L1CA_CARR_TO_CODE,
                        GPS_L1_DOPPLER_MAX_HZ,
+                       0.25f, /* see L1S in [1] */
                        false},
     [CODE_GPS_L1CQ] = {CONSTELLATION_GPS,
                        NUM_SATS_GPS,
@@ -91,6 +98,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        GPS_L1_DOPPLER_MAX_HZ,
+                       0.25f, /* see L1L in [1] */
                        false},
     [CODE_GPS_L1CX] = {CONSTELLATION_GPS,
                        NUM_SATS_GPS,
@@ -104,6 +112,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        GPS_L1_DOPPLER_MAX_HZ,
+                       0.25f, /* see L1X in [1] */
                        false},
     [CODE_GPS_L2CM] = {CONSTELLATION_GPS,
                        NUM_SATS_GPS,
@@ -117,6 +126,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_L2CM_PRN_PERIOD_MS,
                        GPS_L2C_CARR_TO_CODE,
                        GPS_L2_DOPPLER_MAX_HZ,
+                       -0.25f, /* see L2S in [1] */
                        true},
     [CODE_GPS_L2CL] = {CONSTELLATION_GPS,
                        NUM_SATS_GPS,
@@ -130,6 +140,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_L2CL_PRN_PERIOD_MS,
                        GPS_L2C_CARR_TO_CODE,
                        GPS_L2_DOPPLER_MAX_HZ,
+                       -0.25f, /* see L2L in [1] */
                        false},
     [CODE_GPS_L2CX] = {CONSTELLATION_GPS,
                        NUM_SATS_GPS,
@@ -143,6 +154,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        GPS_L2_DOPPLER_MAX_HZ,
+                       -0.25f, /* see L2X [1] */
                        false},
     [CODE_GPS_L5I] = {CONSTELLATION_GPS,
                       NUM_SATS_GPS,
@@ -156,6 +168,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GPS_L5_PRN_PERIOD_MS,
                       GPS_L5_CARR_TO_CODE,
                       GPS_L5_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L5I in [1]) */
                       false},
     [CODE_GPS_L5Q] = {CONSTELLATION_GPS,
                       NUM_SATS_GPS,
@@ -169,6 +182,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GPS_L5_DOPPLER_MAX_HZ,
+                      -0.25f, /* see L5Q in [1] */
                       false},
     [CODE_GPS_L5X] = {CONSTELLATION_GPS,
                       NUM_SATS_GPS,
@@ -182,6 +196,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GPS_L5_DOPPLER_MAX_HZ,
+                      0.f, /* must be aligned to CODE_GPS_L5I (see L5X in [1])*/
                       false},
     [CODE_GPS_L1P] = {CONSTELLATION_GPS,
                       NUM_SATS_GPS,
@@ -195,6 +210,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GPS_L1_DOPPLER_MAX_HZ,
+                      0.25f, /* see L1P in [1] */
                       false},
     [CODE_GPS_L2P] = {CONSTELLATION_GPS,
                       NUM_SATS_GPS,
@@ -208,6 +224,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GPS_L2_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L2P in [1]) */
                       false},
 
     /** SBAS */
@@ -223,6 +240,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         SBAS_L1CA_PRN_PERIOD_MS,
                         SBAS_L1CA_CARR_TO_CODE,
                         SBAS_L1_DOPPLER_MAX_HZ,
+                        0.f, /* reference signal */
                         true},
     [CODE_AUX_SBAS] = {CONSTELLATION_SBAS,
                        NUM_SATS_SBAS,
@@ -236,6 +254,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        SBAS_L1CA_PRN_PERIOD_MS,
                        SBAS_L1CA_CARR_TO_CODE,
                        SBAS_L1_DOPPLER_MAX_HZ,
+                       0.f, /* not used */
                        false},
     [CODE_SBAS_L5I] = {CONSTELLATION_SBAS,
                        NUM_SATS_SBAS,
@@ -249,6 +268,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        SBAS_L5_PRN_PERIOD_MS,
                        SBAS_L5_CARR_TO_CODE,
                        SBAS_L5_DOPPLER_MAX_HZ,
+                       0.f, /* reference signal */
                        true},
     [CODE_SBAS_L5Q] = {CONSTELLATION_SBAS,
                        NUM_SATS_SBAS,
@@ -262,6 +282,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        SBAS_L5_PRN_PERIOD_MS,
                        SBAS_L5_CARR_TO_CODE,
                        SBAS_L5_DOPPLER_MAX_HZ,
+                       -0.25f, /* not used */
                        false},
     [CODE_SBAS_L5X] = {CONSTELLATION_SBAS,
                        NUM_SATS_SBAS,
@@ -275,6 +296,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        SBAS_L5_PRN_PERIOD_MS,
                        SBAS_L5_CARR_TO_CODE,
                        SBAS_L5_DOPPLER_MAX_HZ,
+                       0.f, /* must be aligned with CODE_SBAS_L5I */
                        false},
 
     /** Glonass  */
@@ -290,6 +312,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GLO_PRN_PERIOD_MS,
                        GLO_L1_CARR_TO_CODE(0),
                        GLO_L1_DOPPLER_MAX_HZ,
+                       0.f, /* reference signal (see L1C in [1]) */
                        true},
     [CODE_GLO_L2OF] = {CONSTELLATION_GLO,
                        NUM_SATS_GLO,
@@ -303,6 +326,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GLO_PRN_PERIOD_MS,
                        GLO_L2_CARR_TO_CODE(0),
                        GLO_L2_DOPPLER_MAX_HZ,
+                       0.f, /* reference signal (see L2C in [1]) */
                        true},
     [CODE_GLO_L1P] = {CONSTELLATION_GLO,
                       NUM_SATS_GLO,
@@ -316,6 +340,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GLO_L1_DOPPLER_MAX_HZ,
+                      0.25f, /* see L1P in [1] */
                       false},
     [CODE_GLO_L2P] = {CONSTELLATION_GLO,
                       NUM_SATS_GLO,
@@ -329,6 +354,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GLO_L2_DOPPLER_MAX_HZ,
+                      0.25f, /* see L2P in [1] */
                       false},
 
     /** Galileo  */
@@ -344,6 +370,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E1B_PRN_PERIOD_MS,
                       GAL_E1_CARR_TO_CODE,
                       GAL_E1_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L1B in [1]) */
                       true},
     [CODE_GAL_E1C] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -357,6 +384,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E1_DOPPLER_MAX_HZ,
+                      0.5f, /* see L1C in [1] */
                       false},
     [CODE_GAL_E1X] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -370,6 +398,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E1_DOPPLER_MAX_HZ,
+                      0.f, /* must be aligned to CODE_GAL_E1B (see L1X in [1])*/
                       false},
     [CODE_AUX_GAL] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -383,6 +412,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E1B_PRN_PERIOD_MS,
                       GAL_E1_CARR_TO_CODE,
                       GAL_E1_DOPPLER_MAX_HZ,
+                      0.f, /* assuming CODE_GAL_E1B */
                       false},
     [CODE_GAL_E6B] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -396,6 +426,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E6B_PRN_PERIOD_MS,
                       GAL_E6_CARR_TO_CODE,
                       GAL_E6_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L6B in [1]) */
                       true},
     [CODE_GAL_E6C] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -409,6 +440,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E6_DOPPLER_MAX_HZ,
+                      -0.5f, /* see L6C in [1] */
                       false},
     [CODE_GAL_E6X] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -422,6 +454,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E6_DOPPLER_MAX_HZ,
+                      0.f, /* must be aligned to CODE_GAL_E6B (see L6X in [1])*/
                       false},
     [CODE_GAL_E7I] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -435,6 +468,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E7I_PRN_PERIOD_MS,
                       GAL_E7_CARR_TO_CODE,
                       GAL_E7_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L7I in [1]) */
                       true},
     [CODE_GAL_E7Q] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -448,6 +482,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E7_DOPPLER_MAX_HZ,
+                      -0.25f, /* see L7Q in [1] */
                       false},
     [CODE_GAL_E7X] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -461,6 +496,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E7_DOPPLER_MAX_HZ,
+                      0.f, /* must be aligned to CODE_GAL_E7I (see L7X in [1])*/
                       false},
     [CODE_GAL_E8I] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -474,6 +510,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E8_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L8I in [1]) */
                       false},
     [CODE_GAL_E8Q] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -487,6 +524,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E8_DOPPLER_MAX_HZ,
+                      -0.25f, /* see L8Q in [1] */
                       false},
     [CODE_GAL_E8X] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -500,6 +538,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E8_DOPPLER_MAX_HZ,
+                      0.f, /* must be aligned to CODE_GAL_E8Q (see L8X in [1])*/
                       false},
     [CODE_GAL_E5I] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -513,6 +552,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E5I_PRN_PERIOD_MS,
                       GAL_E5_CARR_TO_CODE,
                       GAL_E5_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L5I in [1]) */
                       true},
     [CODE_GAL_E5Q] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -526,6 +566,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E5_DOPPLER_MAX_HZ,
+                      -0.25f, /* see L5Q in [1] */
                       false},
     [CODE_GAL_E5X] = {CONSTELLATION_GAL,
                       NUM_SATS_GAL,
@@ -539,6 +580,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       GAL_E5_DOPPLER_MAX_HZ,
+                      0.f, /* must be aligned to CODE_GAL_E5I (see L5X in [1])*/
                       false},
 
     /** Beidou */
@@ -554,6 +596,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       BDS2_B11_PRN_PERIOD_MS,
                       BDS2_B11_CARR_TO_CODE,
                       BDS2_B11_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L2I in [1]) */
                       true},
     [CODE_AUX_BDS] = {CONSTELLATION_BDS,
                       NUM_SATS_BDS,
@@ -567,6 +610,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       BDS2_B11_PRN_PERIOD_MS,
                       BDS2_B11_CARR_TO_CODE,
                       BDS2_B11_DOPPLER_MAX_HZ,
+                      0.f, /* assuming CODE_BDS2_B1 */
                       false},
     [CODE_BDS2_B2] = {CONSTELLATION_BDS,
                       NUM_SATS_BDS,
@@ -580,6 +624,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       BDS2_B2_PRN_PERIOD_MS,
                       BDS2_B2_CARR_TO_CODE,
                       BDS2_B2_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L7I in [1]) */
                       true},
     [CODE_BDS3_B1CI] = {CONSTELLATION_BDS,
                         NUM_SATS_BDS,
@@ -593,6 +638,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         BDS3_B1C_PRN_PERIOD_MS,
                         BDS3_B1C_CARR_TO_CODE,
                         BDS3_B1C_DOPPLER_MAX_HZ,
+                        0.f, /* not used (interoperable with SBAS) */
                         false},
     [CODE_BDS3_B1CQ] = {CONSTELLATION_BDS,
                         NUM_SATS_BDS,
@@ -606,6 +652,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         0,
                         0,
                         BDS3_B1C_DOPPLER_MAX_HZ,
+                        0.f, /* not used (interoperable with SBAS) */
                         false},
     [CODE_BDS3_B1CX] = {CONSTELLATION_BDS,
                         NUM_SATS_BDS,
@@ -619,6 +666,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         0,
                         0,
                         BDS3_B1C_DOPPLER_MAX_HZ,
+                        0.f, /* not used (interoperable with SBAS) */
                         false},
     [CODE_BDS3_B3I] = {CONSTELLATION_BDS,
                        NUM_SATS_BDS,
@@ -632,6 +680,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        BDS3_B3_PRN_PERIOD_MS,
                        BDS3_B3_CARR_TO_CODE,
                        BDS3_B3_DOPPLER_MAX_HZ,
+                       0.f, /* reference signal (see L6I in [1]) */
                        false},
     [CODE_BDS3_B3Q] = {CONSTELLATION_BDS,
                        NUM_SATS_BDS,
@@ -645,6 +694,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        BDS3_B3_DOPPLER_MAX_HZ,
+                       -0.25f, /* see L6Q in [1] */
                        false},
     [CODE_BDS3_B3X] = {CONSTELLATION_BDS,
                        NUM_SATS_BDS,
@@ -658,6 +708,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        BDS3_B3_DOPPLER_MAX_HZ,
+                       0.f, /*must be aligned to CODE_BDS3_B3I (L6X in [1]) */
                        false},
     [CODE_BDS3_B7I] = {CONSTELLATION_BDS,
                        NUM_SATS_BDS,
@@ -671,6 +722,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        BDS3_B7_PRN_PERIOD_MS,
                        BDS3_B7_CARR_TO_CODE,
                        BDS3_B7_DOPPLER_MAX_HZ,
+                       0.f, /* reference signal (see L7I in [1]) */
                        false},
     [CODE_BDS3_B7Q] = {CONSTELLATION_BDS,
                        NUM_SATS_BDS,
@@ -684,6 +736,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        BDS3_B7_DOPPLER_MAX_HZ,
+                       -0.25f, /* see L7Q in [1] */
                        false},
     [CODE_BDS3_B7X] = {CONSTELLATION_BDS,
                        NUM_SATS_BDS,
@@ -697,6 +750,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        BDS3_B7_PRN_PERIOD_MS,
                        BDS3_B7_CARR_TO_CODE,
                        BDS3_B7_DOPPLER_MAX_HZ,
+                       0.f, /* must be aligned to CODE_BDS3_B7I (L7X in [1]) */
                        false},
     [CODE_BDS3_B5I] = {CONSTELLATION_BDS,
                        NUM_SATS_BDS,
@@ -710,6 +764,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        BDS3_B5_PRN_PERIOD_MS,
                        BDS3_B5_CARR_TO_CODE,
                        BDS3_B5_DOPPLER_MAX_HZ,
+                       0.f, /* not used (interoperable with SBAS) */
                        false},
     [CODE_BDS3_B5Q] = {CONSTELLATION_BDS,
                        NUM_SATS_BDS,
@@ -723,6 +778,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        BDS3_B5_DOPPLER_MAX_HZ,
+                       0.f, /* not used (interoperable with SBAS) */
                        false},
     [CODE_BDS3_B5X] = {CONSTELLATION_BDS,
                        NUM_SATS_BDS,
@@ -736,6 +792,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        BDS3_B5_DOPPLER_MAX_HZ,
+                       0.f, /* not used (interoperable with SBAS) */
                        false},
 
     /** QZS L1C/A has all the same characteristics as GPS L1 C/A */
@@ -751,6 +808,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        QZS_L1CA_PRN_PERIOD_MS,
                        QZS_L1CA_CARR_TO_CODE,
                        QZS_L1_DOPPLER_MAX_HZ,
+                       0.f, /* reference signal (see L1C in [1]) */
                        true},
     [CODE_AUX_QZS] = {CONSTELLATION_QZS,
                       NUM_SATS_QZS,
@@ -764,6 +822,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       QZS_L1CA_PRN_PERIOD_MS,
                       QZS_L1CA_CARR_TO_CODE,
                       QZS_L1_DOPPLER_MAX_HZ,
+                      0.f, /* assuming CODE_QZS_L1CA */
                       false},
     [CODE_QZS_L1CI] = {CONSTELLATION_QZS,
                        NUM_SATS_QZS,
@@ -777,6 +836,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_L1C_PRN_PERIOD_MS,
                        GPS_L1CA_CARR_TO_CODE,
                        GPS_L1_DOPPLER_MAX_HZ,
+                       0.f, /* see L1S in [1] */
                        false},
     [CODE_QZS_L1CQ] = {CONSTELLATION_QZS,
                        NUM_SATS_QZS,
@@ -790,6 +850,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        GPS_L1_DOPPLER_MAX_HZ,
+                       0.25f, /* see L1L in [1] */
                        false},
     [CODE_QZS_L1CX] = {CONSTELLATION_QZS,
                        NUM_SATS_QZS,
@@ -803,6 +864,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        GPS_L1_DOPPLER_MAX_HZ,
+                       0.25f, /* see L1X in [1] */
                        false},
     [CODE_QZS_L2CM] = {CONSTELLATION_QZS,
                        NUM_SATS_QZS,
@@ -816,6 +878,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_L2CM_PRN_PERIOD_MS,
                        QZS_L2C_CARR_TO_CODE,
                        QZS_L2_DOPPLER_MAX_HZ,
+                       0.f, /* reference signal (see L2S in [1]) */
                        true},
     [CODE_QZS_L2CL] = {CONSTELLATION_QZS,
                        NUM_SATS_QZS,
@@ -829,6 +892,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_L2CL_PRN_PERIOD_MS,
                        QZS_L2C_CARR_TO_CODE,
                        QZS_L2_DOPPLER_MAX_HZ,
+                       0.f, /* see L2L in [1] */
                        false},
     [CODE_QZS_L2CX] = {CONSTELLATION_QZS,
                        NUM_SATS_QZS,
@@ -842,6 +906,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        QZS_L2_DOPPLER_MAX_HZ,
+                       0.f, /* see L2X in [1] */
                        false},
     [CODE_QZS_L5I] = {CONSTELLATION_QZS,
                       NUM_SATS_QZS,
@@ -855,6 +920,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       QZS_L5_DOPPLER_MAX_HZ,
+                      0.f, /* reference signal (see L5I in [1]) */
                       false},
     [CODE_QZS_L5Q] = {CONSTELLATION_QZS,
                       NUM_SATS_QZS,
@@ -868,6 +934,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       QZS_L5_DOPPLER_MAX_HZ,
+                      -0.25f, /* see L5Q in [1] */
                       false},
     [CODE_QZS_L5X] = {CONSTELLATION_QZS,
                       NUM_SATS_QZS,
@@ -881,6 +948,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       QZS_L5_DOPPLER_MAX_HZ,
+                      0.f, /* must be aligned to CODE_QZS_L5I (see L5X in [1])*/
                       false},
 };
 
@@ -1362,6 +1430,12 @@ sbas_system_t get_sbas_system(const gnss_signal_t sid) {
     }
   }
   return SBAS_NONE;
+}
+
+/** Phase alignment in cycles */
+float code_to_phase_alignment(code_t code) {
+  assert(code_valid(code));
+  return code_table[code].phase_alignment_cycles;
 }
 
 /* \} */
