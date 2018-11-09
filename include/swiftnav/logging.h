@@ -43,9 +43,10 @@ extern "C" {
  *
  * \{ */
 
-void log_(u8 level, const char *msg, ...) __attribute__((format(printf, 2, 3)));
+void log_(int level, const char *msg, ...)
+    __attribute__((format(printf, 2, 3)));
 
-void detailed_log_(u8 level,
+void detailed_log_(int level,
                    const char *file_path,
                    const int line_number,
                    const char *msg,

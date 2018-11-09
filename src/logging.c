@@ -25,7 +25,7 @@
  * \param level Log level
  * \param msg Log contents
  */
-__attribute__((weak)) void log_(u8 level, const char *msg, ...) {
+__attribute__((weak)) void log_(int level, const char *msg, ...) {
   va_list ap;
 
   fprintf(stderr, "%s: ", level_string[level]);
@@ -42,7 +42,7 @@ __attribute__((weak)) void log_(u8 level, const char *msg, ...) {
  * \param line_number line number where this function was called
  * \param msg Log contents
  */
-__attribute__((weak)) void detailed_log_(u8 level,
+__attribute__((weak)) void detailed_log_(int level,
                                          const char *file_path,
                                          const int line_number,
                                          const char *msg,
