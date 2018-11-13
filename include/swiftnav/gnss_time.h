@@ -17,6 +17,7 @@
 #include <time.h>
 
 #include <swiftnav/common.h>
+#include <swiftnav/constants.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -322,6 +323,18 @@ bool is_leap_second_event(const gps_time_t *t, const utc_params_t *p);
 
 #ifdef __cplusplus
 } /* extern "C" */
+
+static inline bool operator==(const gps_time_t &a, const gps_time_t &b) {
+  return fabs(gpsdifftime(&a, &b)) < FLOAT_EQUALITY_EPS;
+}
+
+static inline bool operator<(const gps_time_t &a, const gps_time_t &b) {
+  return gpsdifftime(&a, &b) < 0;
+}
+
+static inline bool operator>(const gps_time_t &a, const gps_time_t &b) {
+  return gpsdifftime(&a, &b) > 0;
+}
 #endif
 
 #endif /* LIBSWIFTNAV_GNSS_TIME_H */

@@ -13,14 +13,14 @@
 #ifndef LIBSWIFTNAV_EPHEMERIS_H
 #define LIBSWIFTNAV_EPHEMERIS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <swiftnav/common.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/gnss_time.h>
 #include <swiftnav/signal.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define INVALID_GPS_URA_INDEX -1
 #define MAX_ALLOWED_GPS_URA_IDX 15

@@ -508,32 +508,6 @@ static inline int mesid_compare(const me_gnss_signal_t a,
   }
 }
 
-#ifdef __cplusplus
-static inline bool operator==(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) == 0;
-}
-
-static inline bool operator!=(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) != 0;
-}
-
-static inline bool operator<(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) < 0;
-}
-
-static inline bool operator>(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) > 0;
-}
-
-static inline bool operator<=(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) <= 0;
-}
-
-static inline bool operator>=(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) >= 0;
-}
-#endif /* __cplusplus */
-
 /** Untyped signal comparison function. */
 static inline int cmp_sid_sid(const void *a, const void *b) {
   return sid_compare(*(const gnss_signal_t *)a, *(const gnss_signal_t *)b);
@@ -649,6 +623,30 @@ float code_to_phase_alignment(code_t code);
 
 #ifdef __cplusplus
 } /* extern "C" */
+
+static inline bool operator==(const gnss_signal_t &a, const gnss_signal_t &b) {
+  return sid_compare(a, b) == 0;
+}
+
+static inline bool operator!=(const gnss_signal_t &a, const gnss_signal_t &b) {
+  return sid_compare(a, b) != 0;
+}
+
+static inline bool operator<(const gnss_signal_t &a, const gnss_signal_t &b) {
+  return sid_compare(a, b) < 0;
+}
+
+static inline bool operator>(const gnss_signal_t &a, const gnss_signal_t &b) {
+  return sid_compare(a, b) > 0;
+}
+
+static inline bool operator<=(const gnss_signal_t &a, const gnss_signal_t &b) {
+  return sid_compare(a, b) <= 0;
+}
+
+static inline bool operator>=(const gnss_signal_t &a, const gnss_signal_t &b) {
+  return sid_compare(a, b) >= 0;
+}
 #endif /* __cplusplus */
 
 #endif /* LIBSWIFTNAV_SIGNAL_H */
