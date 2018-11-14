@@ -10,6 +10,8 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+#include "swiftnav/single_epoch_solver.h"
+
 #include <assert.h>
 #include <inttypes.h>
 #include <math.h>
@@ -21,7 +23,7 @@
 #include <swiftnav/linear_algebra.h>
 #include <swiftnav/logging.h>
 #include <swiftnav/memcpy_s.h>
-#include <swiftnav/single_epoch_solver.h>
+
 #include "max_channels.h"
 
 /* Measurement noise model parameters */
@@ -317,9 +319,9 @@ static s8 vel_solve(const u8 n_used,
   int ret = matrix_wlsq_solve(n_used,
                               N_STATE,
                               (double *)G,
-                              (double *)lsq_data->omp_doppler,
-                              (double *)w,
-                              (double *)&lsq_data->rx_state[4],
+                              lsq_data->omp_doppler,
+                              w,
+                              &lsq_data->rx_state[4],
                               (double *)lsq_data->V_vel);
 
   /* Update the residuals with the solved velocity and drift */
@@ -594,6 +596,10 @@ static bool residual_test(const u8 n_used,
     return false;
   }
 
+  if (n_used == 0) {
+    return false;
+  }
+
   u8 n_meas;
   u8 raim_n_state;
 
@@ -667,6 +673,7 @@ static bool flag_outliers(const u8 n_used,
     gnss_signal_t sid = nav_meas[i].sid;
     if (sid_set_contains(exclude_sids, sid) ||
         sid_set_contains(removed_sids, sid)) {
+      range_residual[i] = 0;
       /* already gone through RAIM */
       continue;
     }
@@ -803,13 +810,13 @@ static s8 pvt_iter_masked(const u8 n_meas,
     return -1;
   }
 
-  /* return success if the residual test passes */
-  if (residual_test(
+  if (!residual_test(
           n_used, disable_velocity, lsq_data, nav_meas_subset, metric)) {
-    return 0;
-  } else {
+    /* residuals too large */
     return -1;
   }
+
+  return 0;
 }
 
 /** PVT solution with only GPS measurements
@@ -848,12 +855,14 @@ static s8 pvt_solve_gps_only(const u8 n_meas,
         n_used,
         original_metric);
     return PVT_RAIM_REPAIR_IMPOSSIBLE;
-  } else if (0 == pvt_iter_masked(n_meas,
-                                  disable_velocity,
-                                  nav_meas,
-                                  removed_sids,
-                                  lsq_data,
-                                  &new_metric)) {
+  }
+
+  if (0 == pvt_iter_masked(n_meas,
+                           disable_velocity,
+                           nav_meas,
+                           removed_sids,
+                           lsq_data,
+                           &new_metric)) {
     /* success */
     log_info("RAIM excluded all non-GPS measurements (%" PRIu32
              " out of %d), metric %.1g "
@@ -863,27 +872,27 @@ static s8 pvt_solve_gps_only(const u8 n_meas,
              original_metric,
              new_metric);
     return PVT_CONVERGED_RAIM_REPAIR;
-  } else {
-    /* no solution found */
-    if (sid_set_get_sig_count(removed_sids) > 0) {
-      log_info("RAIM failed: tried excluding %" PRIu32
-               " measurement(s) out of %d, "
-               "metric %"
-               ".1g -> %.1f",
-               sid_set_get_sig_count(removed_sids),
-               n_meas,
-               original_metric,
-               new_metric);
-    } else {
-      log_info(
-          "RAIM failed: all exclusion candidates out of %d measurements "
-          "failed, "
-          "metric %.1g",
-          n_meas,
-          original_metric);
-    }
-    return PVT_RAIM_REPAIR_FAILED;
   }
+
+  /* no solution found */
+  if (sid_set_get_sig_count(removed_sids) > 0) {
+    log_info("RAIM failed: tried excluding %" PRIu32
+             " measurement(s) out of %d, "
+             "metric %"
+             ".1g -> %.1f",
+             sid_set_get_sig_count(removed_sids),
+             n_meas,
+             original_metric,
+             new_metric);
+  } else {
+    log_info(
+        "RAIM failed: all exclusion candidates out of %d measurements "
+        "failed, "
+        "metric %.1g",
+        n_meas,
+        original_metric);
+  }
+  return PVT_RAIM_REPAIR_FAILED;
 }
 
 /** See pvt_solve_raim() for parameter meanings.
@@ -913,7 +922,7 @@ static s8 pvt_repair(const u8 n_used,
   double metric[n_used];
   s8 bad_sat = -1;
 
-  double original_metric;
+  double original_metric = INFINITY;
   residual_test(n_used, disable_velocity, lsq_data, nav_meas, &original_metric);
 
   /* Each iteration of this loop excludes one signal and either returns with
