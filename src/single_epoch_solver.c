@@ -970,7 +970,7 @@ static s8 pvt_repair(const u8 n_used,
        * If a valid exclusion is already found, then store only those exclusions
        * that improve the metric and also result in a valid solution.
        * */
-      if ((metric[i] < best_metric) &&
+      if ((metric[i] <= best_metric) &&
           (!successful_exclusion_found || 0 == solution_flag)) {
         bad_sat = i;
         best_metric = metric[i];
