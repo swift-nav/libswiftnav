@@ -43,7 +43,7 @@
  *  llhrad2deg(arr1, arr1);
  */
 
-void llhrad2deg(const double llh_rad[3], double llh_deg[3]) {
+void llhrad2deg(const double llh_rad[static 3], double llh_deg[static 3]) {
   llh_deg[0] = llh_rad[0] * R2D;
   llh_deg[1] = llh_rad[1] * R2D;
   llh_deg[2] = llh_rad[2];
@@ -60,7 +60,7 @@ void llhrad2deg(const double llh_rad[3], double llh_deg[3]) {
  *  llhdeg2rad(arr1, arr1);
  */
 
-void llhdeg2rad(const double llg_deg[3], double llh_rad[3]) {
+void llhdeg2rad(const double llg_deg[static 3], double llh_rad[static 3]) {
   llh_rad[0] = llg_deg[0] * D2R;
   llh_rad[1] = llg_deg[1] * D2R;
   llh_rad[2] = llg_deg[2];
@@ -90,7 +90,7 @@ void llhdeg2rad(const double llg_deg[3], double llh_rad[3]) {
  * \param ecef Converted Cartesian coordinates are written into this array
  *             as [X, Y, Z], all in meters.
  */
-void wgsllh2ecef(const double llh[3], double ecef[3]) {
+void wgsllh2ecef(const double llh[static 3], double ecef[static 3]) {
   double d = WGS84_E * sin(llh[0]);
   double N = WGS84_A / sqrt(1. - d * d);
 
@@ -125,7 +125,7 @@ void wgsllh2ecef(const double llh[3], double ecef[3]) {
  * \param llh  Converted geodetic coordinates are written into this array as
  *             [lat, lon, height] in [radians, radians, meters].
  */
-void wgsecef2llh(const double ecef[3], double llh[3]) {
+void wgsecef2llh(const double ecef[static 3], double llh[static 3]) {
   /* Distance from polar axis. */
   const double p = sqrt(ecef[0] * ecef[0] + ecef[1] * ecef[1]);
 
@@ -162,7 +162,7 @@ void wgsecef2llh(const double ecef[3], double llh[3]) {
   /* Iterate a maximum of 10 times. This should be way more than enough for all
    * sane inputs */
   for (int i = 0; i < 10; i++) {
-    /* Calculate some intermmediate variables used in the update step based on
+    /* Calculate some intermediate variables used in the update step based on
      * the current state. */
     A_n = sqrt(S * S + C * C);
     D_n = Z * A_n * A_n * A_n + WGS84_E * WGS84_E * S * S * S;
@@ -226,7 +226,7 @@ void wgsecef2llh(const double ecef[3], double llh[3]) {
  *             are assumed to be in radians, height in meters.
  * \param M        3x3 matrix to be populated with rotation matrix.
  */
-void wgs_ecef2ned_matrix(const double llh[3], double M[3][3]) {
+void wgs_ecef2ned_matrix(const double llh[static 3], double M[3][3]) {
   double sin_lat = sin(llh[0]), cos_lat = cos(llh[0]), sin_lon = sin(llh[1]),
          cos_lon = cos(llh[1]);
   M[0][0] = -sin_lat * cos_lon;
@@ -248,7 +248,7 @@ void wgs_ecef2ned_matrix(const double llh[3], double M[3][3]) {
  *                 [X, Y, Z], all in meters.
  * \param M        3x3 matrix to be populated with rotation matrix.
  */
-void ecef2ned_matrix(const double ref_ecef[3], double M[3][3]) {
+void ecef2ned_matrix(const double ref_ecef[static 3], double M[3][3]) {
   double llh[3];
   wgsecef2llh(ref_ecef, llh);
   wgs_ecef2ned_matrix(llh, M);
@@ -272,11 +272,10 @@ void ecef2ned_matrix(const double ref_ecef[3], double M[3][3]) {
  * \param ned       The North, East, Down vector is written into this array as
  *                  [N, E, D], all in meters.
  */
-void wgsecef2ned(const double ecef[3],
-                 const double ref_ecef[3],
-                 double ned[3]) {
+void wgsecef2ned(const double ecef[static 3],
+                 const double ref_ecef[static 3],
+                 double ned[static 3]) {
   double M[3][3];
-
   ecef2ned_matrix(ref_ecef, M);
   matrix_multiply(3, 3, 1, (double *)M, ecef, ned);
 }
@@ -320,9 +319,9 @@ void wgsecef2ned_d(const double ecef[3],
  * \param ecef      Cartesian coordinates of the point written into this array,
  *                  [X, Y, Z], all in meters.
  */
-void wgsned2ecef(const double ned[3],
-                 const double ref_ecef[3],
-                 double ecef[3]) {
+void wgsned2ecef(const double ned[static 3],
+                 const double ref_ecef[static 3],
+                 double ecef[static 3]) {
   double M[3][3], M_transpose[3][3];
   ecef2ned_matrix(ref_ecef, M);
   matrix_transpose(3, 3, (double *)M, (double *)M_transpose);
@@ -343,9 +342,9 @@ void wgsned2ecef(const double ned[3],
  * \param ecef      Cartesian coordinates of the point written into this array,
  *                  [X, Y, Z], all in meters.
  */
-void wgsned2ecef_d(const double ned[3],
-                   const double ref_ecef[3],
-                   double ecef[3]) {
+void wgsned2ecef_d(const double ned[static 3],
+                   const double ref_ecef[static 3],
+                   double ecef[static 3]) {
   double tempv[3];
   wgsned2ecef(ned, ref_ecef, tempv);
   vector_add(3, tempv, ref_ecef, ecef);
@@ -367,8 +366,8 @@ void wgsned2ecef_d(const double ned[3],
  * \param azimuth   Pointer to where to store the calculated azimuth output.
  * \param elevation Pointer to where to store the calculated elevation output.
  */
-void wgsecef2azel(const double ecef[3],
-                  const double ref_ecef[3],
+void wgsecef2azel(const double ecef[static 3],
+                  const double ref_ecef[static 3],
                   double *azimuth,
                   double *elevation) {
   double ned[3];

@@ -90,9 +90,9 @@ static inline s32 sign_extend24(u32 arg) {
  */
 static s8 calc_sat_state_xyz(const ephemeris_t *e,
                              const gps_time_t *t,
-                             double pos[3],
-                             double vel[3],
-                             double acc[3],
+                             double pos[static 3],
+                             double vel[static 3],
+                             double acc[static 3],
                              double *clock_err,
                              double *clock_rate_err,
                              u16 *iodc,
@@ -141,10 +141,10 @@ static s8 calc_sat_state_xyz(const ephemeris_t *e,
  * \param vel Pointer to velocity input array (ECEF)
  * \param acc Pointer to acceleration input array (ECI)
  */
-static void calc_ecef_vel_acc(double vel_acc[6],
-                              const double pos[3],
-                              const double vel[3],
-                              const double acc[3]) {
+static void calc_ecef_vel_acc(double vel_acc[static 6],
+                              const double pos[static 3],
+                              const double vel[static 3],
+                              const double acc[static 3]) {
   double r = sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
 
   double m_r3 = GLO_GM / (r * r * r);
@@ -183,9 +183,9 @@ static void calc_ecef_vel_acc(double vel_acc[6],
  */
 static s8 calc_sat_state_glo(const ephemeris_t *e,
                              const gps_time_t *t,
-                             double pos[3],
-                             double vel[3],
-                             double acc[3],
+                             double pos[static 3],
+                             double vel[static 3],
+                             double acc[static 3],
                              double *clock_err,
                              double *clock_rate_err,
                              u16 *iodc,
@@ -288,9 +288,9 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
  */
 static s8 calc_sat_state_kepler(const ephemeris_t *e,
                                 const gps_time_t *t,
-                                double pos[3],
-                                double vel[3],
-                                double acc[3],
+                                double pos[static 3],
+                                double vel[static 3],
+                                double acc[static 3],
                                 double *clock_err,
                                 double *clock_rate_err,
                                 u16 *iodc,
@@ -561,9 +561,9 @@ s8 calc_sat_state(const ephemeris_t *e,
  */
 s8 calc_sat_state_n(const ephemeris_t *e,
                     const gps_time_t *t,
-                    double pos[3],
-                    double vel[3],
-                    double acc[3],
+                    double pos[static 3],
+                    double vel[static 3],
+                    double acc[static 3],
                     double *clock_err,
                     double *clock_rate_err,
                     u16 *iodc,
@@ -612,7 +612,7 @@ s8 calc_sat_state_n(const ephemeris_t *e,
  */
 s8 calc_sat_az_el(const ephemeris_t *e,
                   const gps_time_t *t,
-                  const double ref[3],
+                  const double ref[static 3],
                   double *az,
                   double *el,
                   bool check_e) {
@@ -666,8 +666,8 @@ s8 calc_sat_az_el(const ephemeris_t *e,
  */
 s8 calc_sat_doppler(const ephemeris_t *e,
                     const gps_time_t *t,
-                    const double ref_pos[3],
-                    const double ref_vel[3],
+                    const double ref_pos[static 3],
+                    const double ref_vel[static 3],
                     double *doppler) {
   double sat_pos[3];
   double sat_vel[3];
@@ -993,7 +993,7 @@ void decode_ephemeris(const u32 frame_words[3][8],
   log_debug_sid(e->sid, "Health bits = 0x%02" PRIx8, e->health_bits);
 
   /* t_gd: Word 7, bits 17-24 */
-  k->tgd_gps_s =
+  k->tgd.gps_s =
       (s8)(frame_words[0][7 - 3] >> (30 - 24) & 0xFF) * GPS_LNAV_EPH_SF_TGD;
 
   /* iodc: Word 3, bits 23-24 and word 8, bits 1-8 */
@@ -1114,57 +1114,19 @@ void decode_ephemeris(const u32 frame_words[3][8],
   e->valid = iode_valid && toe_valid;
 }
 
-static bool tgd_equal(const ephemeris_kepler_t *a,
-                      const ephemeris_kepler_t *b,
-                      const code_t code) {
-  bool eq = false;
-  constellation_t con = code_to_constellation(code);
-  if (CONSTELLATION_GPS == con) {
-    eq = (a->tgd_gps_s == b->tgd_gps_s);
-  } else if (CONSTELLATION_QZS == con) {
-    eq = (a->tgd_qzss_s == b->tgd_qzss_s);
-  } else if (CONSTELLATION_BDS == con) {
-    eq = ((a->tgd_bds_s[0] == b->tgd_bds_s[0]) &&
-          (a->tgd_bds_s[1] == b->tgd_bds_s[1]));
-  } else if (CONSTELLATION_GAL == con) {
-    eq = ((a->tgd_gal_s[0] == b->tgd_gal_s[0]) &&
-          (a->tgd_gal_s[1] == b->tgd_gal_s[1]));
-  } else {
-    assert(!"Unsupported Keplerian constellation");
-    return false;
-  }
-  return eq;
-}
-
 static bool ephemeris_xyz_equal(const ephemeris_xyz_t *a,
                                 const ephemeris_xyz_t *b) {
-  return (a->a_gf0 == b->a_gf0) && (a->a_gf1 == b->a_gf1) &&
-         (memcmp(a->pos, b->pos, sizeof(a->pos)) == 0) &&
-         (memcmp(a->vel, b->vel, sizeof(a->vel)) == 0) &&
-         (memcmp(a->acc, b->acc, sizeof(a->acc)) == 0);
+  return (memcmp(a, b, sizeof(ephemeris_xyz_t)) == 0);
 }
 
 static bool ephemeris_kepler_equal(const ephemeris_kepler_t *a,
-                                   const ephemeris_kepler_t *b,
-                                   const code_t code) {
-  return (a->iodc == b->iodc) && (a->iode == b->iode) &&
-         tgd_equal(a, b, code) && (a->crs == b->crs) && (a->crc == b->crc) &&
-         (a->cuc == b->cuc) && (a->cus == b->cus) && (a->cic == b->cic) &&
-         (a->cis == b->cis) && (a->dn == b->dn) && (a->m0 == b->m0) &&
-         (a->ecc == b->ecc) && (a->sqrta == b->sqrta) &&
-         (a->omega0 == b->omega0) && (a->omegadot == b->omegadot) &&
-         (a->w == b->w) && (a->inc == b->inc) && (a->inc_dot == b->inc_dot) &&
-         (a->af0 == b->af0) && (a->af1 == b->af1) && (a->af2 == b->af2) &&
-         (a->toc.wn == b->toc.wn) && (a->toc.tow == b->toc.tow);
+                                   const ephemeris_kepler_t *b) {
+  return (memcmp(a, b, sizeof(ephemeris_kepler_t)) == 0);
 }
 
 static bool ephemeris_glo_equal(const ephemeris_glo_t *a,
                                 const ephemeris_glo_t *b) {
-  return (a->gamma == b->gamma) && (a->tau == b->tau) &&
-         (a->d_tau == b->d_tau) && (a->iod == b->iod) && (a->fcn == b->fcn) &&
-         (memcmp(a->pos, b->pos, sizeof(a->pos)) == 0) &&
-         (memcmp(a->vel, b->vel, sizeof(a->vel)) == 0) &&
-         (memcmp(a->acc, b->acc, sizeof(a->acc)) == 0);
+  return (memcmp(a, b, sizeof(ephemeris_glo_t)) == 0);
 }
 
 /** Are the two ephemerides the same?
@@ -1182,10 +1144,11 @@ bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b) {
 
   switch (sid_to_constellation(a->sid)) {
     case CONSTELLATION_GPS:
+    case CONSTELLATION_QZS:
+      return ephemeris_kepler_equal(&a->kepler, &b->kepler);
     case CONSTELLATION_BDS:
     case CONSTELLATION_GAL:
-    case CONSTELLATION_QZS:
-      return ephemeris_kepler_equal(&a->kepler, &b->kepler, a->sid.code);
+      return ephemeris_kepler_equal(&a->kepler, &b->kepler);
     case CONSTELLATION_SBAS:
       return ephemeris_xyz_equal(&a->xyz, &b->xyz);
     case CONSTELLATION_GLO:
@@ -1395,14 +1358,14 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       /* sat_clock_error = iono_free_clock_error - (f_1 / f)^2 * TGD. */
       frequency = sid_to_carr_freq(*sid);
       gamma = GPS_L1_HZ * GPS_L1_HZ / (frequency * frequency);
-      *tgd = eph->kepler.tgd_gps_s * gamma;
+      *tgd = eph->kepler.tgd.gps_s * gamma;
       return 0;
     case CONSTELLATION_BDS:
       if (CODE_BDS2_B1 == sid->code) {
-        *tgd = eph->kepler.tgd_bds_s[0];
+        *tgd = eph->kepler.tgd.bds_s[0];
         return 0;
       } else if (CODE_BDS2_B2 == sid->code) {
-        *tgd = eph->kepler.tgd_bds_s[1];
+        *tgd = eph->kepler.tgd.bds_s[1];
         return 0;
       } else {
         log_debug_sid(*sid, "TGD not applied for the signal");
@@ -1426,7 +1389,7 @@ s8 get_tgd_correction(const ephemeris_t *eph,
     case CONSTELLATION_QZS:
       /* As per QZSS ICD draft 1.5, all signals use the same unscaled Tgd and
        * inter-signal biases are applied separately */
-      *tgd = eph->kepler.tgd_qzss_s;
+      *tgd = eph->kepler.tgd.qzss_s;
       return 0;
     case CONSTELLATION_GAL:
       /* Galileo ICD chapter 5.1.5 */
@@ -1435,14 +1398,14 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       if (CODE_GAL_E5I == sid->code || CODE_GAL_E5Q == sid->code ||
           CODE_GAL_E5X == sid->code) {
         /* The first TGD correction is for the (E1,E5a) combination */
-        *tgd = gamma * eph->kepler.tgd_gal_s[0];
+        *tgd = gamma * eph->kepler.tgd.gal_s[0];
         return 0;
       } else if (CODE_GAL_E1B == sid->code || CODE_GAL_E1C == sid->code ||
                  CODE_GAL_E1X == sid->code || CODE_GAL_E7I == sid->code ||
                  CODE_GAL_E7Q == sid->code || CODE_GAL_E7X == sid->code) {
         /* The clock corrections from INAV are for the (E1,E5b) combination, so
          * use the matching group delay correction for all the other signals */
-        *tgd = gamma * eph->kepler.tgd_gal_s[1];
+        *tgd = gamma * eph->kepler.tgd.gal_s[1];
         return 0;
       } else {
         log_debug_sid(*sid, "TGD not applied for the signal");

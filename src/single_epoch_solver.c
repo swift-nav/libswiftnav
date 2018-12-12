@@ -207,9 +207,9 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
  * \param tau               Time of flight in seconds
  * \param[out] sat_pos_new  Corrected satellite position vector
  */
-static void sagnac_rotation(const double sat_pos[3],
+static void sagnac_rotation(const double sat_pos[static 3],
                             const double tau,
-                            double sat_pos_new[3]) {
+                            double sat_pos_new[static 3]) {
   /* Rotation of Earth during time of flight in radians. */
   double wEtau = GPS_OMEGAE_DOT * tau;
   /* Apply linearised rotation about Z-axis which will adjust for the
@@ -233,13 +233,13 @@ static void sagnac_rotation(const double sat_pos[3],
  * \return predicted Doppler in m/s
  */
 static double compute_predicted_doppler(
-    const double rx_state[8], const navigation_measurement_t *nav_meas) {
+    const double rx_state[static 8], const navigation_measurement_t *nav_meas) {
   const double *user_pos = &rx_state[0];
   const double *user_vel = &rx_state[4];
   const double clock_drift_m_s = rx_state[7];
-  double sat_vel_new[3];
-  double line_of_sight[3];
-  double relative_velocity[3];
+  double sat_vel_new[3] = {0.0};
+  double line_of_sight[3] = {0.0};
+  double relative_velocity[3] = {0.0};
 
   /* Magnitude of range vector converted into an approximate time in secs. */
   vector_subtract(3, nav_meas->sat_pos, user_pos, line_of_sight);
@@ -283,10 +283,7 @@ static s8 vel_solve(const u8 n_used,
       /* If any signal lacks valid Doppler, do not compute velocity.
        * (Currently either all signals have Doppler or none do, in case of
        * base station measurements) */
-      lsq_data->rx_state[4] = 0.0;
-      lsq_data->rx_state[5] = 0.0;
-      lsq_data->rx_state[6] = 0.0;
-      lsq_data->rx_state[7] = 0.0;
+      memset(&(lsq_data->rx_state[4]), 0, 4 * sizeof(double));
       return -1;
     }
 
@@ -335,7 +332,7 @@ static s8 vel_solve(const u8 n_used,
 }
 
 static void compute_dops(const double H[4][4],
-                         const double pos_ecef[3],
+                         const double pos_ecef[static 3],
                          dops_t *dops) {
   /* PDOP is the norm of the position elements of tr(H) */
   double pdop_sq = H[0][0] + H[1][1] + H[2][2];
@@ -374,7 +371,7 @@ static void compute_dops(const double H[4][4],
  * \return predicted pseudorange in meters
  */
 static double compute_predicted_pseudorange(
-    const double rx_state[8],
+    const double rx_state[static 8],
     const navigation_measurement_t *nav_meas,
     double line_of_sight[3]) {
   const double *user_pos = &rx_state[0];
@@ -443,11 +440,6 @@ static s8 pvt_solve(const u8 n_used,
   double w[n_used];
 
   double los[3];
-  double correction[N_STATE];
-
-  for (u8 j = 0; j < N_STATE; j++) {
-    correction[j] = 0.0;
-  }
 
   for (u8 j = 0; j < n_used; j++) {
     /* Predicted range from satellite position and estimated Rx position. */
@@ -490,6 +482,7 @@ static s8 pvt_solve(const u8 n_used,
    * Newton's method.  There's a reasonably clear explanation of this
    * in Wikipedia's article on GPS.
    */
+  double correction[N_STATE] = {0.0};
 
   /* Solve the state update and its covariance matrix */
   int ret = matrix_wlsq_solve(n_used,
@@ -523,10 +516,7 @@ static s8 pvt_solve(const u8 n_used,
 
   if (disable_velocity) {
     /* No velocity solution */
-    lsq_data->rx_state[4] = 0.0;
-    lsq_data->rx_state[5] = 0.0;
-    lsq_data->rx_state[6] = 0.0;
-    lsq_data->rx_state[7] = 0.0;
+    memset(&(lsq_data->rx_state[4]), 0, 4 * sizeof(double));
     memset(lsq_data->omp_doppler, 0, sizeof(lsq_data->omp_doppler));
   } else {
     /* Perform the velocity solution. */
@@ -748,9 +738,7 @@ static s8 pvt_iter(const u8 n_used,
                    const navigation_measurement_t *nav_meas[n_used],
                    lsq_data_t *lsq_data) {
   /* Reset state to zero */
-  for (u8 i = 0; i < 8; i++) {
-    lsq_data->rx_state[i] = 0;
-  }
+  memset(lsq_data->rx_state, 0, 8 * sizeof(double));
 
   u8 iters;
   s8 ret;
@@ -1333,10 +1321,7 @@ s8 calc_PVT(const u8 n_used,
     soln->velocity_valid = 1;
   } else {
     soln->velocity_valid = 0;
-    lsq_data.rx_state[4] = 0.0;
-    lsq_data.rx_state[5] = 0.0;
-    lsq_data.rx_state[6] = 0.0;
-    lsq_data.rx_state[7] = 0.0;
+    memset(&(lsq_data.rx_state[4]), 0, 4 * sizeof(double));
   }
 
   if (ALL_CONSTELLATIONS != strategy && !disable_raim) {

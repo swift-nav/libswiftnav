@@ -22,7 +22,7 @@ static const ephemeris_t gps_eph = {
     .fit_interval = 14400,
     .valid = 1,
     .health_bits = 0,
-    .kepler = {.tgd_gps_s = 5.122274160385132E-9,
+    .kepler = {.tgd.gps_s = 5.122274160385132E-9,
                .crc = 198.9375,
                .crs = 10.28125,
                .cuc = 5.327165126800537E-7,
@@ -224,7 +224,7 @@ START_TEST(test_ephemeris_equal) {
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.tgd_gps_s = 1;
+  a.kepler.tgd.gps_s = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.tgd_gps_s)");
   memset(&a, 0, sizeof(a));

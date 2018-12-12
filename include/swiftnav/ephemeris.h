@@ -86,13 +86,13 @@ extern "C" {
 /** Structure containing the GPS ephemeris for one satellite. */
 typedef struct {
   union {
-    double tgd_gps_s;    /**< GPS TGD  */
-    double tgd_qzss_s;   /**< QZSS TGD */
-    double tgd_bds_s[2]; /**< tgd_bds_s[0] = BDS TGD1,
-                              tgd_bds_s[1] = BDS TGD2 */
-    double tgd_gal_s[2]; /**< tgd_gal_s[0] = GAL E5a/E1 BGD,
-                              tgd_gal_s[1] = GAL E5b/E1 BGD*/
-  };
+    double gps_s;   /**< GPS TGD  */
+    double qzss_s;  /**< QZSS TGD */
+    float bds_s[2]; /**< tgd_bds_s[0] = BDS TGD1,
+                         tgd_bds_s[1] = BDS TGD2 */
+    float gal_s[2]; /**< tgd_gal_s[0] = GAL E5a/E1 BGD,
+                         tgd_gal_s[1] = GAL E5b/E1 BGD*/
+  } tgd;
   double crc;      /**< Amplitude of the cosine harmonic correction term
                         to the orbit radius [m] */
   double crs;      /**< Amplitude of the sine harmonic correction term
@@ -106,16 +106,16 @@ typedef struct {
   double cis;      /**< Amplitude of the sine harmonic correction term
                         to the angle of inclination [rad] */
   double dn;       /**< Mean motion difference from computed value
-                        [semi-circles/s] */
-  double m0;       /**< Mean anomaly at reference time [semi-circles] */
+                        [rad/s] */
+  double m0;       /**< Mean anomaly at reference time [rad] */
   double ecc;      /**< Eccentricity, dimensionless */
   double sqrta;    /**< Square root of the semi-major axis [sqrt(m)] */
   double omega0;   /**< Longitude of ascending node
-                        of orbit plane at weekly epoch [semi-circles] */
-  double omegadot; /**< Rate of right ascension [semi-circles/s] */
-  double w;        /**< Argument of perigee [semi-circles] */
-  double inc;      /**< Inclindation angle at reference time [semi-circles] */
-  double inc_dot;  /**< Rate of inclination angle [semi-circles/s] */
+                        of orbit plane at weekly epoch [rad] */
+  double omegadot; /**< Rate of right ascension [rad/s] */
+  double w;        /**< Argument of perigee [rad] */
+  double inc;      /**< Inclindation angle at reference time [rad] */
+  double inc_dot;  /**< Rate of inclination angle [rad/s] */
   double af0;      /**< Time offset of the sat clock [s] **/
   double af1;      /**< Drift of the sat clock [s/s] **/
   double af2;      /**< Acceleration of the sat clock [s/s^2] **/
