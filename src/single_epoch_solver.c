@@ -1189,6 +1189,11 @@ s8 calc_PVT(const u8 n_used,
         use_this = (CODE_GPS_L1CA == nav_meas[i].sid.code) ||
                    (sats_used <= N_STATE + RAIM_MAX_EXCLUSIONS);
         break;
+      case L1_ONLY:
+        /* use all the available 1575.42 MHz codes */
+        use_this = (CODE_GPS_L1CA == nav_meas[i].sid.code) ||
+                   (CODE_GAL_E1B == nav_meas[i].sid.code);
+        break;
       default:
         break;
     }

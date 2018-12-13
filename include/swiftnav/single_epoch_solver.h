@@ -49,7 +49,8 @@ extern const char *pvt_err_msg[7];
 enum processing_strategy_t {
   GPS_ONLY,
   ALL_CONSTELLATIONS,
-  GPS_L1CA_WHEN_POSSIBLE
+  GPS_L1CA_WHEN_POSSIBLE,
+  L1_ONLY
 };
 
 typedef struct __attribute__((packed)) {
