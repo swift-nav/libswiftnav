@@ -7,8 +7,8 @@
 # PROJECT SETUP
 # **********************************************************************
 
-# Use the current Travis Ubuntu 14.04 (Trusty) image in a Docker container.
-dist:  trusty
+# Travis does not yet fully support bionic, so we need to keep it at Xenial until fixed.
+dist:  xenial
 sudo:  false
 group: stable
 
@@ -17,17 +17,6 @@ language: c
 cache:
   apt: true
   directories:
-
-before_install:
-  # Travis' version of CMake is too old for some reason, and the only
-  # PPA for Ubuntu trusty disappeared sometime around 3 October 2016.
-  # So instead, we install a reasonably recent version from a PPA for
-  # Ubuntu precise, and we have to do it manually, because
-  # apt-add-repository can't use other system specifiers.
-  - echo 'deb http://ppa.launchpad.net/george-edison55/precise-backports/ubuntu precise main' | sudo tee /etc/apt/sources.list.d/cmake.list
-  - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 084ECFC5828AB726
-  - sudo apt-get update
-  - sudo apt-get install cmake
 
 # **********************************************************************
 # BUILD MATRIX:
@@ -45,21 +34,24 @@ matrix:
     # GCC 6 / Unit Test.
     - env: TEST_SUITE=unit
       compiler: gcc-6
-      addons: { apt: { packages: ["g++-6", "check"],
+      addons: { apt: { packages: ["cmake",
+                                  "gcc-6",
+                                  "g++-6",
+                                  "check"],
                        sources: ["ubuntu-toolchain-r-test"] } }
+
     # ------------------------------------------------------------------
     # Lint and check compilation builds with Clang
     # ------------------------------------------------------------------
-
     # CLANG / Lint
     - env: TEST_SUITE=lint
-      compiler: clang-3.8
-      addons: { apt: { packages: ["clang-3.8",
-                                  "clang-tidy-3.8",
-                                  "clang-format-3.8",
+      compiler: clang-6.0
+      addons: { apt: { packages: ["cmake",
+                                  "clang-6.0",
+                                  "clang-format-6.0",
+                                  "clang-tidy-6.0",
                                   "libc++-dev",
-                                  "libc++abi-dev"],
-                       sources: ["llvm-toolchain-trusty-3.8"] } }
+                                  "libc++abi-dev"] } }
 
 
 # **********************************************************************
