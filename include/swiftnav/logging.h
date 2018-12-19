@@ -43,25 +43,22 @@ extern "C" {
  *
  * \{ */
 
-typedef void (*PFN_log)(int level, 
-                        const char *msg, 
-                        ...)
-                        __attribute__((format(printf, 2, 3)));
+typedef void (*PFN_log)(int level, const char *msg, ...)
+    __attribute__((format(printf, 2, 3)));
 
-typedef void (*PFN_detailed_log)(int level, 
+typedef void (*PFN_detailed_log)(int level,
                                  const char *file_path,
                                  const int line_number,
-                                 const char *msg, 
-                                 ...)
-                                 __attribute__((format(printf, 4, 5)));
+                                 const char *msg,
+                                 ...) __attribute__((format(printf, 4, 5)));
 
-extern PFN_log          log_;
+extern PFN_log log_;
 extern PFN_detailed_log detailed_log_;
 
 /**
  * Provide custom implementation for the underlying log functions.
  */
-void logging_set_implementation(PFN_log impl_log, 
+void logging_set_implementation(PFN_log impl_log,
                                 PFN_detailed_log impl_detailed_log);
 
 const char *truncate_path_(char *path);
