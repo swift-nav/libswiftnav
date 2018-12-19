@@ -58,11 +58,11 @@ __attribute__((format(printf, 4, 5))) static void default_detailed_log_(
   fprintf(stderr, "\n");
 }
 
-PFN_log log_ = default_log_;
-PFN_detailed_log detailed_log_ = default_detailed_log_;
+pfn_log log_ = default_log_;
+pfn_detailed_log detailed_log_ = default_detailed_log_;
 
-void logging_set_implementation(PFN_log impl_log,
-                                PFN_detailed_log impl_detailed_log) {
+void logging_set_implementation(pfn_log impl_log,
+                                pfn_detailed_log impl_detailed_log) {
   assert(impl_log != NULL);
   assert(impl_detailed_log != NULL);
   log_ = impl_log;
