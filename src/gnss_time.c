@@ -450,8 +450,9 @@ gps_time_t glo2gps(const glo_time_t *glo_t, const utc_params_t *utc_params) {
     gps_t.tow += 1;
   }
 
-  /* convert to GPS time */
-  gps_t.tow -= d_utc;
+  /* use just the integer part of the time difference to convert GLO time to
+   * GPS time (see GLO ICD, Section 4.5)*/
+  gps_t.tow -= round(d_utc);
   normalize_gps_time(&gps_t);
   return gps_t;
 }

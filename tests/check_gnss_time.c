@@ -597,7 +597,7 @@ START_TEST(test_utc_params) {
     glo_time_t glo_time = gps2glo(&testcases[i].t, testcases[i].p);
     gps_time_t converted = glo2gps(&glo_time, testcases[i].p);
     fail_unless(
-        fabs(gpsdifftime(&testcases[i].t, &converted)) < 1e-5,
+        fabs(gpsdifftime(&testcases[i].t, &converted)) < 0.2,
         "utc_params_testcase %d gps2glo2gps failed for (%u/%u %u:%u:%.16f), "
         "expected (%d, %f), got (%d, %f)",
         i,
