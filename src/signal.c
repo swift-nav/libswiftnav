@@ -1438,4 +1438,58 @@ float code_to_phase_alignment(code_t code) {
   return code_table[code].phase_alignment_cycles;
 }
 
+/** Is this a GPS signal?
+ *
+ * \param   code  Code to check.
+ * \return  True if this is a GPS signal.
+ */
+bool is_gps(const code_t code) {
+  return (CONSTELLATION_GPS == code_table[code].constellation);
+}
+
+/** Is this an SBAS signal?
+ *
+ * \param   code  Code to check.
+ * \return  True if this is an SBAS signal.
+ */
+bool is_sbas(const code_t code) {
+  return (CONSTELLATION_SBAS == code_table[code].constellation);
+}
+
+/** Is this a GLO signal?
+ *
+ * \param   code  Code to check.
+ * \return  True if this is a GLO signal.
+ */
+bool is_glo(const code_t code) {
+  return (CONSTELLATION_GLO == code_table[code].constellation);
+}
+
+/** Is this a BDS2 signal?
+ *
+ * \param a ME GNSS signal identifier
+ * \return  True if this is a Beidou generation 2 signal.
+ */
+bool is_bds2(const code_t code) {
+  return (CONSTELLATION_BDS == code_table[code].constellation);
+}
+
+/** Is this a Galileo signal?
+ *
+ * \param   code  Code to check.
+ * \return  True if this is a Galileo signal.
+ */
+bool is_gal(const code_t code) {
+  return (CONSTELLATION_GAL == code_table[code].constellation);
+}
+
+/** Is this a QZSS signal?
+ *
+ * \param   code  Code to check.
+ * \return  True if this is a QZSS signal.
+ */
+bool is_qzss(const code_t code) {
+  return (CONSTELLATION_QZS == code_table[code].constellation);
+}
+
 /* \} */

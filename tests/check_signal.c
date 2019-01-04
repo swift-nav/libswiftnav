@@ -522,11 +522,12 @@ END_TEST
 
 START_TEST(test_sid_system_check) {
   for (u8 i = 0; i < CODE_COUNT; i++) {
-    bool gps = (i == CODE_GPS_L1CA) || (i == CODE_AUX_GPS) ||
-               (i == CODE_GPS_L2CM) || (i == CODE_GPS_L2CL) ||
-               (i == CODE_GPS_L2CX) || (i == CODE_GPS_L1P) ||
-               (i == CODE_GPS_L2P) || (i == CODE_GPS_L5I) ||
-               (i == CODE_GPS_L5Q) || (i == CODE_GPS_L5X);
+    bool gps =
+        (i == CODE_GPS_L1CA) || (i == CODE_AUX_GPS) || (i == CODE_GPS_L2CM) ||
+        (i == CODE_GPS_L2CL) || (i == CODE_GPS_L2CX) || (i == CODE_GPS_L1P) ||
+        (i == CODE_GPS_L2P) || (i == CODE_GPS_L5I) || (i == CODE_GPS_L5Q) ||
+        (i == CODE_GPS_L5X) || (i == CODE_GPS_L1CI) || (i == CODE_GPS_L1CQ) ||
+        (i == CODE_GPS_L1CX);
 
     fail_unless(gps == IS_GPS(construct_sid(i, GPS_FIRST_PRN)),
                 "is_gps_sid fail");

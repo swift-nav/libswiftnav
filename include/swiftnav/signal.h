@@ -329,79 +329,12 @@ static inline bool code_equiv(const code_t a, const code_t b) {
   }
 }
 
-/** Is this a GPS signal?
- *
- * \param   code  Code to check.
- * \return  True if this is a GPS signal.
- */
-static inline bool is_gps(const code_t code) {
-  return (CODE_GPS_L1CA == code) || (CODE_GPS_L2CM == code) ||
-         (CODE_GPS_L2CL == code) || (CODE_GPS_L2CX == code) ||
-         (CODE_GPS_L1P == code) || (CODE_GPS_L2P == code) ||
-         (CODE_GPS_L5I == code) || (CODE_GPS_L5Q == code) ||
-         (CODE_GPS_L5X == code) || (CODE_AUX_GPS == code);
-}
-
-/** Is this an SBAS signal?
- *
- * \param   code  Code to check.
- * \return  True if this is an SBAS signal.
- */
-static inline bool is_sbas(const code_t code) {
-  return (CODE_SBAS_L1CA == code) || (CODE_SBAS_L5I == code) ||
-         (CODE_SBAS_L5Q == code) || (CODE_SBAS_L5X == code) ||
-         (CODE_AUX_SBAS == code);
-}
-
-/** Is this a GLO signal?
- *
- * \param   code  Code to check.
- * \return  True if this is a GLO signal.
- */
-static inline bool is_glo(const code_t code) {
-  return (CODE_GLO_L1OF == code) || (CODE_GLO_L2OF == code) ||
-         (CODE_GLO_L1P == code) || (CODE_GLO_L2P == code);
-}
-
-/** Is this a BDS2 signal?
- *
- * \param a ME GNSS signal identifier
- * \return  True if this is a Beidou generation 2 signal.
- */
-static inline bool is_bds2(const code_t code) {
-  return (CODE_BDS2_B1 == code) || (CODE_BDS2_B2 == code) ||
-         (CODE_BDS3_B5I == code) || (CODE_BDS3_B5Q == code) ||
-         (CODE_BDS3_B5X == code) || (CODE_AUX_BDS == code);
-}
-
-/** Is this a Galileo signal?
- *
- * \param   code  Code to check.
- * \return  True if this is a Galileo signal.
- */
-static inline bool is_gal(const code_t code) {
-  return (CODE_GAL_E1B == code) || (CODE_GAL_E1C == code) ||
-         (CODE_GAL_E1X == code) || (CODE_GAL_E6B == code) ||
-         (CODE_GAL_E6C == code) || (CODE_GAL_E6X == code) ||
-         (CODE_GAL_E7I == code) || (CODE_GAL_E7Q == code) ||
-         (CODE_GAL_E7X == code) || (CODE_GAL_E8I == code) ||
-         (CODE_GAL_E8Q == code) || (CODE_GAL_E8X == code) ||
-         (CODE_GAL_E5I == code) || (CODE_GAL_E5Q == code) ||
-         (CODE_GAL_E5X == code) || (CODE_GAL_E5Q == code) ||
-         (CODE_AUX_GAL == code);
-}
-
-/** Is this a QZSS signal?
- *
- * \param   code  Code to check.
- * \return  True if this is a QZSS signal.
- */
-static inline bool is_qzss(const code_t code) {
-  return (CODE_QZS_L1CA == code) || (CODE_QZS_L2CM == code) ||
-         (CODE_QZS_L2CL == code) || (CODE_QZS_L2CX == code) ||
-         (CODE_QZS_L5I == code) || (CODE_QZS_L5Q == code) ||
-         (CODE_QZS_L5X == code) || (CODE_AUX_QZS == code);
-}
+bool is_gps(const code_t code);
+bool is_sbas(const code_t code);
+bool is_glo(const code_t code);
+bool is_bds2(const code_t code);
+bool is_gal(const code_t code);
+bool is_qzss(const code_t code);
 
 constellation_t sid_to_constellation(gnss_signal_t sid);
 
