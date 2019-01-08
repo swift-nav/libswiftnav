@@ -201,7 +201,7 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
   /* NOTE: toe should be in GPS time as well */
   double dt = gpsdifftime(t, &e->toe);
 
-  double tgd;
+  float tgd;
   if (get_tgd_correction(e, &e->sid, &tgd) != 0) {
     return -1;
   }
@@ -302,7 +302,7 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
   /* Seconds from clock data reference time (toc) */
   double dt = gpsdifftime(t, &k->toc);
 
-  double tgd;
+  float tgd;
   if (get_tgd_correction(e, &e->sid, &tgd) != 0) {
     return -1;
   }
@@ -993,8 +993,11 @@ void decode_ephemeris(const u32 frame_words[3][8],
   log_debug_sid(e->sid, "Health bits = 0x%02" PRIx8, e->health_bits);
 
   /* t_gd: Word 7, bits 17-24 */
-  k->tgd.gps_s =
+  k->tgd.gps_s[0] =
       (s8)(frame_words[0][7 - 3] >> (30 - 24) & 0xFF) * GPS_LNAV_EPH_SF_TGD;
+  /* L1-L5 TGD has to be filled up with C-NAV as combination of L1-L2 TGD and
+   * ISC_L5 */
+  k->tgd.gps_s[1] = 0.0;
 
   /* iodc: Word 3, bits 23-24 and word 8, bits 1-8 */
   k->iodc = ((frame_words[0][3 - 3] >> (30 - 24) & 0x3) << 8) |
@@ -1350,7 +1353,7 @@ u32 get_ephemeris_iod_or_iodcrc(const ephemeris_t *eph) {
  */
 s8 get_tgd_correction(const ephemeris_t *eph,
                       const gnss_signal_t *sid,
-                      double *tgd) {
+                      float *tgd) {
   double frequency, gamma;
   assert(sid_to_constellation(eph->sid) == sid_to_constellation(*sid));
   switch (sid_to_constellation(*sid)) {
@@ -1358,7 +1361,12 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       /* sat_clock_error = iono_free_clock_error - (f_1 / f)^2 * TGD. */
       frequency = sid_to_carr_freq(*sid);
       gamma = GPS_L1_HZ * GPS_L1_HZ / (frequency * frequency);
-      *tgd = eph->kepler.tgd.gps_s * gamma;
+      if (CODE_GPS_L5I == sid->code || CODE_GPS_L5Q == sid->code ||
+          CODE_GPS_L5X == sid->code) {
+        *tgd = eph->kepler.tgd.gps_s[1] * gamma;
+      } else {
+        *tgd = eph->kepler.tgd.gps_s[0] * gamma;
+      }
       return 0;
     case CONSTELLATION_BDS:
       if (CODE_BDS2_B1 == sid->code) {
@@ -1388,8 +1396,16 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       return -1;
     case CONSTELLATION_QZS:
       /* As per QZSS ICD draft 1.5, all signals use the same unscaled Tgd and
-       * inter-signal biases are applied separately */
-      *tgd = eph->kepler.tgd.qzss_s;
+       * inter-signal biases are applied separately - it was however decided
+       * to take a Galileo-like approach with per-frequency-combination tgds */
+      frequency = sid_to_carr_freq(*sid);
+      gamma = QZS_L1_HZ * QZS_L1_HZ / (frequency * frequency);
+      if (CODE_QZS_L5I == sid->code || CODE_QZS_L5Q == sid->code ||
+          CODE_QZS_L5X == sid->code) {
+        *tgd = eph->kepler.tgd.gps_s[1] * gamma;
+      } else {
+        *tgd = eph->kepler.tgd.gps_s[0] * gamma;
+      }
       return 0;
     case CONSTELLATION_GAL:
       /* Galileo ICD chapter 5.1.5 */
