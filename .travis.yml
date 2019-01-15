@@ -14,6 +14,10 @@ group: stable
 
 language: c
 
+# Travis doesn't need the submodule(s) for this repo
+git:
+  submodules: false
+
 cache:
   apt: true
   directories:

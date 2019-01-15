@@ -1,0 +1,2 @@
+# Required by check2junit
+lxml~=4.2.5

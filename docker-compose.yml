@@ -1,0 +1,9 @@
+version: '3.1'
+
+services:
+  libswiftnav:
+    build: .
+    image: libswiftnav
+    volumes:
+      - ${PWD}:/mnt/workspace:delegated
+      - ${HOME}/.ssh/id_rsa:/home/jenkins/.ssh/id_rsa
