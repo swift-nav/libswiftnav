@@ -83,6 +83,16 @@ extern "C" {
 /** IS-GPS-200H Table 20-III: 2^-43 */
 #define GPS_LNAV_EPH_SF_IDOT C_1_2P43
 
+typedef enum {
+  EPH_NULL,
+  EPH_INVALID,
+  EPH_WN_EQ_0,
+  EPH_FIT_INTERVAL_EQ_0,
+  EPH_UNHEALTHY,
+  EPH_TOO_OLD,
+  EPH_VALID
+} ephemeris_status_t;
+
 /** Structure containing the GPS ephemeris for one satellite. */
 typedef struct {
   union {
@@ -195,7 +205,9 @@ s8 calc_sat_doppler(const ephemeris_t *e,
                     const double ref_pos[3],
                     const double ref_vel[3],
                     double *doppler);
-
+ephemeris_status_t get_ephemeris_status_t(const ephemeris_t *e);
+ephemeris_status_t ephemeris_valid_detailed(const ephemeris_t *e,
+                                            const gps_time_t *t);
 u8 ephemeris_valid(const ephemeris_t *e, const gps_time_t *t);
 u8 ephemeris_params_valid(const gps_time_t *bgn,
                           const gps_time_t *end,
