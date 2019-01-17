@@ -36,6 +36,9 @@
  * based on modeling https://github.com/swift-nav/exafore_planning/issues/681 */
 #define GLO_MAX_STEP_NUM 30
 
+#define EPHEMERIS_INVALID_LOG_MESSAGE \
+  "%s ephemeris (v:%d, fi:%d, [%d, %f]), [%d, %f]"
+
 u32 decode_fit_interval(u8 fit_interval_flag, u16 iodc);
 
 /**
@@ -522,16 +525,8 @@ s8 calc_sat_state(const ephemeris_t *e,
   assert(clock_rate_err != NULL);
   assert(e != NULL);
 
-  if (!ephemeris_valid(e, t)) {
-    log_error_sid(e->sid,
-                  "Using invalid or too old ephemeris in calc_sat_state"
-                  " (v:%d, fi:%d, [%d, %f]), [%d, %f]",
-                  (int)e->valid,
-                  (int)e->fit_interval,
-                  (int)e->toe.wn,
-                  e->toe.tow,
-                  (int)t->wn,
-                  t->tow);
+  const ephemeris_status_t eph_status = ephemeris_valid_detailed(e, t);
+  if (eph_status != EPH_VALID) {
     return -1;
   }
 
@@ -751,30 +746,41 @@ static void fake_gps_wns(gps_time_t *t1, gps_time_t *t2) {
   assert(gpsdifftime(t1, t2) <= (WEEK_SECS / 2));
 }
 
-/** Is this ephemeris usable?
+/** Gets the status of an ephemeris - is the ephemeris invalid, unhealthy, or
+ * has some other condition which makes it unusable?
+ *
+ * \param e Ephemeris struct
+ * \return ephemeris_status_t The status of the ephemeris e.
+ */
+ephemeris_status_t get_ephemeris_status_t(const ephemeris_t *e) {
+  if (e == NULL) {
+    return EPH_NULL;
+  }
+  if (!e->valid) {
+    return EPH_INVALID;
+  }
+  if (e->toe.wn == 0) {
+    return EPH_WN_EQ_0; /* ephemeris did not get timestamped when it was
+                           received */
+  }
+  if (0 == e->fit_interval) {
+    return EPH_FIT_INTERVAL_EQ_0;
+  }
+  if (!ephemeris_healthy(e, e->sid.code)) {
+    return EPH_UNHEALTHY;
+  }
+  return EPH_VALID;
+}
+
+/** Used internally by other ephemeris valid functions. Given a valid ephemeris,
+ * is this ephemeris valid at gps time t?
  *
  * \param e Ephemeris struct
  * \param t The current GPS time. This is used to determine the ephemeris age.
  * \return 1 if the ephemeris is valid and not too old.
  *         0 otherwise.
  */
-u8 ephemeris_valid(const ephemeris_t *e, const gps_time_t *t) {
-  if (e == NULL || t == NULL) {
-    return 0;
-  }
-  if (!e->valid) {
-    return 0;
-  }
-  if (e->toe.wn == 0) {
-    return 0; /* ephemeris did not get timestamped when it was received */
-  }
-  if (0 == e->fit_interval) {
-    return 0;
-  }
-  if (!ephemeris_healthy(e, e->sid.code)) {
-    return 0;
-  }
-
+static u8 ephemeris_valid_at_time(const ephemeris_t *e, const gps_time_t *t) {
   gps_time_t toe = e->toe;
   gps_time_t tm = *t;
   fake_gps_wns(&toe, &tm);
@@ -804,6 +810,116 @@ u8 ephemeris_valid(const ephemeris_t *e, const gps_time_t *t) {
   normalize_gps_time(&end);
 
   return ephemeris_params_valid(&bgn, &end, toc, &tm);
+}
+
+/** Is this ephemeris usable?
+ *
+ * \param e Ephemeris struct
+ * \param t The current GPS time. This is used to determine the ephemeris age.
+ * \return 1 if the ephemeris is valid and not too old.
+ *         0 otherwise.
+ */
+u8 ephemeris_valid(const ephemeris_t *e, const gps_time_t *t) {
+  if (t == NULL) {
+    return 0;
+  }
+
+  const ephemeris_status_t eph_status = get_ephemeris_status_t(e);
+
+  if (eph_status != EPH_VALID) {
+    return 0;
+  }
+
+  return ephemeris_valid_at_time(e, t);
+}
+
+/** Is this ephemeris usable? Similar to `ephemeris_valid()`, but returns an
+ * `ephemeris_status_t` as well as logs if there's an unexpected ephemeris
+ * status.
+ *
+ * \param e Ephemeris struct
+ * \param t The current GPS time. This is used to determine the ephemeris age.
+ * \return ephemeris_status_t The status of the ephemeris e at gps_time t.
+ */
+ephemeris_status_t ephemeris_valid_detailed(const ephemeris_t *e,
+                                            const gps_time_t *t) {
+  if (t == NULL) {
+    assert(false);
+  }
+
+  ephemeris_status_t eph_status = get_ephemeris_status_t(e);
+
+  switch (eph_status) {
+    case EPH_NULL:
+      log_error_sid(e->sid,
+                    EPHEMERIS_INVALID_LOG_MESSAGE,
+                    "null",
+                    (int)e->valid,
+                    (int)e->fit_interval,
+                    (int)e->toe.wn,
+                    e->toe.tow,
+                    (int)t->wn,
+                    t->tow);
+      break;
+    case EPH_INVALID:
+      log_error_sid(e->sid,
+                    EPHEMERIS_INVALID_LOG_MESSAGE,
+                    "invalid",
+                    (int)e->valid,
+                    (int)e->fit_interval,
+                    (int)e->toe.wn,
+                    e->toe.tow,
+                    (int)t->wn,
+                    t->tow);
+      break;
+    case EPH_WN_EQ_0:
+      log_error_sid(e->sid,
+                    EPHEMERIS_INVALID_LOG_MESSAGE,
+                    "wn == 0",
+                    (int)e->valid,
+                    (int)e->fit_interval,
+                    (int)e->toe.wn,
+                    e->toe.tow,
+                    (int)t->wn,
+                    t->tow);
+      break;
+    case EPH_FIT_INTERVAL_EQ_0:
+      log_error_sid(e->sid,
+                    EPHEMERIS_INVALID_LOG_MESSAGE,
+                    "fit_interval == 0",
+                    (int)e->valid,
+                    (int)e->fit_interval,
+                    (int)e->toe.wn,
+                    e->toe.tow,
+                    (int)t->wn,
+                    t->tow);
+      break;
+    case EPH_UNHEALTHY:
+      log_info_sid(e->sid,
+                   EPHEMERIS_INVALID_LOG_MESSAGE,
+                   "unhealthy",
+                   (int)e->valid,
+                   (int)e->fit_interval,
+                   (int)e->toe.wn,
+                   e->toe.tow,
+                   (int)t->wn,
+                   t->tow);
+      break;
+    case EPH_TOO_OLD:
+    case EPH_VALID:
+    default:
+      break;
+  }
+
+  if (eph_status != EPH_VALID) {
+    return eph_status;
+  }
+
+  if (0 == ephemeris_valid_at_time(e, t)) {
+    eph_status = EPH_TOO_OLD;
+  }
+
+  return eph_status;
 }
 
 /** Lean version of ephemeris_valid
