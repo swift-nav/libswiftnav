@@ -177,18 +177,6 @@ extern "C" {
 /** GPS L5 code chipping rate in Hz. */
 #define GPS_L5_CHIPPING_RATE 10.23e6
 
-/** GPS L1 C/A carrier freq / code chipping rate
- * \note this is GPS_L1_HZ / GPS_CA_CHIPPING_RATE */
-#define GPS_L1CA_CARR_TO_CODE (GPS_L1_HZ / GPS_CA_CHIPPING_RATE)
-
-/** GPS L2C carrier freq / code chipping rate
- * \note this is GPS_L2_HZ / GPS_CA_CHIPPING_RATE */
-#define GPS_L2C_CARR_TO_CODE (GPS_L2_HZ / GPS_CA_CHIPPING_RATE)
-
-/** GPS L5 carrier freq / code chipping rate
- * \note this is GPS_L5_HZ / GPS_L5_CHIPPING_RATE */
-#define GPS_L5_CARR_TO_CODE (GPS_L5_HZ / GPS_L5_CHIPPING_RATE)
-
 /** GPS CM code chipping rate in Hz. */
 #define GPS_CM_CHIPPING_RATE .5115e6
 
@@ -302,16 +290,6 @@ extern "C" {
 /** GLONASS CA chips number */
 #define GLO_CA_CHIPS_NUM 511
 
-/** GLO L1 carrier freq / code chipping rate
- * \note this is GLO_L1_HZ / GLO_CHIPPING_RATE */
-#define GLO_L1_CARR_TO_CODE(fcn) \
-  ((GLO_L1_HZ + (fcn)*GLO_L1_DELTA_HZ) / GLO_CA_CHIPPING_RATE)
-
-/** GLO L2 carrier freq / code chipping rate
- * \note this is GLO_L2_HZ / GLO_CHIPPING_RATE */
-#define GLO_L2_CARR_TO_CODE(fcn) \
-  ((GLO_L2_HZ + (fcn)*GLO_L2_DELTA_HZ) / GLO_CA_CHIPPING_RATE)
-
 /** GLO L1 maximum Doppler value [Hz],
  * refer to https://swiftnav.hackpad.com/Glonass-Dopplers-1ojKWwf8UN4 */
 #define GLO_L1_DOPPLER_MAX_HZ (+4820.f)
@@ -342,12 +320,6 @@ extern "C" {
 
 /** SBAS L5 chip rate ??? */
 #define SBAS_L5_CHIPPING_RATE 10.23e6
-
-/** SBAS L1 carrier to code ratio */
-#define SBAS_L1CA_CARR_TO_CODE (SBAS_L1_HZ / SBAS_L1CA_CHIPPING_RATE)
-
-/** SBAS L5 carrier to code ratio */
-#define SBAS_L5_CARR_TO_CODE (SBAS_L5_HZ / SBAS_L5_CHIPPING_RATE)
 
 /** Number of chips in SBAS L1 signal */
 #define SBAS_L1CA_CHIPS_NUM 1023
@@ -423,24 +395,6 @@ extern "C" {
 
 /** Beidou3 B2a chip rate */
 #define BDS3_B5_CHIPPING_RATE (10 * 1.023e6)
-
-/** Beidou2 B11 carrier to code ratio */
-#define BDS2_B11_CARR_TO_CODE (BDS2_B11_HZ / BDS2_B11_CHIPPING_RATE)
-
-/** Beidou2 B2 carrier to code ratio */
-#define BDS2_B2_CARR_TO_CODE (BDS2_B2_HZ / BDS2_B2_CHIPPING_RATE)
-
-/** Beidou3 B1C carrier to code ratio */
-#define BDS3_B1C_CARR_TO_CODE (BDS3_B1C_HZ / BDS3_B1C_CHIPPING_RATE)
-
-/** Beidou3 B3 carrier to code ratio */
-#define BDS3_B3_CARR_TO_CODE (BDS3_B3_HZ / BDS3_B3_CHIPPING_RATE)
-
-/** Beidou3 B2b carrier to code ratio */
-#define BDS3_B7_CARR_TO_CODE (BDS3_B7_HZ / BDS3_B7_CHIPPING_RATE)
-
-/** Beidou3 B2a carrier to code ratio */
-#define BDS3_B5_CARR_TO_CODE (BDS3_B5_HZ / BDS3_B5_CHIPPING_RATE)
 
 /** Number of chips in Beidou2 B11 (data) */
 #define BDS2_B11_CHIPS_NUM 2046
@@ -562,18 +516,6 @@ extern "C" {
 /** Galileo E5a chip rate (data and pilot) */
 #define GAL_E5_CHIPPING_RATE (10 * 1.023e6)
 
-/** Galileo E1 carrier to code ratio */
-#define GAL_E1_CARR_TO_CODE (GAL_E1_HZ / GAL_E1_CHIPPING_RATE)
-
-/** Galileo E6 carrier to code ratio */
-#define GAL_E6_CARR_TO_CODE (GAL_E6_HZ / GAL_E6_CHIPPING_RATE)
-
-/** Galileo E5b carrier to code ratio */
-#define GAL_E7_CARR_TO_CODE (GAL_E7_HZ / GAL_E7_CHIPPING_RATE)
-
-/** Galileo E5a carrier to code ratio */
-#define GAL_E5_CARR_TO_CODE (GAL_E5_HZ / GAL_E5_CHIPPING_RATE)
-
 /** Number of chips in Galileo E1B (data) */
 #define GAL_E1B_CHIPS_NUM (4 * 1023)
 
@@ -658,9 +600,6 @@ extern "C" {
 /** QZSS L1C/A chip rate */
 #define QZS_L1CA_CHIPPING_RATE (1 * 1.023e6)
 
-/** QZSS L1C/A carrier to code ratio */
-#define QZS_L1CA_CARR_TO_CODE (QZS_L1_HZ / QZS_L1CA_CHIPPING_RATE)
-
 /** Number of chips in QZSS L1C/A signal */
 #define QZS_L1CA_CHIPS_NUM (1023)
 
@@ -669,9 +608,6 @@ extern "C" {
 
 /** QZSS L2 CL chips number */
 #define QZS_L2CL_CHIPS_NUM (767250 + 767250)
-
-/** QZSS L2C carrier to code ratio */
-#define QZS_L2C_CARR_TO_CODE (QZS_L2_HZ / QZS_L1CA_CHIPPING_RATE)
 
 /** QZSS L1 C/A PRN period in ms */
 #define QZS_L1CA_PRN_PERIOD_MS 1

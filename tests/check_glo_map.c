@@ -29,9 +29,8 @@ START_TEST(test_glo_map) {
   glo_map_init(glo_map_lock, glo_map_unlock);
 
   for (u16 i = 1; i <= NUM_SATS_GLO; i++) {
-    me_gnss_signal_t glo_mesid = construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL);
     gnss_signal_t glo_sid = construct_sid(CODE_GLO_L1OF, i);
-    glo_map_set_slot_id(glo_mesid, i);
+    glo_map_set_slot_id(FCN_TEST_VAL, /*glo_slot_id=*/i);
 
     fail_if(glo_map_valid(glo_sid) == false, "GLO mapping should be valid");
 
@@ -57,8 +56,7 @@ START_TEST(test_glo_map) {
           si_num,
           slot_id1,
           slot_id2);
-  glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
-                      SLOT_ID_TEST_VAL_1);
+  glo_map_set_slot_id(FCN_TEST_VAL, SLOT_ID_TEST_VAL_1);
   si_num = glo_map_get_slot_id(FCN_TEST_VAL, &slot_id1, &slot_id2);
   fail_if(si_num != 1 || slot_id1 != SLOT_ID_TEST_VAL_1 || slot_id2 != 0,
           "Incorrect number of slot ID or slot ID\n"
@@ -69,10 +67,8 @@ START_TEST(test_glo_map) {
           slot_id1,
           SLOT_ID_TEST_VAL_1,
           slot_id2);
-  glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
-                      SLOT_ID_TEST_VAL_1);
-  glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
-                      SLOT_ID_TEST_VAL_2);
+  glo_map_set_slot_id(FCN_TEST_VAL, SLOT_ID_TEST_VAL_1);
+  glo_map_set_slot_id(FCN_TEST_VAL, SLOT_ID_TEST_VAL_2);
   si_num = glo_map_get_slot_id(FCN_TEST_VAL, &slot_id1, &slot_id2);
   fail_if(si_num != 2 || slot_id1 != SLOT_ID_TEST_VAL_1 ||
               slot_id2 != SLOT_ID_TEST_VAL_2,
@@ -85,12 +81,9 @@ START_TEST(test_glo_map) {
           SLOT_ID_TEST_VAL_1,
           slot_id2,
           SLOT_ID_TEST_VAL_2);
-  glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
-                      SLOT_ID_TEST_VAL_1);
-  glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
-                      SLOT_ID_TEST_VAL_2);
-  glo_map_set_slot_id(construct_mesid(CODE_GLO_L1OF, FCN_TEST_VAL),
-                      SLOT_ID_TEST_VAL_2 + 1);
+  glo_map_set_slot_id(FCN_TEST_VAL, SLOT_ID_TEST_VAL_1);
+  glo_map_set_slot_id(FCN_TEST_VAL, SLOT_ID_TEST_VAL_2);
+  glo_map_set_slot_id(FCN_TEST_VAL, SLOT_ID_TEST_VAL_2 + 1);
   si_num = glo_map_get_slot_id(FCN_TEST_VAL, &slot_id1, &slot_id2);
   fail_if(si_num != 2 || slot_id1 != SLOT_ID_TEST_VAL_1 ||
               slot_id2 != SLOT_ID_TEST_VAL_2,

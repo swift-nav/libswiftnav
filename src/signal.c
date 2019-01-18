@@ -24,7 +24,7 @@
 typedef struct {
   constellation_t constellation;
   u16 sat_count;
-  u16 me_sig_count;
+  u16 sig_count;
   u16 sat_start;
   const char str[12];
   double carr_freq;
@@ -32,7 +32,6 @@ typedef struct {
   double chip_rate;
   bool requires_direct_acq;
   u16 prn_period_ms;
-  double carr_to_code;
   float sv_doppler_max;
   float phase_alignment_cycles;
   bool requires_data_decoder;
@@ -54,7 +53,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_CA_CHIPPING_RATE,
                        true,
                        GPS_L1CA_PRN_PERIOD_MS,
-                       GPS_L1CA_CARR_TO_CODE,
                        GPS_L1_DOPPLER_MAX_HZ,
                        0.f, /* reference signal (see L1C in [1]) */
                        true},
@@ -68,7 +66,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GPS_CA_CHIPPING_RATE,
                       false,
                       GPS_L1CA_PRN_PERIOD_MS,
-                      GPS_L1CA_CARR_TO_CODE,
                       GPS_L1_DOPPLER_MAX_HZ,
                       0.f, /* assuming CODE_GPS_L1CA */
                       false},
@@ -82,7 +79,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_CA_CHIPPING_RATE,
                        false,
                        GPS_L1C_PRN_PERIOD_MS,
-                       GPS_L1CA_CARR_TO_CODE,
                        GPS_L1_DOPPLER_MAX_HZ,
                        0.25f, /* see L1S in [1] */
                        false},
@@ -95,7 +91,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        false,
-                       0,
                        0,
                        GPS_L1_DOPPLER_MAX_HZ,
                        0.25f, /* see L1L in [1] */
@@ -110,7 +105,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        false,
                        0,
-                       0,
                        GPS_L1_DOPPLER_MAX_HZ,
                        0.25f, /* see L1X in [1] */
                        false},
@@ -124,7 +118,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_CA_CHIPPING_RATE,
                        false,
                        GPS_L2CM_PRN_PERIOD_MS,
-                       GPS_L2C_CARR_TO_CODE,
                        GPS_L2_DOPPLER_MAX_HZ,
                        -0.25f, /* see L2S in [1] */
                        true},
@@ -138,7 +131,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_CA_CHIPPING_RATE,
                        false,
                        GPS_L2CL_PRN_PERIOD_MS,
-                       GPS_L2C_CARR_TO_CODE,
                        GPS_L2_DOPPLER_MAX_HZ,
                        -0.25f, /* see L2L in [1] */
                        false},
@@ -151,7 +143,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        false,
-                       0,
                        0,
                        GPS_L2_DOPPLER_MAX_HZ,
                        -0.25f, /* see L2X [1] */
@@ -166,7 +157,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GPS_L5_CHIPPING_RATE,
                       false,
                       GPS_L5_PRN_PERIOD_MS,
-                      GPS_L5_CARR_TO_CODE,
                       GPS_L5_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L5I in [1]) */
                       false},
@@ -179,7 +169,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       GPS_L5_DOPPLER_MAX_HZ,
                       -0.25f, /* see L5Q in [1] */
@@ -194,7 +183,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       GPS_L5_DOPPLER_MAX_HZ,
                       0.f, /* must be aligned to CODE_GPS_L5I (see L5X in [1])*/
                       false},
@@ -208,7 +196,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       GPS_L1_DOPPLER_MAX_HZ,
                       0.25f, /* see L1P in [1] */
                       false},
@@ -221,7 +208,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       GPS_L2_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L2P in [1]) */
@@ -238,7 +224,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         SBAS_L1CA_CHIPPING_RATE,
                         true,
                         SBAS_L1CA_PRN_PERIOD_MS,
-                        SBAS_L1CA_CARR_TO_CODE,
                         SBAS_L1_DOPPLER_MAX_HZ,
                         0.f, /* reference signal */
                         true},
@@ -252,7 +237,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        SBAS_L1CA_CHIPPING_RATE,
                        false,
                        SBAS_L1CA_PRN_PERIOD_MS,
-                       SBAS_L1CA_CARR_TO_CODE,
                        SBAS_L1_DOPPLER_MAX_HZ,
                        0.f, /* not used */
                        false},
@@ -266,7 +250,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        SBAS_L5_CHIPPING_RATE,
                        false,
                        SBAS_L5_PRN_PERIOD_MS,
-                       SBAS_L5_CARR_TO_CODE,
                        SBAS_L5_DOPPLER_MAX_HZ,
                        0.f, /* reference signal */
                        true},
@@ -280,7 +263,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        SBAS_L5_CHIPPING_RATE,
                        false,
                        SBAS_L5_PRN_PERIOD_MS,
-                       SBAS_L5_CARR_TO_CODE,
                        SBAS_L5_DOPPLER_MAX_HZ,
                        -0.25f, /* not used */
                        false},
@@ -294,7 +276,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        SBAS_L5_CHIPPING_RATE,
                        false,
                        SBAS_L5_PRN_PERIOD_MS,
-                       SBAS_L5_CARR_TO_CODE,
                        SBAS_L5_DOPPLER_MAX_HZ,
                        0.f, /* must be aligned with CODE_SBAS_L5I */
                        false},
@@ -310,7 +291,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GLO_CA_CHIPPING_RATE,
                        true,
                        GLO_PRN_PERIOD_MS,
-                       GLO_L1_CARR_TO_CODE(0),
                        GLO_L1_DOPPLER_MAX_HZ,
                        0.f, /* reference signal (see L1C in [1]) */
                        true},
@@ -324,7 +304,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GLO_CA_CHIPPING_RATE,
                        false,
                        GLO_PRN_PERIOD_MS,
-                       GLO_L2_CARR_TO_CODE(0),
                        GLO_L2_DOPPLER_MAX_HZ,
                        0.f, /* reference signal (see L2C in [1]) */
                        true},
@@ -338,7 +317,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       GLO_L1_DOPPLER_MAX_HZ,
                       0.25f, /* see L1P in [1] */
                       false},
@@ -351,7 +329,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       GLO_L2_DOPPLER_MAX_HZ,
                       0.25f, /* see L2P in [1] */
@@ -368,7 +345,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E1_CHIPPING_RATE,
                       true,
                       GAL_E1B_PRN_PERIOD_MS,
-                      GAL_E1_CARR_TO_CODE,
                       GAL_E1_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L1B in [1]) */
                       true},
@@ -381,7 +357,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       GAL_E1_DOPPLER_MAX_HZ,
                       0.5f, /* see L1C in [1] */
@@ -396,7 +371,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       GAL_E1_DOPPLER_MAX_HZ,
                       0.f, /* must be aligned to CODE_GAL_E1B (see L1X in [1])*/
                       false},
@@ -410,7 +384,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E1_CHIPPING_RATE,
                       false,
                       GAL_E1B_PRN_PERIOD_MS,
-                      GAL_E1_CARR_TO_CODE,
                       GAL_E1_DOPPLER_MAX_HZ,
                       0.f, /* assuming CODE_GAL_E1B */
                       false},
@@ -424,7 +397,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E6_CHIPPING_RATE,
                       false,
                       GAL_E6B_PRN_PERIOD_MS,
-                      GAL_E6_CARR_TO_CODE,
                       GAL_E6_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L6B in [1]) */
                       true},
@@ -437,7 +409,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       GAL_E6_DOPPLER_MAX_HZ,
                       -0.5f, /* see L6C in [1] */
@@ -452,7 +423,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       GAL_E6_DOPPLER_MAX_HZ,
                       0.f, /* must be aligned to CODE_GAL_E6B (see L6X in [1])*/
                       false},
@@ -466,7 +436,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E7_CHIPPING_RATE,
                       false,
                       GAL_E7I_PRN_PERIOD_MS,
-                      GAL_E7_CARR_TO_CODE,
                       GAL_E7_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L7I in [1]) */
                       true},
@@ -479,7 +448,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       GAL_E7_DOPPLER_MAX_HZ,
                       -0.25f, /* see L7Q in [1] */
@@ -494,7 +462,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       GAL_E7_DOPPLER_MAX_HZ,
                       0.f, /* must be aligned to CODE_GAL_E7I (see L7X in [1])*/
                       false},
@@ -507,7 +474,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       GAL_E8_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L8I in [1]) */
@@ -522,7 +488,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       GAL_E8_DOPPLER_MAX_HZ,
                       -0.25f, /* see L8Q in [1] */
                       false},
@@ -535,7 +500,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       GAL_E8_DOPPLER_MAX_HZ,
                       0.f, /* must be aligned to CODE_GAL_E8Q (see L8X in [1])*/
@@ -550,7 +514,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       GAL_E5_CHIPPING_RATE,
                       false,
                       GAL_E5I_PRN_PERIOD_MS,
-                      GAL_E5_CARR_TO_CODE,
                       GAL_E5_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L5I in [1]) */
                       true},
@@ -564,7 +527,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       GAL_E5_DOPPLER_MAX_HZ,
                       -0.25f, /* see L5Q in [1] */
                       false},
@@ -577,7 +539,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       GAL_E5_DOPPLER_MAX_HZ,
                       0.f, /* must be aligned to CODE_GAL_E5I (see L5X in [1])*/
@@ -594,7 +555,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       BDS2_B11_CHIPPING_RATE,
                       true,
                       BDS2_B11_PRN_PERIOD_MS,
-                      BDS2_B11_CARR_TO_CODE,
                       BDS2_B11_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L2I in [1]) */
                       true},
@@ -608,7 +568,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       BDS2_B11_CHIPPING_RATE,
                       false,
                       BDS2_B11_PRN_PERIOD_MS,
-                      BDS2_B11_CARR_TO_CODE,
                       BDS2_B11_DOPPLER_MAX_HZ,
                       0.f, /* assuming CODE_BDS2_B1 */
                       false},
@@ -622,7 +581,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       BDS2_B2_CHIPPING_RATE,
                       false,
                       BDS2_B2_PRN_PERIOD_MS,
-                      BDS2_B2_CARR_TO_CODE,
                       BDS2_B2_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L7I in [1]) */
                       true},
@@ -636,7 +594,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         BDS3_B1C_CHIPPING_RATE,
                         false,
                         BDS3_B1C_PRN_PERIOD_MS,
-                        BDS3_B1C_CARR_TO_CODE,
                         BDS3_B1C_DOPPLER_MAX_HZ,
                         0.f, /* not used (interoperable with SBAS) */
                         false},
@@ -649,7 +606,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         0,
                         0,
                         false,
-                        0,
                         0,
                         BDS3_B1C_DOPPLER_MAX_HZ,
                         0.f, /* not used (interoperable with SBAS) */
@@ -664,7 +620,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         0,
                         false,
                         0,
-                        0,
                         BDS3_B1C_DOPPLER_MAX_HZ,
                         0.f, /* not used (interoperable with SBAS) */
                         false},
@@ -678,7 +633,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        BDS3_B3_CHIPPING_RATE,
                        false,
                        BDS3_B3_PRN_PERIOD_MS,
-                       BDS3_B3_CARR_TO_CODE,
                        BDS3_B3_DOPPLER_MAX_HZ,
                        0.f, /* reference signal (see L6I in [1]) */
                        false},
@@ -691,7 +645,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        false,
-                       0,
                        0,
                        BDS3_B3_DOPPLER_MAX_HZ,
                        -0.25f, /* see L6Q in [1] */
@@ -706,7 +659,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        false,
                        0,
-                       0,
                        BDS3_B3_DOPPLER_MAX_HZ,
                        0.f, /*must be aligned to CODE_BDS3_B3I (L6X in [1]) */
                        false},
@@ -720,7 +672,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        BDS3_B7_CHIPPING_RATE,
                        false,
                        BDS3_B7_PRN_PERIOD_MS,
-                       BDS3_B7_CARR_TO_CODE,
                        BDS3_B7_DOPPLER_MAX_HZ,
                        0.f, /* reference signal (see L7I in [1]) */
                        false},
@@ -733,7 +684,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        false,
-                       0,
                        0,
                        BDS3_B7_DOPPLER_MAX_HZ,
                        -0.25f, /* see L7Q in [1] */
@@ -748,7 +698,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        BDS3_B7_CHIPPING_RATE,
                        false,
                        BDS3_B7_PRN_PERIOD_MS,
-                       BDS3_B7_CARR_TO_CODE,
                        BDS3_B7_DOPPLER_MAX_HZ,
                        0.f, /* must be aligned to CODE_BDS3_B7I (L7X in [1]) */
                        false},
@@ -762,7 +711,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        BDS3_B5_CHIPPING_RATE,
                        false,
                        BDS3_B5_PRN_PERIOD_MS,
-                       BDS3_B5_CARR_TO_CODE,
                        BDS3_B5_DOPPLER_MAX_HZ,
                        0.f, /* not used (interoperable with SBAS) */
                        false},
@@ -776,7 +724,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        false,
                        0,
-                       0,
                        BDS3_B5_DOPPLER_MAX_HZ,
                        0.f, /* not used (interoperable with SBAS) */
                        false},
@@ -789,7 +736,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        false,
-                       0,
                        0,
                        BDS3_B5_DOPPLER_MAX_HZ,
                        0.f, /* not used (interoperable with SBAS) */
@@ -806,7 +752,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        QZS_L1CA_CHIPPING_RATE,
                        true,
                        QZS_L1CA_PRN_PERIOD_MS,
-                       QZS_L1CA_CARR_TO_CODE,
                        QZS_L1_DOPPLER_MAX_HZ,
                        0.f, /* reference signal (see L1C in [1]) */
                        true},
@@ -820,7 +765,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       QZS_L1CA_CHIPPING_RATE,
                       false,
                       QZS_L1CA_PRN_PERIOD_MS,
-                      QZS_L1CA_CARR_TO_CODE,
                       QZS_L1_DOPPLER_MAX_HZ,
                       0.f, /* assuming CODE_QZS_L1CA */
                       false},
@@ -834,7 +778,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_CA_CHIPPING_RATE,
                        false,
                        GPS_L1C_PRN_PERIOD_MS,
-                       GPS_L1CA_CARR_TO_CODE,
                        GPS_L1_DOPPLER_MAX_HZ,
                        0.f, /* see L1S in [1] */
                        false},
@@ -847,7 +790,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        false,
-                       0,
                        0,
                        GPS_L1_DOPPLER_MAX_HZ,
                        0.25f, /* see L1L in [1] */
@@ -862,7 +804,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        false,
                        0,
-                       0,
                        GPS_L1_DOPPLER_MAX_HZ,
                        0.25f, /* see L1X in [1] */
                        false},
@@ -876,7 +817,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        QZS_L1CA_CHIPPING_RATE,
                        false,
                        GPS_L2CM_PRN_PERIOD_MS,
-                       QZS_L2C_CARR_TO_CODE,
                        QZS_L2_DOPPLER_MAX_HZ,
                        0.f, /* reference signal (see L2S in [1]) */
                        true},
@@ -890,7 +830,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        QZS_L1CA_CHIPPING_RATE,
                        false,
                        GPS_L2CL_PRN_PERIOD_MS,
-                       QZS_L2C_CARR_TO_CODE,
                        QZS_L2_DOPPLER_MAX_HZ,
                        0.f, /* see L2L in [1] */
                        false},
@@ -903,7 +842,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        0,
                        false,
-                       0,
                        0,
                        QZS_L2_DOPPLER_MAX_HZ,
                        0.f, /* see L2X in [1] */
@@ -918,7 +856,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       QZS_L5_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L5I in [1]) */
                       false},
@@ -932,7 +869,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      0,
                       QZS_L5_DOPPLER_MAX_HZ,
                       -0.25f, /* see L5Q in [1] */
                       false},
@@ -945,7 +881,6 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       0,
                       false,
-                      0,
                       0,
                       QZS_L5_DOPPLER_MAX_HZ,
                       0.f, /* must be aligned to CODE_QZS_L5I (see L5X in [1])*/
@@ -981,39 +916,6 @@ static const char *unknown_str = "?";
  */
 gnss_signal_t construct_sid(code_t code, u16 sat) {
   gnss_signal_t sid = {.code = code, .sat = sat};
-  return sid;
-}
-
-/** Construct a me_gnss_signal_t.
- *
- * \note This function does not check the validity of the resulting signal.
- *
- * \param code  Code to use.
- * \param sat   Satellite identifier to use.
- *
- * \return me_gnss_signal_t corresponding to the specified arguments.
- */
-me_gnss_signal_t construct_mesid(code_t code, u16 sat) {
-  me_gnss_signal_t mesid = {.code = code, .sat = sat};
-  return mesid;
-}
-
-/** Construct a gnss_signal_t from input me_gnss_signal_t.
- *
- * \param mesid        ME signal to use.
- * \param glo_slot_id  GLO orbital slot.
- *
- * \return gnss_signal_t corresponding to the specified argument.
- */
-gnss_signal_t mesid2sid(const me_gnss_signal_t mesid, u16 glo_slot_id) {
-  assert(mesid_valid(mesid));
-  gnss_signal_t sid;
-  if (IS_GLO(mesid)) {
-    assert(glo_slot_id_is_valid(glo_slot_id));
-    sid = construct_sid(mesid.code, glo_slot_id);
-  } else {
-    sid = construct_sid(mesid.code, mesid.sat);
-  }
   return sid;
 }
 
@@ -1085,21 +987,6 @@ int sid_to_string(char *s, int n, const gnss_signal_t sid) {
       s, SID_SUFFIX_LENGTH, /* suffix = */ " ", sid.sat, sid.code);
 }
 
-/** Print a string representation of a me_gnss_signal_t.
- *
- * \param s     Buffer of capacity n to which the string will be written.
- * \param n     Capacity of buffer s.
- * \param mesid me_gnss_signal_t to use.
- *
- * \return Number of characters written to s, excluding the terminating null.
- */
-int mesid_to_string(char *s, int n, const me_gnss_signal_t mesid) {
-  assert(n >= MESID_STR_LEN_MAX);
-  (void)n;
-  return sat_code_to_string(
-      s, MESID_SUFFIX_LENGTH, /* suffix = */ " ME ", mesid.sat, mesid.code);
-}
-
 /** Determine if a gnss_signal_t corresponds to a known code and
  * satellite identifier.
  *
@@ -1114,32 +1001,6 @@ bool sid_valid(gnss_signal_t sid) {
 
   const code_table_element_t *e = &code_table[sid.code];
   if ((sid.sat < e->sat_start) || (sid.sat >= e->sat_start + e->sat_count)) {
-    return false;
-  }
-
-  return true;
-}
-
-/** Determine if a me_gnss_signal_t corresponds to a known code and
- * ME satellite identifier.
- *
- * \param mesid   me_gnss_signal_t to use.
- *
- * \return true if mesid exists, false otherwise.
- */
-bool mesid_valid(const me_gnss_signal_t mesid) {
-  if (!code_valid(mesid.code)) {
-    return false;
-  }
-
-  const code_table_element_t *e = &code_table[mesid.code];
-  if ((mesid.sat < e->sat_start) ||
-      (mesid.sat >= e->sat_start + e->me_sig_count)) {
-    log_debug_mesid(mesid,
-                    "mesid.sat %u e->start %u e->me_sig_count %u",
-                    mesid.sat,
-                    e->sat_start,
-                    e->me_sig_count);
     return false;
   }
 
@@ -1170,20 +1031,6 @@ gnss_signal_t sid_from_code_index(code_t code, u16 sat_index) {
   return construct_sid(code, code_table[code].sat_start + sat_index);
 }
 
-/** Convert a code-specific ME signal index to a me_gnss_signal_t.
- *
- * \param code          Code to use.
- * \param me_code_index ME code-specific signal index in
- *                      [0, ACQ_TRACK_COUNT_\<code\>).
- *
- * \return me_gnss_signal_t corresponding to code and code_index.
- */
-me_gnss_signal_t mesid_from_code_index(code_t code, u16 me_code_index) {
-  assert(code_valid(code));
-  assert(me_code_index < code_table[code].me_sig_count);
-  return construct_mesid(code, code_table[code].sat_start + me_code_index);
-}
-
 /** Return the code-specific signal index for a gnss_signal_t.
  *
  * \param sid   gnss_signal_t to use.
@@ -1195,17 +1042,6 @@ u16 sid_to_code_index(gnss_signal_t sid) {
   return sid.sat - code_table[sid.code].sat_start;
 }
 
-/** Return the code-specific signal index for a me_gnss_signal_t.
- *
- * \param mesid me_gnss_signal_t to use.
- *
- * \return Code-specific signal index in [0, SIGNAL_COUNT_\<code\>).
- */
-u16 mesid_to_code_index(const me_gnss_signal_t mesid) {
-  assert(mesid_valid(mesid));
-  return mesid.sat - code_table[mesid.code].sat_start;
-}
-
 /** Get the constellation to which a gnss_signal_t belongs.
  *
  * \param sid   gnss_signal_t to use.
@@ -1214,36 +1050,6 @@ u16 mesid_to_code_index(const me_gnss_signal_t mesid) {
  */
 constellation_t sid_to_constellation(gnss_signal_t sid) {
   return code_to_constellation(sid.code);
-}
-
-/** Get the constellation to which a me_gnss_signal_t belongs.
- *
- * \param mesid   me_gnss_signal_t to use.
- *
- * \return Constellation to which mesid belongs.
- */
-constellation_t mesid_to_constellation(const me_gnss_signal_t mesid) {
-  return code_to_constellation(mesid.code);
-}
-
-/** Return the carrier frequency for a mesid.
- *
- * \param mesid  me_gnss_signal_t to use.
- * \return carrier frequency
- */
-double mesid_to_carr_freq(const me_gnss_signal_t mesid) {
-  code_t code = mesid.code;
-  assert(code_valid(code));
-  /* Map GLO mesid.sat [1 - 14] -> GLO FCN [-7 - +6] */
-  s8 fcn = mesid.sat - GLO_FCN_OFFSET;
-  if (CODE_GLO_L1OF == code) {
-    return GLO_L1_HZ + fcn * GLO_L1_DELTA_HZ;
-  } else if (CODE_GLO_L2OF == code) {
-    return GLO_L2_HZ + fcn * GLO_L2_DELTA_HZ;
-  }
-  /* there is no difference between mesid and sid for GPS */
-  gnss_signal_t sid = construct_sid(mesid.code, mesid.sat);
-  return sid_to_carr_freq(sid);
 }
 
 /** Get the constellation to which a code belongs.
@@ -1319,25 +1125,6 @@ u32 code_to_chip_count(code_t code) {
 double code_to_chip_rate(code_t code) {
   assert(code_valid(code));
   return code_table[code].chip_rate;
-}
-
-/** Return the [carrier freq / code chip rate] for a code_t.
- *
- * \param mesid  me_gnss_signal_t to use.
- * \return [carrier freq / code chip rate]
- */
-double mesid_to_carr_to_code(const me_gnss_signal_t mesid) {
-  code_t code = mesid.code;
-  assert(code_valid(code));
-  /* Map GLO mesid.sat [1 - 14] -> GLO FCN [-7 - +6] */
-  s8 fcn = mesid.sat - GLO_FCN_OFFSET;
-  if (CODE_GLO_L1OF == code) {
-    return GLO_L1_CARR_TO_CODE(fcn);
-  } else if (CODE_GLO_L2OF == code) {
-    return GLO_L2_CARR_TO_CODE(fcn);
-  } else {
-    return code_table[mesid.code].carr_to_code;
-  }
 }
 
 /** Return the PRN period for a code_t.
@@ -1490,6 +1277,12 @@ bool is_gal(const code_t code) {
  */
 bool is_qzss(const code_t code) {
   return (CONSTELLATION_QZS == code_table[code].constellation);
+}
+
+/** Return signal count for a signal code */
+u16 code_to_sig_count(const code_t code) {
+  assert(code_valid(code));
+  return code_table[code].sig_count;
 }
 
 /* \} */

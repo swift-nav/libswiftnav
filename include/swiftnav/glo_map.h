@@ -21,7 +21,7 @@ extern "C" {
 
 void glo_map_init(void (*lock)(void), void (*unlock)(void));
 bool glo_map_valid(const gnss_signal_t sid);
-void glo_map_set_slot_id(me_gnss_signal_t mesid, u16 glo_slot_id);
+void glo_map_set_slot_id(u16 fcn, u16 glo_slot_id);
 u16 glo_map_get_fcn(gnss_signal_t sid);
 void glo_map_clear_slot_id(u16 glo_slot_id);
 void glo_map_clear_all(void);

@@ -63,16 +63,15 @@ bool glo_map_valid(const gnss_signal_t sid) {
 
 /** The function maps GLO orbital slot and frequency slot
  *
- * @param[in] mesid ME signal identifier
+ * @param[in] fcn GLO FCN
  * @param[in] glo_slot_id GLO orbital slot
  */
-void glo_map_set_slot_id(me_gnss_signal_t mesid, u16 glo_slot_id) {
-  assert(IS_GLO(mesid));
+void glo_map_set_slot_id(u16 fcn, u16 glo_slot_id) {
   assert(glo_slot_id_is_valid(glo_slot_id));
-  assert(glo_fcn_is_valid(mesid.sat));
+  assert(glo_fcn_is_valid(fcn));
 
   glo_map_lock();
-  glo_sv_id_fcn_map[glo_slot_id] = mesid.sat;
+  glo_sv_id_fcn_map[glo_slot_id] = fcn;
   glo_map_unlock();
 }
 

@@ -271,19 +271,6 @@ typedef struct {
   code_t code;
 } gnss_signal_t;
 
-/** GNSS signal identifier for internal ME processing.
- *
- *  GPS signals are encoded similarly with gnss_signal_t,
- *  sat range 1 - 32.
- *
- *  GLO signals have their sat field represent the frequency slot FCN,
- *  sat range 1 - 14 (which is FCN -7..6 shifted by 8).
- */
-typedef struct {
-  u16 sat;
-  code_t code;
-} me_gnss_signal_t;
-
 #define MAX_SBAS_SATS_PER_SYSTEM 3
 
 typedef enum sbas_system_e {
@@ -416,31 +403,6 @@ static inline bool glo_slot_id_is_valid(u16 slot) {
   return (slot <= NUM_SATS_GLO) && (slot > 0);
 }
 
-constellation_t mesid_to_constellation(const me_gnss_signal_t mesid);
-/** ME signal comparison function. */
-static inline int mesid_compare(const me_gnss_signal_t a,
-                                const me_gnss_signal_t b) {
-  /* Signal code are not sorted in order per constellation
-   * (e.g. GLO L1C ~ 3 and GPS L2P ~ 6).
-   * As some of our functions relies on comparing ordered sets of signals,
-   * this can cause issues.
-   * Therefore, in this function, we enforce the ordering per
-   * constellation/frequency/satellite */
-  if ((code_valid(a.code)) && code_valid(b.code)) {
-    if (mesid_to_constellation(a) == mesid_to_constellation(b)) {
-      if (code_equiv(a.code, b.code)) {
-        return a.sat - b.sat;
-      } else {
-        return a.code - b.code;
-      }
-    } else {
-      return mesid_to_constellation(a) - mesid_to_constellation(b);
-    }
-  } else {
-    return a.code - b.code;
-  }
-}
-
 /** Untyped signal comparison function. */
 static inline int cmp_sid_sid(const void *a, const void *b) {
   return sid_compare(*(const gnss_signal_t *)a, *(const gnss_signal_t *)b);
@@ -449,12 +411,6 @@ static inline int cmp_sid_sid(const void *a, const void *b) {
 /** Signal equality function. */
 static inline bool sid_is_equal(const gnss_signal_t a, const gnss_signal_t b) {
   return sid_compare(a, b) == 0;
-}
-
-/** ME signal equality function. */
-static inline bool mesid_is_equal(const me_gnss_signal_t a,
-                                  const me_gnss_signal_t b) {
-  return mesid_compare(a, b) == 0;
 }
 
 /* Logging macros */
@@ -523,27 +479,19 @@ static inline bool mesid_is_equal(const me_gnss_signal_t a,
 /* \} */
 
 gnss_signal_t construct_sid(code_t code, u16 sat);
-me_gnss_signal_t construct_mesid(code_t code, u16 sat);
-gnss_signal_t mesid2sid(const me_gnss_signal_t mesid, u16 glo_slot_id);
 int sat_code_to_string(
     char *str_buf, size_t suffix_len, const char *suffix, u16 sat, code_t code);
 int sid_to_string(char *s, int n, const gnss_signal_t sid);
-int mesid_to_string(char *s, int n, const me_gnss_signal_t mesid);
 bool sid_valid(gnss_signal_t sid);
-bool mesid_valid(const me_gnss_signal_t mesid);
 bool constellation_valid(constellation_t constellation);
 gnss_signal_t sid_from_code_index(code_t code, u16 code_index);
-me_gnss_signal_t mesid_from_code_index(code_t code, u16 code_index);
 u16 sid_to_code_index(gnss_signal_t sid);
-u16 mesid_to_code_index(const me_gnss_signal_t mesid);
-double mesid_to_carr_freq(const me_gnss_signal_t mesid);
 constellation_t code_to_constellation(code_t code);
 double sid_to_carr_freq(gnss_signal_t sid);
 double sid_to_lambda(gnss_signal_t sid);
 const char *code_to_string(const code_t code);
 u32 code_to_chip_count(code_t code);
 double code_to_chip_rate(code_t code);
-double mesid_to_carr_to_code(const me_gnss_signal_t mesid);
 u16 code_to_prn_period_ms(code_t code);
 bool code_requires_direct_acq(code_t code);
 float code_to_sv_doppler_min(code_t code);
@@ -553,6 +501,7 @@ u16 constellation_to_sat_count(constellation_t gnss);
 const u8 *get_sbas_prn_list(sbas_system_t sbas_system);
 sbas_system_t get_sbas_system(const gnss_signal_t sid);
 float code_to_phase_alignment(code_t code);
+u16 code_to_sig_count(const code_t code);
 
 #ifdef __cplusplus
 } /* extern "C" */

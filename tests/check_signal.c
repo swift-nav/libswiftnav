@@ -371,16 +371,14 @@ START_TEST(test_signal_sid_to_carr_freq) {
   for (u16 sat = GLO_FIRST_PRN; sat <= NUM_SATS_GLO; sat++) {
     for (u16 fcn = GLO_MIN_FCN; fcn <= GLO_MAX_FCN; fcn++) {
       /* L2 first */
-      me_gnss_signal_t mesid = construct_mesid(CODE_GLO_L2OF, fcn);
-      /* map orb and fcn slots, it does not matter what mesid.code is used */
-      glo_map_set_slot_id(mesid, sat);
+      /* map orb and fcn slots */
+      glo_map_set_slot_id(fcn, sat);
       sid = construct_sid(CODE_GLO_L2OF, sat);
       carr_freq = sid_to_carr_freq(sid);
       fail_unless((GLO_L2_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
                                    GLO_L2_DELTA_HZ) == carr_freq,
                   "Glonass L2 carrier error");
       /* now L1 */
-      mesid = construct_mesid(CODE_GLO_L1OF, fcn);
       sid = construct_sid(CODE_GLO_L1OF, sat);
       carr_freq = sid_to_carr_freq(sid);
       fail_unless((GLO_L1_HZ + (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) *
@@ -410,9 +408,8 @@ START_TEST(test_signal_sid_to_lambda) {
   for (u16 orb_slot = GLO_FIRST_PRN; orb_slot <= NUM_SATS_GLO; orb_slot++) {
     for (u16 fcn = GLO_MIN_FCN; fcn <= GLO_MAX_FCN; fcn++) {
       /* L2 first */
-      me_gnss_signal_t mesid = construct_mesid(CODE_GLO_L2OF, fcn);
-      /* map orb and fcn slots, it does not matter what mesid.code is used */
-      glo_map_set_slot_id(mesid, orb_slot);
+      /* map orb and fcn slots */
+      glo_map_set_slot_id(fcn, orb_slot);
       sid = construct_sid(CODE_GLO_L2OF, orb_slot);
       lambda = sid_to_lambda(sid);
       fail_unless(
@@ -420,7 +417,6 @@ START_TEST(test_signal_sid_to_lambda) {
                                     GLO_L2_DELTA_HZ)) == lambda,
           "Glonass L2 wavelength error");
       /* now L1 */
-      mesid = construct_mesid(CODE_GLO_L1OF, fcn);
       sid = construct_sid(CODE_GLO_L1OF, orb_slot);
       lambda = sid_to_lambda(sid);
       fail_unless(
@@ -483,29 +479,6 @@ START_TEST(test_signal_code_requires_direct_acq) {
 }
 END_TEST
 
-START_TEST(test_signal_code_to_carr_to_code) {
-  double c2c;
-
-  c2c = mesid_to_carr_to_code(construct_mesid(CODE_GPS_L1CA, 1));
-  fail_unless(within_epsilon(1540, c2c),
-              "Incorrect GPS L1CA carr_to_code (%lf vs %lf)",
-              1540.f,
-              c2c);
-
-  c2c = mesid_to_carr_to_code(construct_mesid(CODE_GPS_L2CM, 1));
-  fail_unless(within_epsilon(1200, c2c),
-              "Incorrect GPS L2CM carr_to_code (%lf vs %lf)",
-              1200.f,
-              c2c);
-
-  c2c = mesid_to_carr_to_code(construct_mesid(CODE_GLO_L1OF, 1));
-  fail_unless(within_epsilon(3127.3238748, c2c),
-              "Incorrect GLO L1OF FCN 1 carr_to_code (%lf vs %lf)",
-              3127.3238748,
-              c2c);
-}
-END_TEST
-
 START_TEST(test_signal_code_to_prn_period) {
   u16 period;
 
@@ -531,16 +504,12 @@ START_TEST(test_sid_system_check) {
 
     fail_unless(gps == IS_GPS(construct_sid(i, GPS_FIRST_PRN)),
                 "is_gps_sid fail");
-    fail_unless(gps == IS_GPS(construct_mesid(i, GPS_FIRST_PRN)),
-                "is_gps_mesid fail");
 
     bool glo = (i == CODE_GLO_L1OF) || (i == CODE_GLO_L2OF) ||
                (i == CODE_GLO_L1P) || (i == CODE_GLO_L2P);
 
     fail_unless(glo == IS_GLO(construct_sid(i, GLO_FIRST_PRN)),
                 "is_glo_sid fail");
-    fail_unless(glo == IS_GLO(construct_mesid(i, GLO_FIRST_PRN)),
-                "is_glo_mesid fail");
 
     bool sbas = (i == CODE_SBAS_L1CA) || (i == CODE_AUX_SBAS) ||
                 (i == CODE_SBAS_L5I) || (i == CODE_SBAS_L5Q) ||
@@ -548,8 +517,6 @@ START_TEST(test_sid_system_check) {
 
     fail_unless(sbas == IS_SBAS(construct_sid(i, SBAS_FIRST_PRN)),
                 "is_sbas_sid fail");
-    fail_unless(sbas == IS_SBAS(construct_mesid(i, SBAS_FIRST_PRN)),
-                "is_sbas_mesid fail");
   }
 }
 END_TEST
@@ -593,7 +560,6 @@ Suite *signal_test_suite(void) {
   tcase_add_test(tc_core, test_signal_code_to_chip_rate);
   tcase_add_test(tc_core, test_signal_code_requires_direct_acq);
   tcase_add_test(tc_core, test_signal_sid_to_lambda);
-  tcase_add_test(tc_core, test_signal_code_to_carr_to_code);
   tcase_add_test(tc_core, test_signal_code_to_prn_period);
   tcase_add_test(tc_core, test_sid_system_check);
   tcase_add_test(tc_core, test_sbas_prn_list);
