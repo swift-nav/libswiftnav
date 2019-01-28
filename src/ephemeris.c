@@ -862,15 +862,15 @@ ephemeris_status_t ephemeris_valid_detailed(const ephemeris_t *e,
                     t->tow);
       break;
     case EPH_INVALID:
-      log_error_sid(e->sid,
-                    EPHEMERIS_INVALID_LOG_MESSAGE,
-                    "invalid",
-                    (int)e->valid,
-                    (int)e->fit_interval,
-                    (int)e->toe.wn,
-                    e->toe.tow,
-                    (int)t->wn,
-                    t->tow);
+      log_info_sid(e->sid,
+                   EPHEMERIS_INVALID_LOG_MESSAGE,
+                   "invalid",
+                   (int)e->valid,
+                   (int)e->fit_interval,
+                   (int)e->toe.wn,
+                   e->toe.tow,
+                   (int)t->wn,
+                   t->tow);
       break;
     case EPH_WN_EQ_0:
       log_error_sid(e->sid,
