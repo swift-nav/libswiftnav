@@ -11,7 +11,7 @@
  */
 
 #include <assert.h>
-
+#include <string.h>
 #include <swiftnav/array_tools.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/glo_map.h>
@@ -886,6 +886,36 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0.f, /* must be aligned to CODE_QZS_L5I (see L5X in [1])*/
                       false},
 };
+
+static const char *constellation_table[CONSTELLATION_COUNT] = {
+    [CONSTELLATION_GPS] = "GPS",
+    [CONSTELLATION_SBAS] = "SBAS",
+    [CONSTELLATION_GLO] = "GLO",
+    [CONSTELLATION_BDS] = "BDS",
+    [CONSTELLATION_QZS] = "QZS",
+    [CONSTELLATION_GAL] = "GAL"};
+
+const char *constellation_to_string(const constellation_t cons) {
+  return constellation_table[cons];
+}
+
+constellation_t constellation_string_to_enum(const char *constellation_string) {
+  for (s32 i = 0; i < (s32)CONSTELLATION_COUNT; ++i) {
+    if (strcmp(constellation_string, constellation_table[i]) == 0) {
+      return (constellation_t)i;
+    }
+  }
+  return CONSTELLATION_INVALID;
+}
+
+code_t code_string_to_enum(const char *code_label) {
+  for (s32 i = 0; i < (s32)CODE_COUNT; ++i) {
+    if (strcmp(code_label, code_table[i].str) == 0) {
+      return (code_t)i;
+    }
+  }
+  return CODE_INVALID;
+}
 
 typedef struct {
   u8 prn_list[MAX_SBAS_SATS_PER_SYSTEM];

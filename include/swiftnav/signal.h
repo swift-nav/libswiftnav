@@ -195,6 +195,10 @@ static inline char constellation_to_char(constellation_t cons) {
   }
 }
 
+const char *constellation_to_string(const constellation_t cons);
+
+constellation_t constellation_string_to_enum(const char *constellation_string);
+
 /** Code identifier. */
 typedef enum code_e {
   CODE_INVALID = -1,
@@ -264,6 +268,8 @@ typedef enum code_e {
   CODE_AUX_BDS = 63,
   CODE_COUNT
 } code_t;
+
+code_t code_string_to_enum(const char *code_label);
 
 /** GNSS signal identifier. */
 typedef struct {
