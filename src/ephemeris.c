@@ -214,7 +214,7 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
 
   dt -= *clock_err;
 
-  u32 num_steps = ceil(fabs(dt) / GLO_MAX_STEP_LENGTH);
+  u32 num_steps = (u32)ceil(fabs(dt) / GLO_MAX_STEP_LENGTH);
   num_steps = MIN(num_steps, GLO_MAX_STEP_NUM);
 
   double ecef_vel_acc[6];
@@ -1109,8 +1109,8 @@ void decode_ephemeris(const u32 frame_words[3][8],
   log_debug_sid(e->sid, "Health bits = 0x%02" PRIx8, e->health_bits);
 
   /* t_gd: Word 7, bits 17-24 */
-  k->tgd.gps_s[0] =
-      (s8)(frame_words[0][7 - 3] >> (30 - 24) & 0xFF) * GPS_LNAV_EPH_SF_TGD;
+  k->tgd.gps_s[0] = (float)((s8)(frame_words[0][7 - 3] >> (30 - 24) & 0xFF) *
+                            GPS_LNAV_EPH_SF_TGD);
   /* L1-L5 TGD has to be filled up with C-NAV as combination of L1-L2 TGD and
    * ISC_L5 */
   k->tgd.gps_s[1] = 0.0;
@@ -1350,84 +1350,87 @@ static u32 get_iodcrc(const ephemeris_t *eph) {
   setbits(buffer,
           numbits,
           14,
-          eph->kepler.inc_dot / M_PI * (double)(1 << 30) * (double)(1 << 13));
+          (s32)(eph->kepler.inc_dot / M_PI * (double)(1 << 30) *
+                (double)(1 << 13)));
   numbits += 14;
   setbits(buffer,
           numbits,
           11,
-          eph->kepler.af2 * (double)(1 << 30) * (double)(1 << 30) *
-              (double)(1 << 6));
+          (s32)(eph->kepler.af2 * (double)(1 << 30) * (double)(1 << 30) *
+                (double)(1 << 6)));
   numbits += 11;
   setbits(buffer,
           numbits,
           22,
-          eph->kepler.af1 * (double)(1 << 30) * (double)(1 << 20));
+          (s32)(eph->kepler.af1 * (double)(1 << 30) * (double)(1 << 20)));
   numbits += 22;
   setbits(buffer,
           numbits,
           24,
-          eph->kepler.af0 * (double)(1 << 30) * (double)(1 << 3));
+          (s32)(eph->kepler.af0 * (double)(1 << 30) * (double)(1 << 3)));
   numbits += 24;
-  setbits(buffer, numbits, 18, eph->kepler.crs * (double)(1 << 6));
+  setbits(buffer, numbits, 18, (s32)(eph->kepler.crs * (double)(1 << 6)));
   numbits += 18;
   setbits(buffer,
           numbits,
           16,
-          eph->kepler.dn / M_PI * (double)(1 << 30) * (double)(1 << 13));
+          (s32)(eph->kepler.dn / M_PI * (double)(1 << 30) * (double)(1 << 13)));
   numbits += 16;
   setbits(buffer,
           numbits,
           32,
-          eph->kepler.m0 / M_PI * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.m0 / M_PI * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 32;
   setbits(buffer,
           numbits,
           18,
-          eph->kepler.cuc * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.cuc * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 18;
   setbitu(buffer,
           numbits,
           32,
-          eph->kepler.ecc * (double)(1 << 30) * (double)(1 << 3));
+          (u32)(eph->kepler.ecc * (double)(1 << 30) * (double)(1 << 3)));
   numbits += 32;
   setbits(buffer,
           numbits,
           18,
-          eph->kepler.cus * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.cus * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 18;
-  setbitu(buffer, numbits, 32, eph->kepler.sqrta * (double)(1 << 19));
+  setbitu(buffer, numbits, 32, (u32)(eph->kepler.sqrta * (double)(1 << 19)));
   numbits += 32;
   setbits(buffer,
           numbits,
           18,
-          eph->kepler.cic * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.cic * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 18;
-  setbits(buffer,
-          numbits,
-          32,
-          eph->kepler.omega0 / M_PI * (double)(1 << 30) * (double)(1 << 1));
+  setbits(
+      buffer,
+      numbits,
+      32,
+      (s32)(eph->kepler.omega0 / M_PI * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 32;
   setbits(buffer,
           numbits,
           18,
-          eph->kepler.cis * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.cis * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 18;
   setbits(buffer,
           numbits,
           32,
-          eph->kepler.inc / M_PI * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.inc / M_PI * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 32;
-  setbits(buffer, numbits, 18, eph->kepler.crc * (double)(1 << 6));
+  setbits(buffer, numbits, 18, (s32)(eph->kepler.crc * (double)(1 << 6)));
   numbits += 18;
   setbits(buffer,
           numbits,
           32,
-          eph->kepler.w / M_PI * (double)(1 << 30) * (double)(1 << 1));
+          (s32)(eph->kepler.w / M_PI * (double)(1 << 30) * (double)(1 << 1)));
   numbits += 32;
   setbits(buffer,
           numbits,
           24,
-          eph->kepler.omegadot / M_PI * (double)(1 << 30) * (double)(1 << 13));
+          (s32)(eph->kepler.omegadot / M_PI * (double)(1 << 30) *
+                (double)(1 << 13)));
   numbits += 24;
   setbits(buffer, numbits, 5, 0);
   numbits += 5;
@@ -1479,9 +1482,9 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       gamma = GPS_L1_HZ * GPS_L1_HZ / (frequency * frequency);
       if (CODE_GPS_L5I == sid->code || CODE_GPS_L5Q == sid->code ||
           CODE_GPS_L5X == sid->code) {
-        *tgd = eph->kepler.tgd.gps_s[1] * gamma;
+        *tgd = (float)(eph->kepler.tgd.gps_s[1] * gamma);
       } else {
-        *tgd = eph->kepler.tgd.gps_s[0] * gamma;
+        *tgd = (float)(eph->kepler.tgd.gps_s[0] * gamma);
       }
       return 0;
     case CONSTELLATION_BDS:
@@ -1504,7 +1507,7 @@ s8 get_tgd_correction(const ephemeris_t *eph,
         *tgd = 0.0;
         return 0;
       } else if (CODE_GLO_L2OF == sid->code || CODE_GLO_L2P == sid->code) {
-        *tgd = eph->glo.d_tau;
+        *tgd = (float)eph->glo.d_tau;
         return 0;
       } else {
         log_debug_sid(*sid, "TGD not applied for the signal");
@@ -1518,9 +1521,9 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       gamma = QZS_L1_HZ * QZS_L1_HZ / (frequency * frequency);
       if (CODE_QZS_L5I == sid->code || CODE_QZS_L5Q == sid->code ||
           CODE_QZS_L5X == sid->code) {
-        *tgd = eph->kepler.tgd.gps_s[1] * gamma;
+        *tgd = (float)(eph->kepler.tgd.gps_s[1] * gamma);
       } else {
-        *tgd = eph->kepler.tgd.gps_s[0] * gamma;
+        *tgd = (float)(eph->kepler.tgd.gps_s[0] * gamma);
       }
       return 0;
     case CONSTELLATION_GAL:
@@ -1530,14 +1533,14 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       if (CODE_GAL_E5I == sid->code || CODE_GAL_E5Q == sid->code ||
           CODE_GAL_E5X == sid->code) {
         /* The first TGD correction is for the (E1,E5a) combination */
-        *tgd = gamma * eph->kepler.tgd.gal_s[0];
+        *tgd = (float)(gamma * eph->kepler.tgd.gal_s[0]);
         return 0;
       } else if (CODE_GAL_E1B == sid->code || CODE_GAL_E1C == sid->code ||
                  CODE_GAL_E1X == sid->code || CODE_GAL_E7I == sid->code ||
                  CODE_GAL_E7Q == sid->code || CODE_GAL_E7X == sid->code) {
         /* The clock corrections from INAV are for the (E1,E5b) combination, so
          * use the matching group delay correction for all the other signals */
-        *tgd = gamma * eph->kepler.tgd.gal_s[1];
+        *tgd = (float)(gamma * eph->kepler.tgd.gal_s[1]);
         return 0;
       } else {
         log_debug_sid(*sid, "TGD not applied for the signal");

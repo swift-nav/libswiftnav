@@ -152,7 +152,7 @@ void make_utc_tm(const gps_time_t *t, utc_tm *u) {
   double t_utc = fmod(t->tow, DAY_SECS);
 
   /* Convert this into hours, minutes and seconds */
-  u32 second_int = floor(t_utc);        /* The integer part of the seconds */
+  u32 second_int = (u32)floor(t_utc);   /* The integer part of the seconds */
   u->second_frac = fmod(t_utc, 1.0);    /* The fractional part of the seconds */
   u->hour = second_int / HOUR_SECS;     /* The hours (1 - 23) */
   second_int -= u->hour * HOUR_SECS;    /* Remove the hours from seconds */
@@ -164,7 +164,7 @@ void make_utc_tm(const gps_time_t *t, utc_tm *u) {
 
   /* Days from 1 Jan 1980. GPS epoch is 6 Jan 1980 */
   u32 modified_julian_days =
-      MJD_JAN_6_1980 + t->wn * 7 + floor(t->tow / DAY_SECS);
+      MJD_JAN_6_1980 + t->wn * 7 + (u32)floor(t->tow / DAY_SECS);
   u32 days_since_1601 = modified_julian_days - MJD_JAN_1_1601;
 
   /* Calculate the number of leap years */
@@ -191,7 +191,7 @@ void make_utc_tm(const gps_time_t *t, utc_tm *u) {
   u8 leap_year = (u8)is_leap_year(u->year);
 
   /* Roughly work out the month number */
-  u8 month_guess = u->year_day * 0.032;
+  u8 month_guess = (u8)(u->year_day * 0.032);
 
   /* Lookup table of the total number of days in the year after each month */
   /* First row is for a non-leap year, second row is for a leap year */
@@ -225,7 +225,7 @@ void make_utc_tm(const gps_time_t *t, utc_tm *u) {
 time_t gps2time(const gps_time_t *t_gps) {
   assert(gps_time_valid(t_gps));
 
-  time_t t = GPS_EPOCH - get_gps_utc_offset(t_gps, NULL);
+  time_t t = (time_t)(GPS_EPOCH - get_gps_utc_offset(t_gps, NULL));
 
   t += WEEK_SECS * t_gps->wn;
   t += (s32)t_gps->tow;
@@ -260,7 +260,6 @@ bool gpstime_in_range(const gps_time_t *bgn,
   assert(end->wn != WN_UNKNOWN);
   assert(t);
   assert(t->tow != TOW_UNKNOWN);
-  assert(t->tow != WN_UNKNOWN);
 
   double since_bgn_s = gpsdifftime(t, bgn);
   if (since_bgn_s < 0) {
@@ -525,7 +524,7 @@ glo_time_t gps2glo(const gps_time_t *gps_t, const utc_params_t *utc_params) {
   }
 
   /* number of the 4-year cycle */
-  glo_t.n4 = floor((u.year - GLO_EPOCH_YEAR) / 4) + 1;
+  glo_t.n4 = (u8)floor((u.year - GLO_EPOCH_YEAR) / 4) + 1;
   /* day number within the cycle */
   glo_t.nt = u.year_day;
   /* add the days from the previous years in this 4-year cycle */
@@ -671,7 +670,7 @@ void mjd2date(double mjd,
               double *sec) {
   s32 J, C, Y, M;
 
-  J = mjd + 2400001 + 68569;
+  J = (s32)mjd + 2400001 + 68569;
   C = 4 * J / 146097;
   J = J - (146097 * C + 3) / 4;
   Y = 4000 * (J + 1) / 1461001;
@@ -683,9 +682,9 @@ void mjd2date(double mjd,
   *year = 100 * (C - 49) + Y + J;
   double int_part;
   double frac_part = modf(mjd, &int_part);
-  *hour = frac_part * (double)DAY_HOURS;
-  *min = (frac_part - (double)(*hour) / (double)(DAY_HOURS)) * DAY_HOURS *
-         HOUR_MINUTES;
+  *hour = (s32)(frac_part * DAY_HOURS);
+  *min = (s32)((frac_part - (double)(*hour) / (double)(DAY_HOURS)) * DAY_HOURS *
+               HOUR_MINUTES);
   *sec = (frac_part - (double)(*hour) / (double)(DAY_HOURS) -
           (double)(*min) / (double)(DAY_HOURS) / (double)(HOUR_MINUTES)) *
          (double)DAY_SECS;
@@ -697,7 +696,7 @@ utc_tm mjd2utc(double mjd) {
   utc_tm ret;
   double utc_days = mjd - MJD_JAN_6_1980;
   gps_time_t utc_time;
-  utc_time.wn = utc_days / WEEK_DAYS;
+  utc_time.wn = (s16)(utc_days / WEEK_DAYS);
   utc_time.tow = (utc_days - utc_time.wn * WEEK_DAYS) * (double)DAY_SECS;
   make_utc_tm(&utc_time, &ret);
   return ret;
@@ -742,7 +741,7 @@ void utc2date(const utc_tm *utc_time,
 gps_time_t mjd2gps(double mjd) {
   double utc_days = mjd - MJD_JAN_6_1980;
   gps_time_t utc_time;
-  utc_time.wn = utc_days / WEEK_DAYS;
+  utc_time.wn = (s16)(utc_days / WEEK_DAYS);
   utc_time.tow = (utc_days - utc_time.wn * WEEK_DAYS) * (double)DAY_SECS;
   double leap_secs = get_utc_gps_offset(&utc_time, NULL);
   gps_time_t gps_time = utc_time;
