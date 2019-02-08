@@ -391,7 +391,7 @@ START_TEST(test_utc_offset) {
   for (size_t i = 0; i < sizeof(testcases) / sizeof(struct utc_offset_testcase);
        i++) {
     double dUTC = get_gps_utc_offset(&testcases[i].t, NULL);
-    double is_lse = is_leap_second_event(&testcases[i].t, NULL);
+    bool is_lse = is_leap_second_event(&testcases[i].t, NULL);
 
     fail_unless(dUTC == testcases[i].dUTC && is_lse == testcases[i].is_lse,
                 "utc_leap_testcase %d failed, expected (%f,%d) got (%f,%d)",

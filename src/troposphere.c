@@ -100,7 +100,7 @@ static double lookup_param(double lat, const double *lut) {
     return lut[4];
   } else {
     /* Otherwise interpolate the value */
-    u8 i = (lat - 15.0) / 15.0;
+    u8 i = (u8)((lat - 15.0) / 15.0);
     double lat_i = i * 15.0 + 15.0;
     return lut[i] + (lut[i + 1] - lut[i]) / 15.0 * (lat - lat_i);
   }
@@ -209,9 +209,9 @@ double calc_troposphere(const gps_time_t *t_gps,
 
   /* Scale surface values to required height */
   double t = t_0 - b * h;
-  double p = p_0 * powf(t / t_0, e_p);
+  double p = p_0 * powf((float)(t / t_0), (float)e_p);
   double dl = l + 1.0;
-  double e = e_0 * powf(t / t_0, e_p * dl);
+  double e = e_0 * powf((float)(t / t_0), (float)(e_p * dl));
 
   /* Compute the acceleration at the mass center
      of a vertical column of the atmosphere */

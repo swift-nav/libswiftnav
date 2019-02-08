@@ -470,7 +470,7 @@ END_TEST
 START_TEST(test_signal_code_requires_direct_acq) {
   bool requires;
 
-  requires = code_to_chip_rate(CODE_GPS_L1CA);
+  requires = code_requires_direct_acq(CODE_GPS_L1CA);
   fail_unless(true == requires, "CODE_GPS_L1CA requires code_to_chip_rate");
 
   requires = code_requires_direct_acq(CODE_GPS_L2CM);
