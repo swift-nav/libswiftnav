@@ -16,6 +16,25 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#ifdef _MSC_VER
+#include <sal.h>
+#endif
+
+#ifndef __GNUC__
+/* This is GCC specific so make it void for others */
+#define __attribute__(x)
+#endif
+
+#ifdef _MSC_VER
+#if _MSC_VER >= 1400
+#define LIBSWIFTNAV_FORMAT_STRING _Printf_format_string_
+#else
+#define LIBSWIFTNAV_FORMAT_STRING __format_string
+#endif
+#else
+#define LIBSWIFTNAV_FORMAT_STRING
+#endif
+
 #include <swiftnav/common.h>
 
 #ifdef __cplusplus
@@ -43,13 +62,14 @@ extern "C" {
  *
  * \{ */
 
-typedef void (*pfn_log)(int level, const char *msg, ...)
-    __attribute__((format(printf, 2, 3)));
+typedef void (*pfn_log)(int level,
+                        LIBSWIFTNAV_FORMAT_STRING const char *msg,
+                        ...) __attribute__((format(printf, 2, 3)));
 
 typedef void (*pfn_detailed_log)(int level,
                                  const char *file_path,
                                  const int line_number,
-                                 const char *msg,
+                                 LIBSWIFTNAV_FORMAT_STRING const char *msg,
                                  ...) __attribute__((format(printf, 4, 5)));
 
 extern pfn_log log_;
@@ -77,80 +97,80 @@ extern const char *level_string[];
 /** Log an emergency.
  * \param args `printf` style format and arguments.
  */
-#define log_emerg(args...)        \
-  do {                            \
-    if (LOG_LEVEL >= LOG_EMERG) { \
-      log_(LOG_EMERG, args);      \
-    }                             \
+#define log_emerg(...)              \
+  do {                              \
+    if (LOG_LEVEL >= LOG_EMERG) {   \
+      log_(LOG_EMERG, __VA_ARGS__); \
+    }                               \
   } while (false)
 
 /** Log an alert.
  * \param args `printf` style format and arguments.
  */
-#define log_alert(args...)        \
-  do {                            \
-    if (LOG_LEVEL >= LOG_ALERT) { \
-      log_(LOG_ALERT, args);      \
-    }                             \
+#define log_alert(...)              \
+  do {                              \
+    if (LOG_LEVEL >= LOG_ALERT) {   \
+      log_(LOG_ALERT, __VA_ARGS__); \
+    }                               \
   } while (false)
 
 /** Log a critical event.
  * \param args `printf` style format and arguments.
  */
-#define log_crit(args...)        \
-  do {                           \
-    if (LOG_LEVEL >= LOG_CRIT) { \
-      log_(LOG_CRIT, args);      \
-    }                            \
+#define log_crit(...)              \
+  do {                             \
+    if (LOG_LEVEL >= LOG_CRIT) {   \
+      log_(LOG_CRIT, __VA_ARGS__); \
+    }                              \
   } while (false)
 
 /** Log an error.
  * \param args `printf` style format and arguments.
  */
-#define log_error(args...)        \
-  do {                            \
-    if (LOG_LEVEL >= LOG_ERROR) { \
-      log_(LOG_ERROR, args);      \
-    }                             \
+#define log_error(...)              \
+  do {                              \
+    if (LOG_LEVEL >= LOG_ERROR) {   \
+      log_(LOG_ERROR, __VA_ARGS__); \
+    }                               \
   } while (false)
 
 /** Log a warning.
  * \param args `printf` style format and arguments.
  */
-#define log_warn(args...)        \
-  do {                           \
-    if (LOG_LEVEL >= LOG_WARN) { \
-      log_(LOG_WARN, args);      \
-    }                            \
+#define log_warn(...)              \
+  do {                             \
+    if (LOG_LEVEL >= LOG_WARN) {   \
+      log_(LOG_WARN, __VA_ARGS__); \
+    }                              \
   } while (false)
 
 /** Log a notice.
  * \param args `printf` style format and arguments.
  */
-#define log_notice(args...)        \
-  do {                             \
-    if (LOG_LEVEL >= LOG_NOTICE) { \
-      log_(LOG_NOTICE, args);      \
-    }                              \
+#define log_notice(...)              \
+  do {                               \
+    if (LOG_LEVEL >= LOG_NOTICE) {   \
+      log_(LOG_NOTICE, __VA_ARGS__); \
+    }                                \
   } while (false)
 
 /** Log an information message.
  * \param args `printf` style format and arguments.
  */
-#define log_info(args...)        \
-  do {                           \
-    if (LOG_LEVEL >= LOG_INFO) { \
-      log_(LOG_INFO, args);      \
-    }                            \
+#define log_info(...)              \
+  do {                             \
+    if (LOG_LEVEL >= LOG_INFO) {   \
+      log_(LOG_INFO, __VA_ARGS__); \
+    }                              \
   } while (false)
 
 /** Log a debugging message.
  * \param args `printf` style format and arguments.
  */
-#define log_debug(args...)                 \
+#define log_debug(...)                     \
   do {                                     \
     if (DEBUG || LOG_LEVEL >= LOG_DEBUG) { \
-      log_(LOG_DEBUG, args);               \
+      log_(LOG_DEBUG, __VA_ARGS__);        \
     }                                      \
   } while (false)
 
@@ -160,90 +180,90 @@ extern const char *level_string[];
  * \param line      line number where the logger was called
  * \param args      `printf` style format and argumebts
  */
-#define detailed_log_truncated_(log_level, full_path, line, args...) \
-  do {                                                               \
-    char path[255] = full_path;                                      \
-    detailed_log_(log_level, truncate_path_(path), line, args);      \
+#define detailed_log_truncated_(log_level, full_path, line, ...)       \
+  do {                                                                 \
+    char path[255] = full_path;                                        \
+    detailed_log_(log_level, truncate_path_(path), line, __VA_ARGS__); \
   } while (false)
 
 /** Log an emergency (with file path and line number).
  * \param args `printf` style format and arguments.
  */
-#define detailed_log_emerg(args...)                                 \
-  do {                                                              \
-    if (LOG_LEVEL >= LOG_EMERG) {                                   \
-      detailed_log_truncated_(LOG_EMERG, __FILE__, __LINE__, args); \
-    }                                                               \
+#define detailed_log_emerg(...)                                            \
+  do {                                                                     \
+    if (LOG_LEVEL >= LOG_EMERG) {                                          \
+      detailed_log_truncated_(LOG_EMERG, __FILE__, __LINE__, __VA_ARGS__); \
+    }                                                                      \
   } while (false)
 
 /** Log an alert. (with file path and line number).
  * \param args `printf` style format and arguments.
  */
-#define detailed_log_alert(args...)                                 \
-  do {                                                              \
-    if (LOG_LEVEL >= LOG_ALERT) {                                   \
-      detailed_log_truncated_(LOG_ALERT, __FILE__, __LINE__, args); \
-    }                                                               \
+#define detailed_log_alert(...)                                            \
+  do {                                                                     \
+    if (LOG_LEVEL >= LOG_ALERT) {                                          \
+      detailed_log_truncated_(LOG_ALERT, __FILE__, __LINE__, __VA_ARGS__); \
+    }                                                                      \
   } while (false)
 
 /** Log a critical event. (with file path and line number).
  * \param args `printf` style format and arguments.
  */
-#define detailed_log_crit(args...)                                 \
-  do {                                                             \
-    if (LOG_LEVEL >= LOG_CRIT) {                                   \
-      detailed_log_truncated_(LOG_CRIT, __FILE__, __LINE__, args); \
-    }                                                              \
+#define detailed_log_crit(...)                                            \
+  do {                                                                    \
+    if (LOG_LEVEL >= LOG_CRIT) {                                          \
+      detailed_log_truncated_(LOG_CRIT, __FILE__, __LINE__, __VA_ARGS__); \
+    }                                                                     \
   } while (false)
 
 /** Log an error. (with file path and line number).
  * \param args `printf` style format and arguments.
  */
-#define detailed_log_error(args...)                                 \
-  do {                                                              \
-    if (LOG_LEVEL >= LOG_ERROR) {                                   \
-      detailed_log_truncated_(LOG_ERROR, __FILE__, __LINE__, args); \
-    }                                                               \
+#define detailed_log_error(...)                                            \
+  do {                                                                     \
+    if (LOG_LEVEL >= LOG_ERROR) {                                          \
+      detailed_log_truncated_(LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__); \
+    }                                                                      \
   } while (false)
 
 /** Log a warning. (with file path and line number).
  * \param args `printf` style format and arguments.
  */
-#define detailed_log_warn(args...)                                 \
-  do {                                                             \
-    if (LOG_LEVEL >= LOG_WARN) {                                   \
-      detailed_log_truncated_(LOG_WARN, __FILE__, __LINE__, args); \
-    }                                                              \
+#define detailed_log_warn(...)                                            \
+  do {                                                                    \
+    if (LOG_LEVEL >= LOG_WARN) {                                          \
+      detailed_log_truncated_(LOG_WARN, __FILE__, __LINE__, __VA_ARGS__); \
+    }                                                                     \
   } while (false)
 
 /** Log a notice. (with file path and line number).
  * \param args `printf` style format and arguments.
  */
-#define detailed_log_notice(args...)                                 \
-  do {                                                               \
-    if (LOG_LEVEL >= LOG_NOTICE) {                                   \
-      detailed_log_truncated_(LOG_NOTICE, __FILE__, __LINE__, args); \
-    }                                                                \
+#define detailed_log_notice(...)                                            \
+  do {                                                                      \
+    if (LOG_LEVEL >= LOG_NOTICE) {                                          \
+      detailed_log_truncated_(LOG_NOTICE, __FILE__, __LINE__, __VA_ARGS__); \
+    }                                                                       \
   } while (false)
 
 /** Log an information message. (with file path and line number).
  * \param args `printf` style format and arguments.
  */
-#define detailed_log_info(args...)                                 \
-  do {                                                             \
-    if (LOG_LEVEL >= LOG_INFO) {                                   \
-      detailed_log_truncated_(LOG_INFO, __FILE__, __LINE__, args); \
-    }                                                              \
+#define detailed_log_info(...)                                            \
+  do {                                                                    \
+    if (LOG_LEVEL >= LOG_INFO) {                                          \
+      detailed_log_truncated_(LOG_INFO, __FILE__, __LINE__, __VA_ARGS__); \
+    }                                                                     \
   } while (false)
 
 /** Log a debugging message. (with file path and line number).
  * \param args `printf` style format and arguments.
  */
-#define detailed_log_debug(args...)                                 \
-  do {                                                              \
-    if (LOG_LEVEL >= LOG_DEBUG) {                                   \
-      detailed_log_truncated_(LOG_DEBUG, __FILE__, __LINE__, args); \
-    }                                                               \
+#define detailed_log_debug(...)                                            \
+  do {                                                                     \
+    if (LOG_LEVEL >= LOG_DEBUG) {                                          \
+      detailed_log_truncated_(LOG_DEBUG, __FILE__, __LINE__, __VA_ARGS__); \
+    }                                                                      \
   } while (false)
 
 /** Log a debug message indicating entry to a function.
