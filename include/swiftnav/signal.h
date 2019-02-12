@@ -195,6 +195,25 @@ static inline char constellation_to_char(constellation_t cons) {
   }
 }
 
+static inline constellation_t char_to_constellation(char cons) {
+  switch (cons) {
+    case 'G':
+      return CONSTELLATION_GPS;
+    case 'S':
+      return CONSTELLATION_SBAS;
+    case 'R':
+      return CONSTELLATION_GLO;
+    case 'C':
+      return CONSTELLATION_BDS;
+    case 'J':
+      return CONSTELLATION_QZS;
+    case 'E':
+      return CONSTELLATION_GAL;
+    default:
+      return CONSTELLATION_INVALID;
+  }
+}
+
 const char *constellation_to_string(const constellation_t cons);
 
 constellation_t constellation_string_to_enum(const char *constellation_string);
