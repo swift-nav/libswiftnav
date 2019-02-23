@@ -62,19 +62,23 @@ endif()
 ################################################################################
 
 if (EXISTS ${CLANG_FORMAT_PATH})
-    # Format all files .c files (and their headers) in project
+  # Format all files .c files (and their headers) in project
+  if (NOT TARGET clang-format-all)
     add_custom_target(clang-format-all COMMAND ${CLANG_FORMAT_PATH} -i ../src/*.c ../include/swiftnav/*.h ../tests/*.c ../tests/common/*.c ../tests/common/*.h)
+  endif()
 endif()
 
 if (EXISTS ${CLANG_TIDY_PATH})
+  if (NOT TARGET clang-tidy-all)
     # Tidy all files .cc files (and their headers) in project
     # Second stage of pipeline makes an absolute path for each file. Note that
     # git ls-files and diff-tree behave differently in prepending the file path.
     add_custom_target(clang-tidy-all
-        COMMAND git ls-files -- '../src/*.c'
-        | sed 's/^...//' | sed 's\#\^\#${CMAKE_SOURCE_DIR}/\#'
-        | xargs -P 2 -I file "${CLANG_TIDY_PATH}"
-            -export-fixes="${CMAKE_SOURCE_DIR}/fixes.yaml" file --
-            "-I${CMAKE_SOURCE_DIR}/include/"
-        )
+      COMMAND git ls-files -- '../src/*.c'
+      | sed 's/^...//' | sed 's\#\^\#${CMAKE_SOURCE_DIR}/\#'
+      | xargs -P 2 -I file "${CLANG_TIDY_PATH}"
+      -export-fixes="${CMAKE_SOURCE_DIR}/fixes.yaml" file --
+      "-I${CMAKE_SOURCE_DIR}/include/"
+      )
+  endif()
 endif()
