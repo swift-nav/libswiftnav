@@ -116,9 +116,12 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
       break;
 
     case CODE_GPS_L2CM:
-    case CODE_GPS_L2P:
     case CODE_GPS_L2CL:
+    case CODE_GPS_L2CX:
+    case CODE_GPS_L2P:
     case CODE_GPS_L5I:
+    case CODE_GPS_L5Q:
+    case CODE_GPS_L5X:
       pseudorange_var = GPS_L2CM_PSEUDORANGE_VARIANCE +
                         PSEUDORANGE_CN0_COEFFICIENT * cn0_term +
                         PSEUDORANGE_ELE_COEFFICIENT * el_term * el_term;
@@ -133,6 +136,18 @@ static void calc_measurement_noises(const navigation_measurement_t *nav_meas,
 
     case CODE_BDS2_B1:
     case CODE_BDS2_B2:
+    case CODE_BDS3_B1CI:
+    case CODE_BDS3_B1CQ:
+    case CODE_BDS3_B1CX:
+    case CODE_BDS3_B3I:
+    case CODE_BDS3_B3Q:
+    case CODE_BDS3_B3X:
+    case CODE_BDS3_B5I:
+    case CODE_BDS3_B5Q:
+    case CODE_BDS3_B5X:
+    case CODE_BDS3_B7I:
+    case CODE_BDS3_B7Q:
+    case CODE_BDS3_B7X:
       pseudorange_var = BDS2_PSEUDORANGE_VARIANCE +
                         PSEUDORANGE_CN0_COEFFICIENT * cn0_term +
                         PSEUDORANGE_ELE_COEFFICIENT * el_term * el_term;
