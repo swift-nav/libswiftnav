@@ -291,7 +291,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GLO_CA_CHIPPING_RATE,
                        true,
                        GLO_PRN_PERIOD_MS,
-                       (float)GLO_L1_DOPPLER_MAX_HZ,
+                       GLO_L1_DOPPLER_MAX_HZ,
                        0.f, /* reference signal (see L1C in [1]) */
                        true},
     [CODE_GLO_L2OF] = {CONSTELLATION_GLO,
@@ -317,7 +317,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       0,
                       false,
                       0,
-                      (float)GLO_L1_DOPPLER_MAX_HZ,
+                      GLO_L1_DOPPLER_MAX_HZ,
                       0.25f, /* see L1P in [1] */
                       false},
     [CODE_GLO_L2P] = {CONSTELLATION_GLO,
@@ -594,7 +594,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         BDS3_B1C_CHIPPING_RATE,
                         false,
                         BDS3_B1C_PRN_PERIOD_MS,
-                        (float)BDS3_B1C_DOPPLER_MAX_HZ,
+                        BDS3_B1C_DOPPLER_MAX_HZ,
                         0.f, /* not used (interoperable with SBAS) */
                         false},
     [CODE_BDS3_B1CQ] = {CONSTELLATION_BDS,
@@ -607,7 +607,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         0,
                         false,
                         0,
-                        (float)BDS3_B1C_DOPPLER_MAX_HZ,
+                        BDS3_B1C_DOPPLER_MAX_HZ,
                         0.f, /* not used (interoperable with SBAS) */
                         false},
     [CODE_BDS3_B1CX] = {CONSTELLATION_BDS,
@@ -620,7 +620,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                         0,
                         false,
                         0,
-                        (float)BDS3_B1C_DOPPLER_MAX_HZ,
+                        BDS3_B1C_DOPPLER_MAX_HZ,
                         0.f, /* not used (interoperable with SBAS) */
                         false},
     [CODE_BDS3_B3I] = {CONSTELLATION_BDS,
@@ -778,7 +778,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        GPS_CA_CHIPPING_RATE,
                        false,
                        GPS_L1C_PRN_PERIOD_MS,
-                       (float)GPS_L1_DOPPLER_MAX_HZ,
+                       GPS_L1_DOPPLER_MAX_HZ,
                        0.f, /* see L1S in [1] */
                        false},
     [CODE_QZS_L1CQ] = {CONSTELLATION_QZS,
@@ -791,7 +791,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        false,
                        0,
-                       (float)GPS_L1_DOPPLER_MAX_HZ,
+                       GPS_L1_DOPPLER_MAX_HZ,
                        0.25f, /* see L1L in [1] */
                        false},
     [CODE_QZS_L1CX] = {CONSTELLATION_QZS,
@@ -804,7 +804,7 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                        0,
                        false,
                        0,
-                       (float)GPS_L1_DOPPLER_MAX_HZ,
+                       GPS_L1_DOPPLER_MAX_HZ,
                        0.25f, /* see L1X in [1] */
                        false},
     [CODE_QZS_L2CM] = {CONSTELLATION_QZS,
@@ -1050,7 +1050,7 @@ bool constellation_valid(constellation_t constellation) {
 /** Convert a code-specific signal index to a gnss_signal_t.
  *
  * \param code          Code to use.
- * \param code_index    Code-specific signal index in
+ * \param sat_index    Code-specific signal index in
  *                      [0, SIGNAL_COUNT_\<code\>).
  *
  * \return gnss_signal_t corresponding to code and sat_index.
@@ -1106,7 +1106,8 @@ double sid_to_carr_freq(gnss_signal_t sid) {
     assert(glo_map_valid(sid));
     return GLO_L1_HZ +
            (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) * GLO_L1_DELTA_HZ;
-  } else if (CODE_GLO_L2OF == sid.code) {
+  }
+  if (CODE_GLO_L2OF == sid.code) {
     assert(glo_map_valid(sid));
     return GLO_L2_HZ +
            (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) * GLO_L2_DELTA_HZ;
@@ -1128,7 +1129,8 @@ double sid_to_lambda(gnss_signal_t sid) {
     assert(glo_map_valid(sid));
     return GPS_C / (GLO_L1_HZ +
                     (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) * GLO_L1_DELTA_HZ);
-  } else if (CODE_GLO_L2OF == sid.code) {
+  }
+  if (CODE_GLO_L2OF == sid.code) {
     assert(glo_map_valid(sid));
     return GPS_C / (GLO_L2_HZ +
                     (glo_map_get_fcn(sid) - GLO_FCN_OFFSET) * GLO_L2_DELTA_HZ);

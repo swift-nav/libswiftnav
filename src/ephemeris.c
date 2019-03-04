@@ -234,20 +234,27 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
 
       memcpy(k1, ecef_vel_acc, sizeof(k1));
 
-      for (j = 0; j < 6; j++) y_tmp[j] = y[j] + h / 2 * k1[j];
+      for (j = 0; j < 6; j++) {
+        y_tmp[j] = y[j] + h / 2 * k1[j];
+      }
 
       calc_ecef_vel_acc(k2, &y_tmp[0], &y_tmp[3], e->glo.acc);
 
-      for (j = 0; j < 6; j++) y_tmp[j] = y[j] + h / 2 * k2[j];
+      for (j = 0; j < 6; j++) {
+        y_tmp[j] = y[j] + h / 2 * k2[j];
+      }
 
       calc_ecef_vel_acc(k3, &y_tmp[0], &y_tmp[3], e->glo.acc);
 
-      for (j = 0; j < 6; j++) y_tmp[j] = y[j] + h * k3[j];
+      for (j = 0; j < 6; j++) {
+        y_tmp[j] = y[j] + h * k3[j];
+      }
 
       calc_ecef_vel_acc(k4, &y_tmp[0], &y_tmp[3], e->glo.acc);
 
-      for (j = 0; j < 6; j++)
+      for (j = 0; j < 6; j++) {
         y[j] += h / 6 * (k1[j] + 2 * k2[j] + 2 * k3[j] + k4[j]);
+      }
 
       calc_ecef_vel_acc(ecef_vel_acc, &y[0], &y[3], e->glo.acc);
     }
@@ -368,7 +375,9 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
     temp = 1.0 - ecc * cos(ea_old);
     ea = ea + (ma - ea_old + ecc * sin(ea_old)) / temp;
     count++;
-    if (count > 5) break;
+    if (count > 5) {
+      break;
+    }
   } while (fabs(ea - ea_old) > 1.0E-14);
 
   double ea_dot = ma_dot / temp;
@@ -618,7 +627,7 @@ s8 calc_sat_az_el(const ephemeris_t *e,
   u8 iode;
   double clock_err, clock_rate_err;
   s8 ret;
-  if (check_e)
+  if (check_e) {
     ret = calc_sat_state(e,
                          t,
                          sat_pos,
@@ -628,7 +637,7 @@ s8 calc_sat_az_el(const ephemeris_t *e,
                          &clock_rate_err,
                          &iodc,
                          &iode);
-  else
+  } else {
     ret = calc_sat_state_n(e,
                            t,
                            sat_pos,
@@ -638,6 +647,7 @@ s8 calc_sat_az_el(const ephemeris_t *e,
                            &clock_rate_err,
                            &iodc,
                            &iode);
+  }
   if (ret != 0) {
     return ret;
   }
@@ -987,7 +997,9 @@ static const float gps_ura_values[URA_VALUE_TABLE_LEN] = {
  */
 float decode_ura_index(const u8 index) {
   /* Invalid index */
-  if (URA_VALUE_TABLE_LEN < index) return INVALID_URA_VALUE;
+  if (URA_VALUE_TABLE_LEN < index) {
+    return INVALID_URA_VALUE;
+  }
 
   return gps_ura_values[index];
 }
@@ -999,10 +1011,14 @@ float decode_ura_index(const u8 index) {
  */
 u8 encode_ura(float ura) {
   /* Negative URA */
-  if (0 > ura) return INVALID_GPS_URA_INDEX;
+  if (0 > ura) {
+    return INVALID_GPS_URA_INDEX;
+  }
 
   for (u8 i = 0; i < URA_VALUE_TABLE_LEN; i++) {
-    if (gps_ura_values[i] >= ura) return i;
+    if (gps_ura_values[i] >= ura) {
+      return i;
+    }
   }
 
   /* No valid URA index found */
@@ -1258,8 +1274,9 @@ bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b) {
   if (!sid_is_equal(a->sid, b->sid) || (a->ura != b->ura) ||
       (a->fit_interval != b->fit_interval) || (a->valid != b->valid) ||
       (a->health_bits != b->health_bits) || (a->toe.wn != b->toe.wn) ||
-      (a->toe.tow != b->toe.tow))
+      (a->toe.tow != b->toe.tow)) {
     return false;
+  }
 
   switch (sid_to_constellation(a->sid)) {
     case CONSTELLATION_GPS:
@@ -1535,16 +1552,17 @@ s8 get_tgd_correction(const ephemeris_t *eph,
         /* The first TGD correction is for the (E1,E5a) combination */
         *tgd = (float)(gamma * eph->kepler.tgd.gal_s[0]);
         return 0;
-      } else if (CODE_GAL_E1B == sid->code || CODE_GAL_E1C == sid->code ||
-                 CODE_GAL_E1X == sid->code || CODE_GAL_E7I == sid->code ||
-                 CODE_GAL_E7Q == sid->code || CODE_GAL_E7X == sid->code) {
+      }
+      if (CODE_GAL_E1B == sid->code || CODE_GAL_E1C == sid->code ||
+          CODE_GAL_E1X == sid->code || CODE_GAL_E7I == sid->code ||
+          CODE_GAL_E7Q == sid->code || CODE_GAL_E7X == sid->code) {
         /* The clock corrections from INAV are for the (E1,E5b) combination, so
          * use the matching group delay correction for all the other signals */
         *tgd = (float)(gamma * eph->kepler.tgd.gal_s[1]);
         return 0;
-      } else {
-        log_debug_sid(*sid, "TGD not applied for the signal");
       }
+      log_debug_sid(*sid, "TGD not applied for the signal");
+
       return -1;
     case CONSTELLATION_INVALID:
     case CONSTELLATION_SBAS:

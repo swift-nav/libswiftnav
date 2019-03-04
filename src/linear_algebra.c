@@ -121,44 +121,63 @@ s32 qrdecomp_square(const double *a, u32 rows, double *qt, double *r) {
 
   for (k = 0; k < rows - 1; k++) {
     scale = 0.0;
-    for (i = k; i < rows; i++) scale = fmax(scale, fabs(r[i * rows + k]));
+    for (i = k; i < rows; i++) {
+      scale = fmax(scale, fabs(r[i * rows + k]));
+    }
     if (scale == 0.0) {
       sing = -11;
       c[k] = d[k] = 0.0;
     } else {
-      for (i = k; i < rows; i++) r[i * rows + k] /= scale;
-      for (sum = 0.0, i = k; i < rows; i++)
+      for (i = k; i < rows; i++) {
+        r[i * rows + k] /= scale;
+      }
+      for (sum = 0.0, i = k; i < rows; i++) {
         sum += r[i * rows + k] * r[i * rows + k];
+      }
       sigma = copysign(sqrt(sum), r[k * rows + k]);
       r[k * rows + k] += sigma;
       c[k] = sigma * r[k * rows + k];
       d[k] = -scale * sigma;
       for (j = k + 1; j < rows; j++) {
-        for (sum = 0.0, i = k; i < rows; i++)
+        for (sum = 0.0, i = k; i < rows; i++) {
           sum += r[i * rows + k] * r[i * rows + j];
+        }
         tau = sum / c[k];
-        for (i = k; i < rows; i++) r[i * rows + j] -= tau * r[i * rows + k];
+        for (i = k; i < rows; i++) {
+          r[i * rows + j] -= tau * r[i * rows + k];
+        }
       }
     }
   }
   d[rows - 1] = r[(rows - 1) * rows + rows - 1];
-  if (d[rows - 1] == 0.0) sing = -11;
+  if (d[rows - 1] == 0.0) {
+    sing = -11;
+  }
   for (i = 0; i < rows; i++) {
-    for (j = 0; j < rows; j++) qt[i * rows + j] = 0.0;
+    for (j = 0; j < rows; j++) {
+      qt[i * rows + j] = 0.0;
+    }
     qt[i * rows + i] = 1.0;
   }
   for (k = 0; k < rows - 1; k++) {
-    if (c[k] != 0.0)
+    if (c[k] != 0.0) {
       for (j = 0; j < rows; j++) {
         sum = 0.0;
-        for (i = k; i < rows; i++) sum += r[i * rows + k] * qt[i * rows + j];
+        for (i = k; i < rows; i++) {
+          sum += r[i * rows + k] * qt[i * rows + j];
+        }
         sum /= c[k];
-        for (i = k; i < rows; i++) qt[i * rows + j] -= sum * r[i * rows + k];
+        for (i = k; i < rows; i++) {
+          qt[i * rows + j] -= sum * r[i * rows + k];
+        }
       }
+    }
   }
   for (i = 0; i < rows; i++) {
     r[i * rows + i] = d[i];
-    for (j = 0; j < i; j++) r[i * rows + j] = 0.0;
+    for (j = 0; j < i; j++) {
+      r[i * rows + j] = 0.0;
+    }
   }
 
   LSN_FREE(c);
@@ -182,7 +201,9 @@ void qtmult(const double *qt, u32 n, const double *b, double *x) {
   double sum;
   for (i = 0; i < n; i++) {
     sum = 0.0;
-    for (j = 0; j < n; j++) sum += qt[i * n + j] * b[j];
+    for (j = 0; j < n; j++) {
+      sum += qt[i * n + j] * b[j];
+    }
     x[i] = sum;
   }
 }
@@ -206,7 +227,9 @@ void rsolve(const double *r, u32 rows, u32 cols, const double *b, double *x) {
   double sum;
   for (i = rows - 1; i >= 0; i--) {
     sum = b[i];
-    for (j = i + 1; j < (int)rows; j++) sum -= r[i * cols + j] * x[j];
+    for (j = i + 1; j < (int)rows; j++) {
+      sum -= r[i * cols + j] * x[j];
+    }
     x[i] = sum / r[i * cols + i];
   }
 }
@@ -254,7 +277,9 @@ s32 qrsolve(const double *a, u32 rows, u32 cols, const double *b, double *x) {
  */
 static inline int inv2(const double *a, double *b) {
   double det = a[0] * a[3] - a[1] * a[2];
-  if (fabs(det) < MATRIX_EPSILON) return -1;
+  if (fabs(det) < MATRIX_EPSILON) {
+    return -1;
+  }
   b[0] = a[3] / det;
   b[1] = -a[1] / det;
   b[2] = -a[2] / det;
@@ -279,7 +304,9 @@ static inline int inv3(const double *a, double *b) {
        a[3 * 1 + 2] *
            -(a[3 * 0 + 0] * a[3 * 2 + 1] - a[3 * 0 + 1] * a[3 * 2 + 0]));
 
-  if (fabs(det) < MATRIX_EPSILON) return -1;
+  if (fabs(det) < MATRIX_EPSILON) {
+    return -1;
+  }
 
   b[3 * 0 + 0] =
       (a[3 * 1 + 1] * a[3 * 2 + 2] - a[3 * 1 + 2] * a[3 * 2 + 1]) / det;
@@ -340,7 +367,9 @@ static inline int inv4(const double *a, double *b) {
                        a[4 * 2 + 2] * -(a[4 * 0 + 0] * a[4 * 3 + 1] -
                                         a[4 * 0 + 1] * a[4 * 3 + 0])));
 
-  if (fabs(det) < MATRIX_EPSILON) return -1;
+  if (fabs(det) < MATRIX_EPSILON) {
+    return -1;
+  }
 
   b[4 * 0 + 0] =
       ((a[4 * 2 + 1] *
@@ -501,7 +530,9 @@ static int rref(u32 order, u32 cols, double *m) {
     maxrow = i;
     for (j = i + 1; j < (int)order; j++) {
       /* Find the maximum pivot */
-      if (fabs(m[j * cols + i]) > fabs(m[maxrow * cols + i])) maxrow = j;
+      if (fabs(m[j * cols + i]) > fabs(m[maxrow * cols + i])) {
+        maxrow = j;
+      }
     }
     row_swap(&m[i * cols], &m[maxrow * cols], cols);
     if (fabs(m[i * cols + i]) <= MATRIX_EPSILON) {
@@ -640,10 +671,15 @@ inline int matrix_inverse(u32 n, const double *const a, double *b) {
  *  \return     -1 if a is singular; 0 otherwise.
  */
 int matrix_pseudoinverse(u32 n, u32 m, const double *a, double *b) {
-  if (n == m) return matrix_inverse(n, a, b);
-  if (n > m) return matrix_ataiat(n, m, a, b);
-  if (n < m) /* n < m */
+  if (n == m) {
+    return matrix_inverse(n, a, b);
+  }
+  if (n > m) {
+    return matrix_ataiat(n, m, a, b);
+  }
+  if (n < m) { /* n < m */
     return matrix_ataati(n, m, a, b);
+  }
   return -1;
 }
 
@@ -685,12 +721,14 @@ inline int matrix_atwaiat(
       if (i == j) {
         /* If this is a diagonal element, just sum the squares of the
          * column of A weighted by the weighting vector. */
-        for (k = 0; k < n; k++)
+        for (k = 0; k < n; k++) {
           c[m * i + j] += w[k] * a[m * k + j] * a[m * k + j];
+        }
       } else {
         /* Otherwise, assign both off-diagonal elements at once. */
-        for (k = 0; k < n; k++)
+        for (k = 0; k < n; k++) {
           c[m * i + j] = c[m * j + i] = w[k] * a[m * k + j] * a[m * k + i];
+        }
         c[m * j + i] = c[m * i + j];
       }
     }
@@ -702,7 +740,9 @@ inline int matrix_atwaiat(
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {
         b[n * i + j] = 0;
-        for (k = 0; k < m; k++) b[n * i + j] += inv[n * i + k] * a[m * j + k];
+        for (k = 0; k < m; k++) {
+          b[n * i + j] += inv[n * i + k] * a[m * j + k];
+        }
       }
     }
   }
@@ -751,12 +791,14 @@ inline int matrix_atawati(
       if (i == j) {
         /* If this is a diagonal element, just sum the squares of the
          * column of A weighted by the weighting vector. */
-        for (k = 0; k < n; k++)
+        for (k = 0; k < n; k++) {
           c[m * i + j] += w[k] * a[m * k + j] * a[m * k + j];
+        }
       } else {
         /* Otherwise, assign both off-diagonal elements at once. */
-        for (k = 0; k < n; k++)
+        for (k = 0; k < n; k++) {
           c[m * i + j] = c[m * j + i] = w[k] * a[m * k + j] * a[m * k + i];
+        }
         c[m * j + i] = c[m * i + j];
       }
     }
@@ -768,7 +810,9 @@ inline int matrix_atawati(
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {
         b[n * i + j] = 0;
-        for (k = 0; k < m; k++) b[n * i + j] += inv[n * i + k] * a[m * j + k];
+        for (k = 0; k < m; k++) {
+          b[n * i + j] += inv[n * i + k] * a[m * j + k];
+        }
       }
     }
   }
@@ -795,7 +839,9 @@ inline int matrix_ataiat(u32 n, u32 m, const double *a, double *b) {
   int res;
   double *w = LSN_ALLOCATE(n * sizeof(double));
   assert(w != NULL);
-  for (i = 0; i < n; i++) w[i] = 1;
+  for (i = 0; i < n; i++) {
+    w[i] = 1;
+  }
   res = matrix_atwaiat(n, m, a, w, b);
   LSN_FREE(w);
   return res;
@@ -818,7 +864,9 @@ inline int matrix_ataati(u32 n, u32 m, const double *a, double *b) {
   int res;
   double *w = LSN_ALLOCATE(n * sizeof(double));
   assert(w != NULL);
-  for (i = 0; i < n; i++) w[i] = 1;
+  for (i = 0; i < n; i++) {
+    w[i] = 1;
+  }
   res = matrix_atawati(n, m, a, w, b);
   LSN_FREE(w);
   return res;
@@ -840,31 +888,40 @@ inline int matrix_ataati(u32 n, u32 m, const double *a, double *b) {
 inline void matrix_multiply(
     u32 n, u32 m, u32 p, const double *a, const double *b, double *c) {
   u32 i, j, k;
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     for (j = 0; j < p; j++) {
       c[p * i + j] = 0;
-      for (k = 0; k < m; k++) c[p * i + j] += a[m * i + k] * b[p * k + j];
+      for (k = 0; k < m; k++) {
+        c[p * i + j] += a[m * i + k] * b[p * k + j];
+      }
     }
+  }
 }
 
 inline void matrix_multiply_i(
     u32 n, u32 m, u32 p, const s32 *a, const s32 *b, s32 *c) {
   u32 i, j, k;
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     for (j = 0; j < p; j++) {
       c[p * i + j] = 0;
-      for (k = 0; k < m; k++) c[p * i + j] += a[m * i + k] * b[p * k + j];
+      for (k = 0; k < m; k++) {
+        c[p * i + j] += a[m * i + k] * b[p * k + j];
+      }
     }
+  }
 }
 
 inline void matrix_multiply_s64(
     u32 n, u32 m, u32 p, const s64 *a, const s64 *b, s64 *c) {
   u32 i, j, k;
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     for (j = 0; j < p; j++) {
       c[p * i + j] = 0;
-      for (k = 0; k < m; k++) c[p * i + j] += a[m * i + k] * b[p * k + j];
+      for (k = 0; k < m; k++) {
+        c[p * i + j] += a[m * i + k] * b[p * k + j];
+      }
     }
+  }
 }
 
 /** In-place multiplication of a matrix from right with a diagonal matrix.
@@ -944,26 +1001,26 @@ int matrix_wlsq_solve(u32 n,
   }
 
   /* AtW := A^{T} */
-  matrix_transpose(n, m, A, (double *)AtW);
+  matrix_transpose(n, m, A, AtW);
   /* multiply in the weight matrix if it is given */
   if (NULL != w) {
     /* AtW := A^{T} W */
-    matrix_multiply_diag_right(m, n, (double *)AtW, (double *)w);
+    matrix_multiply_diag_right(m, n, AtW, w);
   }
   /* AtWA := A^{T} W A */
-  matrix_multiply(m, n, m, (double *)AtW, (double *)A, (double *)AtWA);
+  matrix_multiply(m, n, m, AtW, A, AtWA);
 
   /* V  := AtWA^{-1} */
-  int res = matrix_inverse(m, (double *)AtWA, V);
+  int res = matrix_inverse(m, AtWA, V);
 
   /* produce solution only if a pointer for it is given */
   if ((0 == res) && (NULL != x)) {
     /* P is the weighted Moore-Penrose pseudoinverse of A */
     /* P := V * A^{T} * W */
-    matrix_multiply(m, m, n, V, (double *)AtW, (double *)P);
+    matrix_multiply(m, m, n, V, AtW, P);
 
     /* The wlsq solution is then P * b */
-    matrix_multiply(m, n, 1, (double *)P, (double *)b, (double *)x);
+    matrix_multiply(m, n, 1, P, b, x);
   }
 
   LSN_FREE(P);
@@ -1110,8 +1167,11 @@ void matrix_reconstruct_udu(const u32 n,
 void matrix_add_sc(
     u32 n, u32 m, const double *a, const double *b, double gamma, double *c) {
   u32 i, j;
-  for (i = 0; i < n; i++)
-    for (j = 0; j < m; j++) c[m * i + j] = a[m * i + j] + gamma * b[m * i + j];
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < m; j++) {
+      c[m * i + j] = a[m * i + j] + gamma * b[m * i + j];
+    }
+  }
 }
 
 /** Transpose a matrix.
@@ -1126,8 +1186,11 @@ void matrix_add_sc(
  */
 void matrix_transpose(u32 n, u32 m, const double *a, double *b) {
   u32 i, j;
-  for (i = 0; i < n; i++)
-    for (j = 0; j < m; j++) b[n * j + i] = a[m * i + j];
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < m; j++) {
+      b[n * j + i] = a[m * i + j];
+    }
+  }
 }
 
 /** Copy a matrix.
@@ -1141,8 +1204,11 @@ void matrix_transpose(u32 n, u32 m, const double *a, double *b) {
  */
 void matrix_copy(u32 n, u32 m, const double *a, double *b) {
   u32 i, j;
-  for (i = 0; i < n; i++)
-    for (j = 0; j < m; j++) b[m * i + j] = a[m * i + j];
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < m; j++) {
+      b[m * i + j] = a[m * i + j];
+    }
+  }
 }
 
 /* \} */
@@ -1165,7 +1231,9 @@ void matrix_copy(u32 n, u32 m, const double *a, double *b) {
 double vector_dot(u32 n, const double *a, const double *b) {
   u32 i;
   double out = 0;
-  for (i = 0; i < n; i++) out += a[i] * b[i];
+  for (i = 0; i < n; i++) {
+    out += a[i] * b[i];
+  }
   return out;
 }
 
@@ -1181,7 +1249,9 @@ double vector_dot(u32 n, const double *a, const double *b) {
 double vector_norm(u32 n, const double *a) {
   u32 i;
   double out = 0;
-  for (i = 0; i < n; i++) out += a[i] * a[i];
+  for (i = 0; i < n; i++) {
+    out += a[i] * a[i];
+  }
   return sqrt(out);
 }
 
@@ -1196,7 +1266,9 @@ double vector_norm(u32 n, const double *a) {
 double vector_mean(u32 n, const double *a) {
   u32 i;
   double out = 0;
-  for (i = 0; i < n; i++) out += a[i];
+  for (i = 0; i < n; i++) {
+    out += a[i];
+  }
   return out / n;
 }
 
@@ -1210,7 +1282,9 @@ double vector_mean(u32 n, const double *a) {
 void vector_normalize(u32 n, double *a) {
   u32 i;
   double norm = vector_norm(n, a);
-  for (i = 0; i < n; i++) a[i] /= norm;
+  for (i = 0; i < n; i++) {
+    a[i] /= norm;
+  }
 }
 
 /** Add a vector with a scaled vector.
@@ -1227,7 +1301,9 @@ void vector_normalize(u32 n, double *a) {
 void vector_add_sc(
     u32 n, const double *a, const double *b, double gamma, double *c) {
   u32 i;
-  for (i = 0; i < n; i++) c[i] = a[i] + gamma * b[i];
+  for (i = 0; i < n; i++) {
+    c[i] = a[i] + gamma * b[i];
+  }
 }
 
 /** Add two vectors.

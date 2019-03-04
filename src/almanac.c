@@ -294,7 +294,7 @@ u8 almanac_valid(const almanac_t *a, const gps_time_t *t) {
    * better. */
   /* If dt is greater than fit_interval / 2 seconds our ephemeris isn't valid.
    */
-  if (fabs(dt) > ((u32)a->fit_interval / 2)) {
+  if (fabs(dt) > (a->fit_interval / 2)) {
     return 0;
   }
 
@@ -350,8 +350,9 @@ bool almanac_equal(const almanac_t *a, const almanac_t *b) {
   if (!sid_is_equal(a->sid, b->sid) || (a->ura != b->ura) ||
       (a->fit_interval != b->fit_interval) || (a->valid != b->valid) ||
       (a->health_bits != b->health_bits) || (a->toa.wn != b->toa.wn) ||
-      (a->toa.tow != b->toa.tow))
+      (a->toa.tow != b->toa.tow)) {
     return false;
+  }
 
   switch (sid_to_constellation(a->sid)) {
     case CONSTELLATION_GPS:

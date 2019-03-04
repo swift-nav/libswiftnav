@@ -58,16 +58,14 @@ u8 encode_lock_time(double nm_lock_time) {
 
   if (ms_lock_time < 32) {
     return 0;
-  } else {
-    for (u8 i = 0; i < 16; i++) {
-      if (ms_lock_time > (1u << (i + 5))) {
-        continue;
-      } else {
-        return i;
-      }
-    }
-    return 15;
   }
+  for (u8 i = 0; i < 16; i++) {
+    if (ms_lock_time > (1u << (i + 5))) {
+      continue;
+    }
+    return i;
+  }
+  return 15;
 }
 
 /** Convert SBP lock time into navigation_measurement_t.lock_time.

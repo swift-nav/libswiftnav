@@ -204,8 +204,9 @@ s32 intersection(u32 na,
 u32 insertion_index(u32 na, size_t sa, const void *as, void *b, cmp_fn cmp) {
   u32 index;
   for (index = 0; index < na && cmp((const char *)as + index * sa, b) < 0;
-       index++)
+       index++) {
     ;
+  }
   return index;
 }
 

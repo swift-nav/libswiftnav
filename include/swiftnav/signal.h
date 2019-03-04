@@ -490,7 +490,7 @@ int sat_code_to_string(
 int sid_to_string(char *s, int n, const gnss_signal_t sid);
 bool sid_valid(gnss_signal_t sid);
 bool constellation_valid(constellation_t constellation);
-gnss_signal_t sid_from_code_index(code_t code, u16 code_index);
+gnss_signal_t sid_from_code_index(code_t code, u16 sat_index);
 u16 sid_to_code_index(gnss_signal_t sid);
 constellation_t code_to_constellation(code_t code);
 double sid_to_carr_freq(gnss_signal_t sid);
