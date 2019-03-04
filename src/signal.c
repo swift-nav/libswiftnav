@@ -21,7 +21,7 @@
  * \{ */
 
 /** Element in the code data table. */
-typedef struct {
+typedef struct { /* NOLINT(clang-analyzer-optin.performance.Padding) */
   constellation_t constellation;
   u16 sat_count;
   u16 sig_count;
@@ -1241,7 +1241,7 @@ const u8 *get_sbas_prn_list(sbas_system_t sbas_system) {
 sbas_system_t get_sbas_system(const gnss_signal_t sid) {
   assert(IS_SBAS(sid));
   for (sbas_system_t sbas_system = (sbas_system_t)0; sbas_system < SBAS_COUNT;
-       sbas_system = (sbas_system_t)(sbas_system + 1)) {
+       sbas_system = sbas_system + 1) {
     if (is_value_in_array(sbas_prn_table[sbas_system].prn_list,
                           MAX_SBAS_SATS_PER_SYSTEM,
                           sid.sat)) {

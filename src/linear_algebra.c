@@ -523,6 +523,7 @@ static void row_swap(double *a, double *b, u32 size) {
 /* rref is "reduced row echelon form" -- a helper function for the
  * gaussian elimination code. */
 static int rref(u32 order, u32 cols, double *m) {
+  assert(cols > 0);
   int i, j, k, maxrow;
   double tmp;
 
@@ -586,6 +587,7 @@ inline int matrix_inverse(u32 n, const double *const a, double *b) {
    * least-squares fit.  (This may apply also to a least-norm fit if
    * we have too few satellites.)  The Cholesky decomposition becomes
    * even more important for unscented filters. */
+  assert(n > 0);
   int res;
   u32 i, j, k, cols = n * 2;
   double *m = LSN_ALLOCATE(n * cols * sizeof(double));
@@ -702,6 +704,8 @@ inline int matrix_atwaiat(
     u32 n, u32 m, const double *a, const double *w, double *b) {
   u32 i, j, k;
 
+  assert(n > 0 && m > 0);
+
   /* Check to make sure we're doing the right operation */
   if (n <= m) {
     return -1;
@@ -770,6 +774,8 @@ inline int matrix_atwaiat(
 inline int matrix_atawati(
     u32 n, u32 m, const double *a, const double *w, double *b) {
   u32 i, j, k;
+
+  assert(n > 0 && m > 0);
 
   /* Check to make sure we're doing the right operation */
   if (n <= m) {

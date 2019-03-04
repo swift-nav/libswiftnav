@@ -761,6 +761,7 @@ static s8 pvt_iter(const u8 n_used,
                    const bool disable_velocity,
                    const navigation_measurement_t **nav_meas,
                    lsq_data_t *lsq_data) {
+  assert(n_used > 0);
   /* Reset state to zero */
   memset(lsq_data->rx_state, 0, 8 * sizeof(double));
 
