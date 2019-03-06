@@ -95,13 +95,13 @@ pipeline {
                             fi
                             '''
 
-                        //                        sh '''#!/bin/bash -ex
-                        //                            (cd build && make clang-tidy-all)
-                        //                            if [ -e "fixes.yaml" ]; then
-                        //                                echo "clang-tidy warning found"
-                        //                                exit 1
-                        //                            fi
-                        //                            '''
+                        sh '''#!/bin/bash -ex
+                            (cd build && make clang-tidy-all)
+                            if [ -e "fixes.yaml" ]; then
+                                echo "clang-tidy warning found"
+                                exit 1
+                            fi
+                            '''
                     }
                     post {
                         always {
