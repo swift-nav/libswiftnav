@@ -13,6 +13,9 @@
 #ifndef LIBSWIFTNAV_MEMCPY_S_H
 #define LIBSWIFTNAV_MEMCPY_S_H
 
+#if defined(_MSC_VER)
+#include <memory.h>
+#elif !defined(_CRT_MEMORY_DEFINED)
 #include <assert.h>
 
 #include <swiftnav/logging.h>
@@ -45,5 +48,7 @@ memcpy_s_t memcpy_s(void *dest, size_t destsize, const void *src, size_t count);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#endif /* _CRT_MEMORY_DEFINED */
 
 #endif /* LIBSWIFTNAV_MEMCPY_S_H */

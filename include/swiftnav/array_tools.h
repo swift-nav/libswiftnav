@@ -23,9 +23,7 @@
  * \param count Length of array
  * \param value Value to look for
  */
-static inline bool is_value_in_array(const u8 array[const],
-                                     u8 count,
-                                     u8 value) {
+static inline bool is_value_in_array(const u8 *array, u8 count, u8 value) {
   for (u8 i = 0; i < count; i++) {
     if (array[i] == value) {
       return true;
@@ -35,7 +33,7 @@ static inline bool is_value_in_array(const u8 array[const],
   return false;
 }
 
-static inline bool is_value_in_array_u16(const u16 array[const],
+static inline bool is_value_in_array_u16(const u16 *array,
                                          u8 count,
                                          u16 value) {
   for (u8 i = 0; i < count; i++) {

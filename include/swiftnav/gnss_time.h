@@ -143,10 +143,10 @@ extern "C" {
 #define BDS_SECOND_TO_GPS_SECOND 14
 
 /** Structure representing a GPS time. */
-typedef struct __attribute__((packed)) {
+typedef struct PACKED({
   double tow; /**< Seconds since the GPS start of week. */
   s16 wn;     /**< GPS week number. */
-} gps_time_t;
+} gps_time_t);
 
 /** Structure representing a GLO epoch.
     Please refer to GLO ICD v5.1 2008 for details */

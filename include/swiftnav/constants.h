@@ -23,19 +23,13 @@ extern "C" {
  * Useful constants.
  * \{ */
 
-#ifdef __cplusplus
 #ifndef M_PI
-#define M_PI                                                                 \
-  3.14159265358979323846264338 /**< This is not part of the C++ standard, so \
-                                  we define it ourselves if needed. */
-#endif                         /* M_PI */
+#define M_PI 3.14159265358979323846264338
+#endif
 
 #ifndef M_PI_2
-#define M_PI_2                                                                 \
-  1.5707963267948966192313216 /**< This is not part of the C++ standard, so we \
-                                 define it ourselves if needed. */
-#endif                        /* M_PI_2 */
-#endif                        /* __cplusplus */
+#define M_PI_2 1.5707963267948966192313216
+#endif
 
 #define R2D (180.0 / M_PI) /**< Conversion factor from radians to degrees. */
 #define D2R (M_PI / 180.0) /**< Conversion factor from degrees to radians. */

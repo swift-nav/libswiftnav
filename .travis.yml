@@ -35,6 +35,17 @@ matrix:
     # Unit and integration test builds with GCC.
     # ------------------------------------------------------------------
 
+    # GCC 4.8 / Unit Test.
+    # Support for older compilers is required due to need to build Python
+    # extensions for Python 2.7
+    - env: TEST_SUITE=unit CXX=g++-4.8
+      compiler: gcc-4.8
+      addons: { apt: { packages: ["cmake",
+                                  "gcc-4.8",
+                                  "g++-4.8",
+                                  "check"],
+                       sources: ["ubuntu-toolchain-r-test"] } }
+
     # GCC 6 / Unit Test.
     - env: TEST_SUITE=unit
       compiler: gcc-6
@@ -57,6 +68,20 @@ matrix:
                                   "libc++-dev",
                                   "libc++abi-dev"] } }
 
+    - os: osx
+      osx_image: xcode10.1
+
+    - os: windows
+      dist: 1803-containers
+      script:
+        - ./msvc.bat 32
+        - ls -la ./build/Release/swiftnav.lib || exit 1
+
+    - os: windows
+      dist: 1803-containers
+      script:
+        - ./msvc.bat 64
+        - ls -la ./build/Release/swiftnav.lib || exit 1
 
 # **********************************************************************
 # INSTALL AND BUILD STEPS:

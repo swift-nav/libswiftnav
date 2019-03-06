@@ -13,11 +13,53 @@
 #ifndef LIBSWIFTNAV_COMMON_H
 #define LIBSWIFTNAV_COMMON_H
 
+#include <assert.h>
+#include <stdint.h>
+
+#ifdef LSN_USE_HEAP
+#include <stdlib.h>
+#define LSN_ALLOCATE(size) malloc(size)
+#define LSN_FREE(ptr) free((void *)ptr)
+#else /* LSN_USE_HEAP */
+#ifdef _MSC_VER
+#include <malloc.h>
+#define LSN_ALLOCATE(size) _malloca(size)
+#else /* _MSC_VER */
+#ifdef __GLIBC__
+#include <alloca.h> /* glibc has an alloca specific header */
+#else               /* __GLIBC__ */
+#include <stdlib.h>
+#endif /* __GLIBC__ */
+#define LSN_ALLOCATE(size) alloca(size)
+#endif /* _MSC_VER */
+#define LSN_FREE(ptr)
+#endif /* LSN_USE_HEAP */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
+#ifdef _MSC_VER
+#define PACKED(declaration) \
+  __pragma(pack(push, 1)) declaration __pragma(pack(pop))
+#else /* _MSC_VER */
+#define PACKED(declaration) __attribute__((__packed__)) declaration
+#endif /* _MSC_VER */
+
+#if defined(_MSC_VER)
+#if defined(swiftnav_EXTENSION)
+/* If building Python C extension -> leave empty */
+#define LIBSWIFTNAV_DECLSPEC
+#elif defined(swiftnav_EXPORTS) /* swiftnav_EXTENSION */
+#define LIBSWIFTNAV_DECLSPEC __declspec(dllexport)
+#else /* swiftnav_EXPORTS */
+#define LIBSWIFTNAV_DECLSPEC __declspec(dllimport)
+#endif                  /* swiftnav_EXPORTS */
+#elif defined(__GNUC__) /* _MSC_VER */
+#define LIBSWIFTNAV_DECLSPEC __attribute__((visibility("default")))
+#else /* __GNUC__ */
+#pragma error Unknown dynamic link import / export semantics.
+#endif /* __GNUC__ */
 
 /** \defgroup common Common definitions
  * Common definitions used throughout the library.

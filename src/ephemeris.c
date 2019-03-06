@@ -93,9 +93,9 @@ static inline s32 sign_extend24(u32 arg) {
  */
 static s8 calc_sat_state_xyz(const ephemeris_t *e,
                              const gps_time_t *t,
-                             double pos[static 3],
-                             double vel[static 3],
-                             double acc[static 3],
+                             double pos[3],
+                             double vel[3],
+                             double acc[3],
                              double *clock_err,
                              double *clock_rate_err,
                              u16 *iodc,
@@ -144,10 +144,10 @@ static s8 calc_sat_state_xyz(const ephemeris_t *e,
  * \param vel Pointer to velocity input array (ECEF)
  * \param acc Pointer to acceleration input array (ECI)
  */
-static void calc_ecef_vel_acc(double vel_acc[static 6],
-                              const double pos[static 3],
-                              const double vel[static 3],
-                              const double acc[static 3]) {
+static void calc_ecef_vel_acc(double vel_acc[6],
+                              const double pos[3],
+                              const double vel[3],
+                              const double acc[3]) {
   double r = sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]);
 
   double m_r3 = GLO_GM / (r * r * r);
@@ -186,9 +186,9 @@ static void calc_ecef_vel_acc(double vel_acc[static 6],
  */
 static s8 calc_sat_state_glo(const ephemeris_t *e,
                              const gps_time_t *t,
-                             double pos[static 3],
-                             double vel[static 3],
-                             double acc[static 3],
+                             double pos[3],
+                             double vel[3],
+                             double acc[3],
                              double *clock_err,
                              double *clock_rate_err,
                              u16 *iodc,
@@ -291,9 +291,9 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
  */
 static s8 calc_sat_state_kepler(const ephemeris_t *e,
                                 const gps_time_t *t,
-                                double pos[static 3],
-                                double vel[static 3],
-                                double acc[static 3],
+                                double pos[3],
+                                double vel[3],
+                                double acc[3],
                                 double *clock_err,
                                 double *clock_rate_err,
                                 u16 *iodc,
@@ -556,9 +556,9 @@ s8 calc_sat_state(const ephemeris_t *e,
  */
 s8 calc_sat_state_n(const ephemeris_t *e,
                     const gps_time_t *t,
-                    double pos[static 3],
-                    double vel[static 3],
-                    double acc[static 3],
+                    double pos[3],
+                    double vel[3],
+                    double acc[3],
                     double *clock_err,
                     double *clock_rate_err,
                     u16 *iodc,
@@ -607,7 +607,7 @@ s8 calc_sat_state_n(const ephemeris_t *e,
  */
 s8 calc_sat_az_el(const ephemeris_t *e,
                   const gps_time_t *t,
-                  const double ref[static 3],
+                  const double ref[3],
                   double *az,
                   double *el,
                   bool check_e) {
@@ -661,8 +661,8 @@ s8 calc_sat_az_el(const ephemeris_t *e,
  */
 s8 calc_sat_doppler(const ephemeris_t *e,
                     const gps_time_t *t,
-                    const double ref_pos[static 3],
-                    const double ref_vel[static 3],
+                    const double ref_pos[3],
+                    const double ref_vel[3],
                     double *doppler) {
   double sat_pos[3];
   double sat_vel[3];

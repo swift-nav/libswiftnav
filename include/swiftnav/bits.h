@@ -19,6 +19,14 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* See https://github.com/wine-mirror/wine/blob/master/include/windows.h#L22
+ * If enabled, MSVC will give out warning for the sign extend macros:
+ * 'unnamed type definition in parentheses'
+ */
+#if defined(_MSC_VER) && (_MSC_VER >= 800) && !defined(__cplusplus)
+#pragma warning(disable : 4116)
+#endif
+
 /**
  * Sign extension macro for 32-bit integers.
  *

@@ -10,8 +10,10 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <swiftnav/common.h>
@@ -108,7 +110,12 @@ s32 qrdecomp_square(const double *a, u32 rows, double *qt, double *r) {
   s32 sing = 0;
   u32 i, j, k;
 
-  double c[rows], d[rows];
+  double *c = LSN_ALLOCATE(rows * sizeof(double));
+  assert(c != NULL);
+
+  double *d = LSN_ALLOCATE(rows * sizeof(double));
+  assert(d != NULL);
+
   double scale, sigma, sum, tau;
   memcpy(r, a, rows * rows * sizeof(*r));
 
@@ -153,6 +160,10 @@ s32 qrdecomp_square(const double *a, u32 rows, double *qt, double *r) {
     r[i * rows + i] = d[i];
     for (j = 0; j < i; j++) r[i * rows + j] = 0.0;
   }
+
+  LSN_FREE(c);
+  LSN_FREE(d);
+
   return sing;
 }
 
@@ -215,11 +226,21 @@ void rsolve(const double *r, u32 rows, u32 cols, const double *b, double *x) {
  *  \return     -1 if a is singular; 0 otherwise.
  */
 s32 qrsolve(const double *a, u32 rows, u32 cols, const double *b, double *x) {
-  double qt[rows * rows], r[rows * cols];
+  double *qt = LSN_ALLOCATE(rows * rows * sizeof(double));
+  assert(qt != NULL);
+
+  double *r = LSN_ALLOCATE(rows * rows * sizeof(double));
+  assert(qt != NULL);
+
   s32 sing = qrdecomp_square(a, rows, qt, r);
-  if (sing != 0) return sing;
-  qtmult(qt, rows, b, x);
-  rsolve(r, rows, cols, x, x);
+
+  if (sing == 0) {
+    qtmult(qt, rows, b, x);
+    rsolve(r, rows, cols, x, x);
+  }
+
+  LSN_FREE(qt);
+  LSN_FREE(r);
   return sing;
 }
 
@@ -536,20 +557,21 @@ inline int matrix_inverse(u32 n, const double *const a, double *b) {
    * even more important for unscented filters. */
   int res;
   u32 i, j, k, cols = n * 2;
-  double m[n * cols];
+  double *m = LSN_ALLOCATE(n * cols * sizeof(double));
+  assert(m != NULL);
 
   /* For now, we special-case only small matrices.  If we bring back
    * multiple antennas, it won't be hard to auto-generate cases 5 and
    * 6 if hard-coded routines prove more efficient. */
   switch (n) {
     case 2:
-      return inv2(a, b);
+      res = inv2(a, b);
       break;
     case 3:
-      return inv3(a, b);
+      res = inv3(a, b);
       break;
     case 4:
-      return inv4(a, b);
+      res = inv4(a, b);
       break;
     default:
       /* Set up an augmented matrix M = [A I] */
@@ -569,7 +591,7 @@ inline int matrix_inverse(u32 n, const double *const a, double *b) {
 
       if ((res = rref(n, cols, m)) < 0) {
         /* Singular matrix! */
-        return res;
+        break;
       }
 
       /* Extract B from the augmented matrix M = [I inv(A)] */
@@ -579,9 +601,12 @@ inline int matrix_inverse(u32 n, const double *const a, double *b) {
         }
       }
 
-      return 0;
+      res = 0;
       break;
   }
+
+  LSN_FREE(m);
+  return res;
 }
 
 /** Invert a non-square matrix (least-squares or least-norm solution).
@@ -640,13 +665,21 @@ int matrix_pseudoinverse(u32 n, u32 m, const double *a, double *b) {
 inline int matrix_atwaiat(
     u32 n, u32 m, const double *a, const double *w, double *b) {
   u32 i, j, k;
-  double c[m * m], inv[m * m];
+
   /* Check to make sure we're doing the right operation */
-  if (n <= m) return -1;
+  if (n <= m) {
+    return -1;
+  }
+
+  double *c = LSN_ALLOCATE(m * m * sizeof(double));
+  assert(c != NULL);
+
+  double *inv = LSN_ALLOCATE(m * m * sizeof(double));
+  assert(inv != NULL);
 
   /* The resulting matrix is symmetric, so compute both halves at
    * once */
-  for (i = 0; i < m; i++)
+  for (i = 0; i < m; i++) {
     for (j = i; j < m; j++) {
       c[m * i + j] = 0;
       if (i == j) {
@@ -661,13 +694,22 @@ inline int matrix_atwaiat(
         c[m * j + i] = c[m * i + j];
       }
     }
-  if (matrix_inverse(m, c, inv) < 0) return -1;
-  for (i = 0; i < m; i++)
-    for (j = 0; j < n; j++) {
-      b[n * i + j] = 0;
-      for (k = 0; k < m; k++) b[n * i + j] += inv[n * i + k] * a[m * j + k];
+  }
+
+  int res = matrix_inverse(m, c, inv);
+
+  if (0 == res) {
+    for (i = 0; i < m; i++) {
+      for (j = 0; j < n; j++) {
+        b[n * i + j] = 0;
+        for (k = 0; k < m; k++) b[n * i + j] += inv[n * i + k] * a[m * j + k];
+      }
     }
-  return 0;
+  }
+
+  LSN_FREE(c);
+  LSN_FREE(inv);
+  return res;
 }
 
 /** Compute \f$ B := A^T (A W A^{T})^{-1} \f$.
@@ -688,14 +730,22 @@ inline int matrix_atwaiat(
 inline int matrix_atawati(
     u32 n, u32 m, const double *a, const double *w, double *b) {
   u32 i, j, k;
-  double c[m * m], inv[m * m];
+
   /* Check to make sure we're doing the right operation */
-  if (n <= m) return -1;
+  if (n <= m) {
+    return -1;
+  }
+
+  double *c = LSN_ALLOCATE(m * m * sizeof(double));
+  assert(c != NULL);
+
+  double *inv = LSN_ALLOCATE(m * m * sizeof(double));
+  assert(inv != NULL);
 
   /* TODO(MP) -- implement! */
   /* The resulting matrix is symmetric, so compute both halves at
    * once */
-  for (i = 0; i < m; i++)
+  for (i = 0; i < m; i++) {
     for (j = i; j < m; j++) {
       c[m * i + j] = 0;
       if (i == j) {
@@ -710,13 +760,22 @@ inline int matrix_atawati(
         c[m * j + i] = c[m * i + j];
       }
     }
-  if (matrix_inverse(m, c, inv) < 0) return -1;
-  for (i = 0; i < m; i++)
-    for (j = 0; j < n; j++) {
-      b[n * i + j] = 0;
-      for (k = 0; k < m; k++) b[n * i + j] += inv[n * i + k] * a[m * j + k];
+  }
+
+  int res = matrix_inverse(m, c, inv);
+
+  if (0 == res) {
+    for (i = 0; i < m; i++) {
+      for (j = 0; j < n; j++) {
+        b[n * i + j] = 0;
+        for (k = 0; k < m; k++) b[n * i + j] += inv[n * i + k] * a[m * j + k];
+      }
     }
-  return 0;
+  }
+
+  LSN_FREE(c);
+  LSN_FREE(inv);
+  return res;
 }
 
 /** Compute \f$ B := (A^{T} A)^{-1} A^{T} \f$.
@@ -733,9 +792,13 @@ inline int matrix_atawati(
  */
 inline int matrix_ataiat(u32 n, u32 m, const double *a, double *b) {
   u32 i;
-  double w[n];
+  int res;
+  double *w = LSN_ALLOCATE(n * sizeof(double));
+  assert(w != NULL);
   for (i = 0; i < n; i++) w[i] = 1;
-  return matrix_atwaiat(n, m, a, w, b);
+  res = matrix_atwaiat(n, m, a, w, b);
+  LSN_FREE(w);
+  return res;
 }
 
 /** Compute \f$ B := A^{T} (A A^{T})^{-1} \f$.
@@ -752,9 +815,13 @@ inline int matrix_ataiat(u32 n, u32 m, const double *a, double *b) {
  */
 inline int matrix_ataati(u32 n, u32 m, const double *a, double *b) {
   u32 i;
-  double w[n];
+  int res;
+  double *w = LSN_ALLOCATE(n * sizeof(double));
+  assert(w != NULL);
   for (i = 0; i < n; i++) w[i] = 1;
-  return matrix_atawati(n, m, a, w, b);
+  res = matrix_atawati(n, m, a, w, b);
+  LSN_FREE(w);
+  return res;
 }
 
 /** Multiply two matrices.
@@ -859,14 +926,21 @@ int matrix_wlsq_solve(u32 n,
     return -1;
   }
 
-  double P[m][n];
-  double AtW[n][m];
-  double AtWA[n][n];
-  double localV[m][m];
+  double *P = LSN_ALLOCATE(m * n * sizeof(double));
+  assert(P != NULL);
+
+  double *AtW = LSN_ALLOCATE(n * m * sizeof(double));
+  assert(AtW != NULL);
+
+  double *AtWA = LSN_ALLOCATE(n * n * sizeof(double));
+  assert(AtWA != NULL);
+
+  double *localV = LSN_ALLOCATE(m * m * sizeof(double));
+  assert(localV != NULL);
 
   /* use local version of V if the output pointer is not assigned */
   if (NULL == V) {
-    V = *localV;
+    V = localV;
   }
 
   /* AtW := A^{T} */
@@ -880,12 +954,10 @@ int matrix_wlsq_solve(u32 n,
   matrix_multiply(m, n, m, (double *)AtW, (double *)A, (double *)AtWA);
 
   /* V  := AtWA^{-1} */
-  if (matrix_inverse(m, (double *)AtWA, V) < 0) {
-    return -1;
-  }
+  int res = matrix_inverse(m, (double *)AtWA, V);
 
   /* produce solution only if a pointer for it is given */
-  if (NULL != x) {
+  if ((0 == res) && (NULL != x)) {
     /* P is the weighted Moore-Penrose pseudoinverse of A */
     /* P := V * A^{T} * W */
     matrix_multiply(m, m, n, V, (double *)AtW, (double *)P);
@@ -894,7 +966,12 @@ int matrix_wlsq_solve(u32 n,
     matrix_multiply(m, n, 1, (double *)P, (double *)b, (double *)x);
   }
 
-  return 0;
+  LSN_FREE(P);
+  LSN_FREE(AtW);
+  LSN_FREE(AtWA);
+  LSN_FREE(localV);
+
+  return res;
 }
 
 /** Zero lower triangle of an `n` x `n` square matrix.
@@ -1203,9 +1280,13 @@ void vector_cross(const double a[3], const double b[3], double c[3]) {
  *  \return             Distance between points
  */
 double vector_distance(u32 n, const double *a, const double *b) {
-  double c[n];
+  double res;
+  double *c = LSN_ALLOCATE(n * sizeof(double));
+  assert(c != NULL);
   vector_subtract(n, a, b, c);
-  return vector_norm(n, c);
+  res = vector_norm(n, c);
+  LSN_FREE(c);
+  return res;
 }
 
 bool double_approx_eq(const double a, const double b) {

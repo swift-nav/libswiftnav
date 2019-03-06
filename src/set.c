@@ -20,7 +20,9 @@
  * know it works fine, even though technically doing math
  * on void * is undefined in C.
  */
+#ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wpointer-arith"
+#endif /* __GNUC__ */
 
 /** \defgroup set Utility functions for dealing with sets
  * \{ */
@@ -63,7 +65,7 @@ bool is_set(u8 n, size_t sz, const void *set, cmp_fn cmp) {
 
   const void *current = set;
   for (u8 i = 1; i < n; i++) {
-    const void *next = set + sz * i;
+    const void *next = (const char *)set + sz * i;
     if (cmp(next, current) <= 0) {
       return false;
     }
@@ -111,8 +113,8 @@ s32 intersection_map(
   u32 ia, ib, n = 0;
 
   for (ia = 0, ib = 0; ia < na && ib < nb; ia++, ib++) {
-    const void *a = as + sa * ia;
-    const void *b = bs + sb * ib;
+    const void *a = (const char *)as + sa * ia;
+    const void *b = (const char *)bs + sb * ib;
     if (cmp(a, b) < 0) {
       ib--;
     } else if (cmp(a, b) > 0) {
@@ -126,9 +128,9 @@ s32 intersection_map(
 }
 
 struct intersection_context {
-  void *a_out;
+  uintptr_t a_out;
   size_t sa;
-  void *b_out;
+  uintptr_t b_out;
   size_t sb;
 };
 
@@ -140,11 +142,11 @@ static void intersection_function(void *context,
   struct intersection_context *ctxt = (struct intersection_context *)context;
 
   if (ctxt->a_out) {
-    memcpy(ctxt->a_out, a, ctxt->sa);
+    memcpy((void *)ctxt->a_out, a, ctxt->sa);
     ctxt->a_out += ctxt->sa;
   }
   if (ctxt->b_out) {
-    memcpy(ctxt->b_out, b, ctxt->sb);
+    memcpy((void *)ctxt->b_out, b, ctxt->sb);
     ctxt->b_out += ctxt->sb;
   }
 }
@@ -182,7 +184,7 @@ s32 intersection(u32 na,
                  void *b_out,
                  cmp_fn cmp) {
   struct intersection_context ctxt = {
-      .a_out = a_out, .sa = sa, .b_out = b_out, .sb = sb};
+      .a_out = (uintptr_t)a_out, .sa = sa, .b_out = (uintptr_t)b_out, .sb = sb};
 
   return intersection_map(
       na, sa, as, nb, sb, bs, cmp, &ctxt, intersection_function);
@@ -201,7 +203,8 @@ s32 intersection(u32 na,
  */
 u32 insertion_index(u32 na, size_t sa, const void *as, void *b, cmp_fn cmp) {
   u32 index;
-  for (index = 0; index < na && cmp(as + index * sa, b) < 0; index++)
+  for (index = 0; index < na && cmp((const char *)as + index * sa, b) < 0;
+       index++)
     ;
   return index;
 }
@@ -225,7 +228,9 @@ u32 remove_element(
   u32 index = insertion_index(na, sa, as, b, cmp);
 
   memcpy(a_out, as, index * sa);
-  memcpy(a_out + index * sa, as + (index + 1) * sa, (na - index - 1) * sa);
+  memcpy((char *)a_out + index * sa,
+         (const char *)as + (index + 1) * sa,
+         (na - index - 1) * sa);
 
   return index;
 }
@@ -247,8 +252,10 @@ u32 insert_element(
   u32 index = insertion_index(na, sa, as, b, cmp);
 
   memcpy(a_out, as, index * sa);
-  memcpy(a_out + index * sa, b, sa);
-  memcpy(a_out + (index + 1) * sa, as + index * sa, (na - index) * sa);
+  memcpy((char *)a_out + index * sa, b, sa);
+  memcpy((char *)a_out + (index + 1) * sa,
+         (const char *)as + index * sa,
+         (na - index) * sa);
 
   return index;
 }

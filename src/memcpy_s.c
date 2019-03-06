@@ -16,6 +16,8 @@
 #include <swiftnav/logging.h>
 #include <swiftnav/memcpy_s.h>
 
+#if !defined(_MSC_VER) && !defined(_CRT_MEMORY_DEFINED)
+
 memcpy_s_t memcpy_s(void *dest,
                     size_t destsize,
                     const void *src,
@@ -58,3 +60,5 @@ memcpy_s_t memcpy_s(void *dest,
 
   return MEMCPY_S_OK;
 }
+
+#endif /* _CRT_MEMORY_DEFINED */
