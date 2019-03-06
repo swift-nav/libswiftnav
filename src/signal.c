@@ -21,7 +21,7 @@
  * \{ */
 
 /** Element in the code data table. */
-typedef struct {
+typedef struct { /* NOLINT(clang-analyzer-optin.performance.Padding) */
   constellation_t constellation;
   u16 sat_count;
   u16 sig_count;
