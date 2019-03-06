@@ -1,3 +1,7 @@
 # See: http://releases.llvm.org/6.0.1/tools/clang/tools/extra/docs/clang-tidy/checks/list.html
 
-Checks: "*,-cert-msc30-c,-cert-msc50-cpp,-misc-static-assert,-hicpp-static-assert,-cert-dcl03-c,-hicpp-signed-bitwise,-hicpp-no-assembler,-bugprone-integer-division,-llvm-header-guard"
+Checks: "*,
+         -cert-dcl03-c,-misc-static-assert,-hicpp-static-assert,
+         -hicpp-signed-bitwise,
+         -bugprone-integer-division,
+         -llvm-header-guard"
