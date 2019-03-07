@@ -178,7 +178,7 @@ s8 calc_sat_doppler_almanac(const almanac_t *a,
                             double *doppler);
 
 u8 almanac_valid(const almanac_t *a, const gps_time_t *t);
-u8 almanac_healthy(const almanac_t *a);
+u8 almanac_healthy(const almanac_t *alm);
 
 bool almanac_equal(const almanac_t *a, const almanac_t *b);
 bool almanac_decode_week(const u32 words[8], almanac_ref_week_t *ref_week);

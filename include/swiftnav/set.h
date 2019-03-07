@@ -40,7 +40,7 @@ typedef int (*cmp_fn)(const void *a, const void *b);
 int cmp_s32_s32(const void *a, const void *b);
 
 bool is_set(u8 n, size_t sz, const void *set, cmp_fn cmp);
-bool is_sid_set(u8 len, const gnss_signal_t *sids);
+bool is_sid_set(u8 n, const gnss_signal_t *sids);
 
 s32 intersection_map(
     u32 na,

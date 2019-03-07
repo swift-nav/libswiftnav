@@ -284,8 +284,12 @@ double gpsdifftime(const gps_time_t *end, const gps_time_t *beginning) {
   if (end->wn == WN_UNKNOWN || beginning->wn == WN_UNKNOWN) {
     /* One or both of the week numbers is unspecified.  Assume times
        are within +/- 0.5 weeks of each other. */
-    if (dt > WEEK_SECS / 2) dt -= WEEK_SECS;
-    if (dt < -WEEK_SECS / 2) dt += WEEK_SECS;
+    if (dt > WEEK_SECS / 2) {
+      dt -= WEEK_SECS;
+    }
+    if (dt < -WEEK_SECS / 2) {
+      dt += WEEK_SECS;
+    }
   } else {
     /* Week numbers were provided - use them. */
     dt += (end->wn - beginning->wn) * WEEK_SECS;
@@ -300,7 +304,6 @@ double gpsdifftime(const gps_time_t *end, const gps_time_t *beginning) {
 void add_secs(gps_time_t *time, double secs) {
   time->tow += secs;
   unsafe_normalize_gps_time(time);
-  return;
 }
 
 /** Given an unknown week number in t, fill in the week number from ref
@@ -315,10 +318,11 @@ void gps_time_match_weeks(gps_time_t *t, const gps_time_t *ref) {
   }
   t->wn = ref->wn;
   double dt = t->tow - ref->tow;
-  if (dt > WEEK_SECS / 2)
+  if (dt > WEEK_SECS / 2) {
     t->wn--;
-  else if (dt < -WEEK_SECS / 2)
+  } else if (dt < -WEEK_SECS / 2) {
     t->wn++;
+  }
 
   if (!gps_time_valid(t)) {
     log_info(
@@ -392,7 +396,8 @@ gps_time_t glo2gps(const glo_time_t *glo_t, const utc_params_t *utc_params) {
 
   if (glo_t->nt < GLO_NT_0_FLOOR) {
     return GPS_TIME_UNKNOWN;
-  } else if (glo_t->nt <= GLO_NT_0_CEILING) {
+  }
+  if (glo_t->nt <= GLO_NT_0_CEILING) {
     year_of_cycle = 1;
     day_of_year = glo_t->nt;
   } else if (glo_t->nt <= GLO_NT_1_CEILING) {
@@ -782,9 +787,8 @@ u8 days_in_month(u16 year, u8 month) {
       0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
   if (month == 2 && is_leap_year(year)) {
     return 29;
-  } else {
-    return days_in_month_lookup[month];
   }
+  return days_in_month_lookup[month];
 }
 
 /** Difference between GPS and UTC time. Use UTC params struct if given,
@@ -883,9 +887,8 @@ bool is_leap_second_event(const gps_time_t *t, const utc_params_t *p) {
     if (dt >= 0.0 && dt < 1.0) {
       /* time is during the leap second event */
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
   /* iterate through the leap second table, starting from latest */
@@ -897,7 +900,8 @@ bool is_leap_second_event(const gps_time_t *t, const utc_params_t *p) {
     if (dt > 1.0) {
       /* time is past the last known leap second event */
       return false;
-    } else if (dt >= 0.0 && dt < 1.0) {
+    }
+    if (dt >= 0.0 && dt < 1.0) {
       /* time is during the leap second event */
       return true;
     }

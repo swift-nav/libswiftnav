@@ -60,10 +60,10 @@ void llhrad2deg(const double llh_rad[3], double llh_deg[3]) {
  *  llhdeg2rad(arr1, arr1);
  */
 
-void llhdeg2rad(const double llg_deg[3], double llh_rad[3]) {
-  llh_rad[0] = llg_deg[0] * D2R;
-  llh_rad[1] = llg_deg[1] * D2R;
-  llh_rad[2] = llg_deg[2];
+void llhdeg2rad(const double llh_deg[3], double llh_rad[3]) {
+  llh_rad[0] = llh_deg[0] * D2R;
+  llh_rad[1] = llh_deg[1] * D2R;
+  llh_rad[2] = llh_deg[2];
 }
 
 /** Converts from WGS84 geodetic coordinates (latitude, longitude and height)
@@ -130,10 +130,11 @@ void wgsecef2llh(const double ecef[3], double llh[3]) {
   const double p = sqrt(ecef[0] * ecef[0] + ecef[1] * ecef[1]);
 
   /* Compute longitude first, this can be done exactly. */
-  if (p != 0)
+  if (p != 0) {
     llh[1] = atan2(ecef[1], ecef[0]);
-  else
+  } else {
     llh[1] = 0;
+  }
 
   /* If we are close to the pole then convergence is very slow, treat this is a
    * special case. */
@@ -205,10 +206,9 @@ void wgsecef2llh(const double ecef[3], double llh[3]) {
     /* Check for convergence and exit early if we have converged. */
     if (fabs(S - prev_S) < 1e-16 && fabs(C - prev_C) < 1e-16) {
       break;
-    } else {
-      prev_S = S;
-      prev_C = C;
     }
+    prev_S = S;
+    prev_C = C;
   }
 
   A_n = sqrt(S * S + C * C);
@@ -379,7 +379,9 @@ void wgsecef2azel(const double ecef[3],
   *azimuth = atan2(ned[1], ned[0]);
   /* atan2 returns angle in range [-pi, pi], usually azimuth is defined in the
    * range [0, 2pi]. */
-  if (*azimuth < 0) *azimuth += 2 * M_PI;
+  if (*azimuth < 0) {
+    *azimuth += 2 * M_PI;
+  }
 
   *elevation = asin(-ned[2] / vector_norm(3, ned));
 }

@@ -253,15 +253,15 @@ bool gps_time_valid(const gps_time_t *t);
 
 bool gps_current_time_valid(const gps_time_t *t);
 
-void normalize_gps_time(gps_time_t *t_gps);
-void unsafe_normalize_gps_time(gps_time_t *t_gps);
+void normalize_gps_time(gps_time_t *t);
+void unsafe_normalize_gps_time(gps_time_t *t);
 
 time_t gps2time(const gps_time_t *t_gps);
 gps_time_t time2gps_t(const time_t t_unix);
 void gps2utc(const gps_time_t *t, utc_tm *u, const utc_params_t *p);
 void make_utc_tm(const gps_time_t *t, utc_tm *u);
 
-bool gpstime_in_range(const gps_time_t *begin,
+bool gpstime_in_range(const gps_time_t *bgn,
                       const gps_time_t *end,
                       const gps_time_t *t);
 double gpsdifftime(const gps_time_t *end, const gps_time_t *beginning);

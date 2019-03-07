@@ -19,7 +19,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-void glo_map_init(void (*lock)(void), void (*unlock)(void));
+void glo_map_init(void (*lock_cb)(void), void (*unlock_cb)(void));
 bool glo_map_valid(const gnss_signal_t sid);
 void glo_map_set_slot_id(u16 fcn, u16 glo_slot_id);
 u16 glo_map_get_fcn(gnss_signal_t sid);

@@ -36,15 +36,21 @@ const char *truncate_path_(char *path) {
   assert(NULL != path);
   int i;
 
-  if (path[0] == '\0') return "";
-  for (i = strlen(path) - 1; i >= 0 && path[i] == '/'; i--)
+  if (path[0] == '\0') {
+    return "";
+  }
+  for (i = strlen(path) - 1; i >= 0 && path[i] == '/'; i--) {
     ;
-  if (i == -1) return "/";
-  // set the trailing character to null in case it was '/'
-  // e.g. /dev/null/
+  }
+  if (i == -1) {
+    return "/";
+  }
+  /* set the trailing character to null in case it was '/' e.g. /dev/null/ */
   path[i + 1] = '\0';
-  // Go backwards until the prior '/'
-  while (i >= 0 && path[i] != '/') i--;
-  // Return a pointer to the remainder
+  /* Go backwards until the prior '/' */
+  while (i >= 0 && path[i] != '/') {
+    i--;
+  }
+  /* Return a pointer to the remainder */
   return &path[i + 1];
 }

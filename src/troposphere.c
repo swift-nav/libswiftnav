@@ -96,14 +96,14 @@ static double lookup_param(double lat, const double *lut) {
   if (lat <= 15.0) {
     return lut[0];
     /* Below/above +/- 75 degrees latitude */
-  } else if (lat >= 75.0) {
-    return lut[4];
-  } else {
-    /* Otherwise interpolate the value */
-    u8 i = (u8)((lat - 15.0) / 15.0);
-    double lat_i = i * 15.0 + 15.0;
-    return lut[i] + (lut[i + 1] - lut[i]) / 15.0 * (lat - lat_i);
   }
+  if (lat >= 75.0) {
+    return lut[4];
+  }
+  /* Otherwise interpolate the value */
+  u8 i = (u8)((lat - 15.0) / 15.0);
+  double lat_i = i * 15.0 + 15.0;
+  return lut[i] + (lut[i + 1] - lut[i]) / 15.0 * (lat - lat_i);
 }
 
 static double calc_param(double lat,

@@ -90,13 +90,16 @@ s32 getbits(const u8 *buff, u32 pos, u8 len) {
 void setbitu(u8 *buff, u32 pos, u32 len, u32 data) {
   u32 mask = 1u << (len - 1);
 
-  if (len <= 0 || 32 < len) return;
+  if (len <= 0 || 32 < len) {
+    return;
+  }
 
   for (u32 i = pos; i < pos + len; i++, mask >>= 1) {
-    if (data & mask)
+    if (data & mask) {
       buff[i / 8] |= 1u << (7 - i % 8);
-    else
+    } else {
       buff[i / 8] &= ~(1u << (7 - i % 8));
+    }
   }
 }
 
@@ -200,7 +203,9 @@ void bitcopy(
  */
 u8 count_bits_u64(u64 v, u8 bv) {
   u8 r = 0;
-  for (int i = 0; i < 16; i++) r += bitn[(v >> (i * 4)) & 0xf];
+  for (int i = 0; i < 16; i++) {
+    r += bitn[(v >> (i * 4)) & 0xf];
+  }
   return bv == 1 ? r : 64 - r;
 }
 
@@ -214,7 +219,9 @@ u8 count_bits_u64(u64 v, u8 bv) {
  */
 u8 count_bits_u32(u32 v, u8 bv) {
   u8 r = 0;
-  for (int i = 0; i < 8; i++) r += bitn[(v >> (i * 4)) & 0xf];
+  for (int i = 0; i < 8; i++) {
+    r += bitn[(v >> (i * 4)) & 0xf];
+  }
   return bv == 1 ? r : 32 - r;
 }
 
@@ -228,7 +235,9 @@ u8 count_bits_u32(u32 v, u8 bv) {
  */
 u8 count_bits_u16(u16 v, u8 bv) {
   u8 r = 0;
-  for (int i = 0; i < 4; i++) r += bitn[(v >> (i * 4)) & 0xf];
+  for (int i = 0; i < 4; i++) {
+    r += bitn[(v >> (i * 4)) & 0xf];
+  }
   return bv == 1 ? r : 16 - r;
 }
 
@@ -242,7 +251,9 @@ u8 count_bits_u16(u16 v, u8 bv) {
  */
 u8 count_bits_u8(u8 v, u8 bv) {
   u8 r = 0;
-  for (int i = 0; i < 2; i++) r += bitn[(v >> (i * 4)) & 0xf];
+  for (int i = 0; i < 2; i++) {
+    r += bitn[(v >> (i * 4)) & 0xf];
+  }
   return bv == 1 ? r : 8 - r;
 }
 

@@ -505,10 +505,10 @@ static s8 pvt_solve(const u8 n_used,
   /* Solve the state update and its covariance matrix */
   int ret = matrix_wlsq_solve(n_used,
                               N_STATE,
-                              (double *)G,
+                              G,
                               (double *)lsq_data->omp_range,
-                              (double *)w,
-                              (double *)correction,
+                              w,
+                              correction,
                               (double *)lsq_data->V);
   if (ret < 0) {
     log_warn("Under-determined system, n_used = %u", n_used);
@@ -547,7 +547,7 @@ static s8 pvt_solve(const u8 n_used,
      move to get a better solution) in terms of the receiver state. */
   if (matrix_wlsq_solve(n_used,
                         N_STATE,
-                        (double *)G,
+                        G,
                         (double *)lsq_data->omp_range,
                         NULL,
                         NULL,
@@ -761,6 +761,7 @@ static s8 pvt_iter(const u8 n_used,
                    const bool disable_velocity,
                    const navigation_measurement_t **nav_meas,
                    lsq_data_t *lsq_data) {
+  assert(n_used > 0);
   /* Reset state to zero */
   memset(lsq_data->rx_state, 0, 8 * sizeof(double));
 
