@@ -30,7 +30,7 @@ set(SRCS
 
 add_executable(test-swiftnav-common ${HDRS} ${SRCS})
 target_link_libraries(test-swiftnav-common check-utils
-                      ${CHECK_LIBRARIES} m pthread)
+                      ${CHECK_LIBRARIES} pthread)
 
 set_property(TARGET test-swiftnav-common PROPERTY C_STANDARD 99)
 

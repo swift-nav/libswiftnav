@@ -64,6 +64,7 @@ set(SRCS
 add_library(swiftnav ${HDRS} ${SRCS})
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(swiftnav m)
 install(FILES ${HDRS} DESTINATION include/swiftnav)
 install(TARGETS swiftnav DESTINATION lib)
 
