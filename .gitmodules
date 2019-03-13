@@ -1,3 +1,0 @@
-[submodule "modules/docker-recipes"]
-	path = modules/docker-recipes
-	url = ssh://git@github.com/swift-nav/docker-recipes
