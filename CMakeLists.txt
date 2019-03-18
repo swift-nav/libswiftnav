@@ -64,7 +64,6 @@ set(SRCS
 add_library(swiftnav ${HDRS} ${SRCS})
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(swiftnav m)
 install(FILES ${HDRS} DESTINATION include/swiftnav)
 install(TARGETS swiftnav DESTINATION lib)
 
@@ -72,6 +71,7 @@ set_property(TARGET swiftnav PROPERTY C_STANDARD 99)
 
 if (MSVC)
 else ()
+    target_link_libraries(swiftnav m)
     target_compile_options(swiftnav PRIVATE "-Werror")
     target_compile_options(swiftnav PRIVATE "-Wmissing-prototypes")
     target_compile_options(swiftnav PRIVATE "-Wimplicit")
