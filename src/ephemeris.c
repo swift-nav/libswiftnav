@@ -1507,14 +1507,10 @@ s8 get_tgd_correction(const ephemeris_t *eph,
     case CONSTELLATION_BDS:
       if (CODE_BDS2_B1 == sid->code) {
         *tgd = eph->kepler.tgd.bds_s[0];
-        return 0;
-      } else if (CODE_BDS2_B2 == sid->code) {
-        *tgd = eph->kepler.tgd.bds_s[1];
-        return 0;
       } else {
-        log_debug_sid(*sid, "TGD not applied for the signal");
+        *tgd = eph->kepler.tgd.bds_s[1];
       }
-      return -1;
+      return 0;
     case CONSTELLATION_GLO:
       /* As per GLO ICD v5.1 2008:
          d_tau = t_f2 - t_f1 -> t_f1 = t_f2 - d_tau.
