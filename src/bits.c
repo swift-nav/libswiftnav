@@ -51,11 +51,11 @@ u8 parity(u32 x) {
  * \param y Second byte
  * \return z Interleaved bytes x with y
  */
-u16 bytes_interleave(const u8 *x, const u8 *y) {
+u16 bytes_interleave(const u8 x, const u8 y) {
   u16 z = 0;
 
   for (u8 i = 0; i < sizeof(x) * CHAR_BIT; i++) {
-    z |= (*x & 1U << i) << i | (*y & 1U << i) << (i + 1);
+    z |= (x & 1U << i) << i | (y & 1U << i) << (i + 1);
   }
   return z;
 }
