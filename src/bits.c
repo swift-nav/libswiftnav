@@ -38,6 +38,28 @@ u8 parity(u32 x) {
   return (0x6996 >> x) & 1;
 }
 
+/* Interleave two bytes.
+ *
+ * Interleaves bits of x and y, so that all of the
+ * bits of x are in the even positions and y in the odd;
+ * z gets the resulting Morton Number.
+ *
+ * Taken from:
+ * https://graphics.stanford.edu/~seander/bithacks.html#InterleaveTableObvious
+ *
+ * \param x First byte
+ * \param y Second byte
+ * \return z Interleaved bytes x with y
+ */
+u16 bytes_interleave(const u8 x, const u8 y) {
+  u16 z = 0;
+
+  for (u8 i = 0; i < sizeof(x) * CHAR_BIT; i++) {
+    z |= (x & 1U << i) << i | (y & 1U << i) << (i + 1);
+  }
+  return z;
+}
+
 /** Get bit field from buffer as an unsigned integer.
  * Unpacks `len` bits at bit position `pos` from the start of the buffer.
  * Maximum bit field length is 32 bits, i.e. `len <= 32`.
