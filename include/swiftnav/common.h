@@ -47,8 +47,8 @@ extern "C" {
 #endif /* _MSC_VER */
 
 #if defined(_MSC_VER)
-#if defined(swiftnav_EXTENSION)
-/* If building Python C extension -> leave empty */
+#if !defined(_WINDLL)
+/* Leave empty when doing non-dll build */
 #define LIBSWIFTNAV_DECLSPEC
 #elif defined(swiftnav_EXPORTS) /* swiftnav_EXTENSION */
 #define LIBSWIFTNAV_DECLSPEC __declspec(dllexport)
