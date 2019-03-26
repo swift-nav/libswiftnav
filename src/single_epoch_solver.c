@@ -1175,6 +1175,41 @@ const char *pvt_err_msg[] = {
     "Not enough measurements for solution (< 4)",
 };
 
+/***********************************************************************
+ * Satellite selection predicates that preserve calc_PVT() functionality
+ ***********************************************************************/
+static bool gps_only(gnss_signal_t sid, gnss_sid_set_t sids_used) {
+  (void)sids_used;
+  return IS_GPS(sid);
+}
+static bool gps_l1ca_when_possible(gnss_signal_t sid,
+                                   gnss_sid_set_t sids_used) {
+  if (CODE_GPS_L1CA == sid.code) {
+    return true;
+  }
+  bool use_this = false;
+  u8 sats_used = sid_set_get_sat_count(&sids_used);
+  if (sats_used <= N_STATE + RAIM_MAX_EXCLUSIONS) {
+    gnss_sid_set_t new_sids_used = sids_used;
+    sid_set_add(&new_sids_used, sid);
+    use_this = (sid_set_get_sat_count(&new_sids_used) >
+                sid_set_get_sat_count(&sids_used));
+  }
+  return use_this;
+}
+static bool all_constellations(gnss_signal_t sid, gnss_sid_set_t sids_used) {
+  (void)sid;
+  (void)sids_used;
+  return true;
+}
+static bool l1_only(gnss_signal_t sid, gnss_sid_set_t sids_used) {
+  (void)sids_used;
+  if ((CODE_GPS_L1CA == sid.code) || (CODE_GAL_E1B == sid.code)) {
+    return true;
+  }
+  return false;
+}
+
 /** Try to calculate a single point gps solution
  *
  * Note: Observations must have SPP OK flag set, and a valid pseudorange.
@@ -1185,12 +1220,8 @@ const char *pvt_err_msg[] = {
  * \param tor the time of reception
  * \param disable_raim passing True will omit RAIM check/repair functionality
  * \param disable_velocity passing True will disable velocity output
- * \param strategy measurement selection strategy
- *   - ALL_CONSTELLATIONS : use all signals
- *   - GPS_ONLY : use only GPS signals
- *   - GPS_L1CA_WHEN_POSSIBLE : use only GPS L1CA signals if there are enough,
- *                              otherwise include just enough other signals to
- *                              perform full RAIM
+ * \param measurement selection predicate
+ *   - returns true if a signal type should be used
  * \param soln output solution struct
  * \param dops output dilution of precision information
  * \param raim_removed_sids optional arg that returns the sids of excluded
@@ -1209,20 +1240,19 @@ const char *pvt_err_msg[] = {
  *   - `-6`: pvt_iter didn't converge
  *   - `-7`: Not enough measurements for solution
  */
-s8 calc_PVT(const u8 n_used,
-            const navigation_measurement_t *nav_meas,
-            const gps_time_t *tor,
-            const bool disable_raim,
-            const bool disable_velocity,
-            enum processing_strategy_t strategy,
-            gnss_solution *soln,
-            dops_t *dops,
-            gnss_sid_set_t *raim_removed_sids) {
+s8 calc_PVT_pred(const u8 n_used,
+                 const navigation_measurement_t *nav_meas,
+                 const gps_time_t *tor,
+                 const bool disable_raim,
+                 const bool disable_velocity,
+                 sat_sel_predicate pred,
+                 gnss_solution *soln,
+                 dops_t *dops,
+                 gnss_sid_set_t *raim_removed_sids) {
   assert(tor != NULL);
   assert(soln != NULL);
   assert(dops != NULL);
   u8 processed_signals = 0;
-  u8 sats_used = 0;
   gnss_sid_set_t sids_used;
   sid_set_init(&sids_used);
   const navigation_measurement_t **nav_meas_ptrs =
@@ -1230,38 +1260,9 @@ s8 calc_PVT(const u8 n_used,
   assert(nav_meas_ptrs != NULL);
 
   for (u8 i = 0; i < n_used; i++) {
-    bool use_this = false;
-    switch (strategy) {
-      case ALL_CONSTELLATIONS:
-        use_this = true;
-        break;
-      case GPS_ONLY:
-        use_this = IS_GPS(nav_meas[i].sid);
-        break;
-      case GPS_L1CA_WHEN_POSSIBLE:
-        /* use all the GPS L1CA codes (that are sorted first in nav_meas), and
-         * after those enough observations to be able to do full RAIM */
-        if (CODE_GPS_L1CA == nav_meas[i].sid.code) {
-          use_this = true;
-        } else if (sats_used <= N_STATE + RAIM_MAX_EXCLUSIONS) {
-          gnss_sid_set_t new_sids_used = sids_used;
-          sid_set_add(&new_sids_used, nav_meas[i].sid);
-          use_this = (sid_set_get_sat_count(&new_sids_used) >
-                      sid_set_get_sat_count(&sids_used));
-        }
-        break;
-      case L1_ONLY:
-        /* use all the available 1575.42 MHz codes */
-        use_this = (CODE_GPS_L1CA == nav_meas[i].sid.code) ||
-                   (CODE_GAL_E1B == nav_meas[i].sid.code);
-        break;
-      default:
-        break;
-    }
-    if (use_this) {
+    if (pred(nav_meas[i].sid, sids_used)) {
       nav_meas_ptrs[processed_signals++] = &nav_meas[i];
       sid_set_add(&sids_used, nav_meas[i].sid);
-      sats_used = sid_set_get_sat_count(&sids_used);
     }
   }
 
@@ -1388,16 +1389,16 @@ s8 calc_PVT(const u8 n_used,
   /* filter out solutions with bad DOP, unlikely altitude, or ITAR violation */
   s8 ret = filter_solution(soln, dops);
   if (0 != ret) {
-    if (ret == PVT_PDOP_TOO_HIGH && strategy != ALL_CONSTELLATIONS) {
-      return calc_PVT(n_used,
-                      nav_meas,
-                      tor,
-                      disable_raim,
-                      disable_velocity,
-                      ALL_CONSTELLATIONS,
-                      soln,
-                      dops,
-                      raim_removed_sids);
+    if (ret == PVT_PDOP_TOO_HIGH) {
+      return calc_PVT_pred(n_used,
+                           nav_meas,
+                           tor,
+                           disable_raim,
+                           disable_velocity,
+                           &all_constellations,
+                           soln,
+                           dops,
+                           raim_removed_sids);
     }
     memset(soln, 0, sizeof(*soln));
     return ret;
@@ -1412,7 +1413,7 @@ s8 calc_PVT(const u8 n_used,
     memset(&(lsq_data.rx_state[4]), 0, 4 * sizeof(double));
   }
 
-  if (ALL_CONSTELLATIONS != strategy && !disable_raim) {
+  if (!disable_raim) {
     /* Only some of the signals were put through the solver and RAIM.
      * Compute the residual of the rest of the measurements against the
      * solution and mark outliers */
@@ -1437,6 +1438,68 @@ s8 calc_PVT(const u8 n_used,
   }
 
   return raim_flag;
+}
+
+/*******************
+ * Legacy calc_PVT()
+ *******************/
+s8 calc_PVT(const u8 n_used,
+            const navigation_measurement_t *nav_meas,
+            const gps_time_t *tor,
+            const bool disable_raim,
+            const bool disable_velocity,
+            enum processing_strategy_t strategy,
+            gnss_solution *soln,
+            dops_t *dops,
+            gnss_sid_set_t *raim_removed_sids) {
+  switch (strategy) {
+    case GPS_ONLY:
+      return calc_PVT_pred(n_used,
+                           nav_meas,
+                           tor,
+                           disable_raim,
+                           disable_velocity,
+                           gps_only,
+                           soln,
+                           dops,
+                           raim_removed_sids);
+      break;
+    case GPS_L1CA_WHEN_POSSIBLE:
+      return calc_PVT_pred(n_used,
+                           nav_meas,
+                           tor,
+                           disable_raim,
+                           disable_velocity,
+                           gps_l1ca_when_possible,
+                           soln,
+                           dops,
+                           raim_removed_sids);
+      break;
+    case L1_ONLY:
+      return calc_PVT_pred(n_used,
+                           nav_meas,
+                           tor,
+                           disable_raim,
+                           disable_velocity,
+                           l1_only,
+                           soln,
+                           dops,
+                           raim_removed_sids);
+      break;
+    default:
+    case ALL_CONSTELLATIONS:
+      return calc_PVT_pred(n_used,
+                           nav_meas,
+                           tor,
+                           disable_raim,
+                           disable_velocity,
+                           all_constellations,
+                           soln,
+                           dops,
+                           raim_removed_sids);
+      break;
+  }
+  return 0;
 }
 
 u8 get_max_channels(void) { return MAX_CHANNELS; }

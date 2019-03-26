@@ -113,6 +113,18 @@ s8 calc_PVT(const u8 n_used,
             dops_t *dops,
             gnss_sid_set_t *raim_removed_sids);
 
+typedef bool (*sat_sel_predicate)(gnss_signal_t sid, gnss_sid_set_t sids_used);
+
+s8 calc_PVT_pred(const u8 n_used,
+                 const navigation_measurement_t nav_meas[],
+                 const gps_time_t *tor,
+                 const bool disable_raim,
+                 const bool disable_velocity,
+                 sat_sel_predicate pred,
+                 gnss_solution *soln,
+                 dops_t *dops,
+                 gnss_sid_set_t *raim_removed_sids);
+
 u8 get_max_channels(void);
 
 #ifdef __cplusplus
