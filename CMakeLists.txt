@@ -8,6 +8,8 @@ include(FindCheck)
 set(MAX_CHANNELS "63" CACHE STRING "Maximum number of concurrent GNSS channels to support.")
 configure_file(src/max_channels.h.in max_channels.h)
 
+include(GNUInstallDirs)
+
 set(HDRS
     include/swiftnav/almanac.h
     include/swiftnav/array_tools.h
@@ -64,8 +66,8 @@ set(SRCS
 add_library(swiftnav ${HDRS} ${SRCS})
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-install(FILES ${HDRS} DESTINATION include/swiftnav)
-install(TARGETS swiftnav DESTINATION lib)
+install(FILES ${HDRS} DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/swiftnav)
+install(TARGETS swiftnav DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
 set_property(TARGET swiftnav PROPERTY C_STANDARD 99)
 
