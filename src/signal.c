@@ -1079,7 +1079,7 @@ u16 sid_to_code_index(gnss_signal_t sid) {
  * \return Constellation to which sid belongs.
  */
 constellation_t sid_to_constellation(gnss_signal_t sid) {
-  return code_to_constellation(sid.code);
+  return code_table[sid.code].constellation;
 }
 
 /** Get the constellation to which a code belongs.
