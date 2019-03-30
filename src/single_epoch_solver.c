@@ -1389,7 +1389,7 @@ s8 calc_PVT_pred(const u8 n_used,
   /* filter out solutions with bad DOP, unlikely altitude, or ITAR violation */
   s8 ret = filter_solution(soln, dops);
   if (0 != ret) {
-    if (ret == PVT_PDOP_TOO_HIGH) {
+    if ((ret == PVT_PDOP_TOO_HIGH) && (pred != all_constellations)) {
       return calc_PVT_pred(n_used,
                            nav_meas,
                            tor,
