@@ -13,10 +13,10 @@
 #ifndef LIBSWIFTNAV_NAV_MEAS_H
 #define LIBSWIFTNAV_NAV_MEAS_H
 
-#include <swiftnav/ch_meas.h>
-#include <swiftnav/common.h>
-#include <swiftnav/gnss_time.h>
-#include <swiftnav/signal.h>
+#include <libswiftnav/ch_meas.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/gnss_time.h>
+#include <libswiftnav/signal.h>
 
 #ifdef __cplusplus
 extern "C" {

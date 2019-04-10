@@ -2,8 +2,8 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include <swiftnav/constants.h>
-#include <swiftnav/coord_system.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/coord_system.h>
 #include "check_suites.h"
 #include "common/check_utils.h"
 

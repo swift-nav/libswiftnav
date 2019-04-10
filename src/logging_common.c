@@ -14,7 +14,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include <swiftnav/logging.h>
+#include <libswiftnav/logging.h>
 
 const char *level_string[] = {
     "EMERGENCY",

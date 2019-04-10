@@ -13,7 +13,7 @@
 /* TODO: MAP-532 add units tests */
 #include <assert.h>
 #include <string.h>
-#include <swiftnav/fifo_byte.h>
+#include <libswiftnav/fifo_byte.h>
 
 #define INDEX_MASK(p_fifo) ((p_fifo)->buffer_size - 1)
 #define LENGTH(p_fifo) \

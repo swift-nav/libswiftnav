@@ -12,9 +12,9 @@
 
 #include <assert.h>
 
-#include <swiftnav/constants.h>
-#include <swiftnav/shm.h>
-#include <swiftnav/signal.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/shm.h>
+#include <libswiftnav/signal.h>
 
 /** Decode shi_ephemeris
  *  Refer to swiftnav/shm.h for details.

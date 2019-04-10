@@ -13,7 +13,7 @@
 #ifndef SRC_GLO_MAP_H_
 #define SRC_GLO_MAP_H_
 
-#include <swiftnav/signal.h>
+#include <libswiftnav/signal.h>
 
 #ifdef __cplusplus
 extern "C" {

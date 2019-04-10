@@ -1,6 +1,6 @@
 #include <check.h>
 
-#include <swiftnav/edc.h>
+#include <libswiftnav/edc.h>
 #include "check_suites.h"
 
 const u8 *test_data = (u8 *)"123456789";

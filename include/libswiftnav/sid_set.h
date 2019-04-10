@@ -13,8 +13,8 @@
 #ifndef LIBSWIFTNAV_SID_SET_H
 #define LIBSWIFTNAV_SID_SET_H
 
-#include <swiftnav/common.h>
-#include <swiftnav/signal.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/signal.h>
 
 #ifdef __cplusplus
 extern "C" {

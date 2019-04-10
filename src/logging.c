@@ -14,7 +14,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include <swiftnav/logging.h>
+#include <libswiftnav/logging.h>
 
 /** \defgroup logging Logging
  * Logging functions.

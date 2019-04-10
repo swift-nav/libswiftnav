@@ -16,14 +16,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <swiftnav/bits.h>
-#include <swiftnav/constants.h>
-#include <swiftnav/coord_system.h>
-#include <swiftnav/edc.h>
-#include <swiftnav/ephemeris.h>
-#include <swiftnav/linear_algebra.h>
-#include <swiftnav/logging.h>
-#include <swiftnav/shm.h>
+#include <libswiftnav/bits.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/coord_system.h>
+#include <libswiftnav/edc.h>
+#include <libswiftnav/ephemeris.h>
+#include <libswiftnav/linear_algebra.h>
+#include <libswiftnav/logging.h>
+#include <libswiftnav/shm.h>
 
 /** \defgroup ephemeris Ephemeris
  * Functions and calculations related to the GPS ephemeris.

@@ -13,8 +13,8 @@
 #include <assert.h>
 #include <string.h>
 
-#include <swiftnav/bits.h>
-#include <swiftnav/sid_set.h>
+#include <libswiftnav/bits.h>
+#include <libswiftnav/sid_set.h>
 
 /** Initialize new sid set
  *

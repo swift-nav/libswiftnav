@@ -16,10 +16,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <swiftnav/almanac.h>
-#include <swiftnav/constants.h>
-#include <swiftnav/ionosphere.h>
-#include <swiftnav/logging.h>
+#include <libswiftnav/almanac.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/ionosphere.h>
+#include <libswiftnav/logging.h>
 
 /** \defgroup ionosphere Ionospheric models
  * Implemenations of ionospheric delay correction models.

@@ -16,8 +16,8 @@
 
 #include <stdbool.h>
 
-#include <swiftnav/common.h>
-#include <swiftnav/logging.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/logging.h>
 
 #ifdef __cplusplus
 extern "C" {

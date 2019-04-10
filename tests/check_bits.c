@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#include <swiftnav/bits.h>
+#include <libswiftnav/bits.h>
 #include "check_suites.h"
 
 START_TEST(test_parity) {

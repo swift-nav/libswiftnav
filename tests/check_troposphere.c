@@ -1,9 +1,9 @@
 
 #include <check.h>
 
-#include <swiftnav/constants.h>
-#include <swiftnav/gnss_time.h>
-#include <swiftnav/troposphere.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/gnss_time.h>
+#include <libswiftnav/troposphere.h>
 
 #include "check_suites.h"
 

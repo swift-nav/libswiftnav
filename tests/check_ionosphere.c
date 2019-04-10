@@ -13,8 +13,8 @@
 #include <check.h>
 #include <stdio.h>
 
-#include <swiftnav/constants.h>
-#include <swiftnav/ionosphere.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/ionosphere.h>
 #include "check_suites.h"
 
 START_TEST(test_calc_ionosphere) {

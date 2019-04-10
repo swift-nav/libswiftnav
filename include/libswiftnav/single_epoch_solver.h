@@ -13,11 +13,11 @@
 #ifndef LIBSWIFTNAV_PVT_H
 #define LIBSWIFTNAV_PVT_H
 
-#include <swiftnav/common.h>
-#include <swiftnav/ionosphere.h>
-#include <swiftnav/nav_meas.h>
-#include <swiftnav/sid_set.h>
-#include <swiftnav/troposphere.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/ionosphere.h>
+#include <libswiftnav/nav_meas.h>
+#include <libswiftnav/sid_set.h>
+#include <libswiftnav/troposphere.h>
 
 #ifdef __cplusplus
 extern "C" {

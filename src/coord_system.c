@@ -12,10 +12,10 @@
 
 #include <math.h>
 
-#include <swiftnav/constants.h>
-#include <swiftnav/coord_system.h>
-#include <swiftnav/linear_algebra.h>
-#include <swiftnav/logging.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/coord_system.h>
+#include <libswiftnav/linear_algebra.h>
+#include <libswiftnav/logging.h>
 
 /** \defgroup coord_system Coordinate systems
  * Functions used for converting between various coordinate systems.

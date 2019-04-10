@@ -13,9 +13,9 @@
 #ifndef LIBSWIFTNAV_CORRECT_IONO_TROPO_H
 #define LIBSWIFTNAV_CORRECT_IONO_TROPO_H
 
-#include <swiftnav/coord_system.h>
-#include <swiftnav/ionosphere.h>
-#include <swiftnav/nav_meas.h>
+#include <libswiftnav/coord_system.h>
+#include <libswiftnav/ionosphere.h>
+#include <libswiftnav/nav_meas.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -15,10 +15,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <swiftnav/almanac.h>
-#include <swiftnav/bits.h>
-#include <swiftnav/constants.h>
-#include <swiftnav/gnss_time.h>
+#include <libswiftnav/almanac.h>
+#include <libswiftnav/bits.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/gnss_time.h>
 
 /** \defgroup time Time functions
  * Functions to handle GPS and UTC time values.

@@ -10,10 +10,10 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#include <swiftnav/constants.h>
-#include <swiftnav/correct_iono_tropo.h>
-#include <swiftnav/ionosphere.h>
-#include <swiftnav/troposphere.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/correct_iono_tropo.h>
+#include <libswiftnav/ionosphere.h>
+#include <libswiftnav/troposphere.h>
 
 void correct_iono(const double *pos_ecef,
                   const ionosphere_t *iono_params,

@@ -12,10 +12,10 @@
 
 #include <assert.h>
 #include <string.h>
-#include <swiftnav/array_tools.h>
-#include <swiftnav/constants.h>
-#include <swiftnav/glo_map.h>
-#include <swiftnav/signal.h>
+#include <libswiftnav/array_tools.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/glo_map.h>
+#include <libswiftnav/signal.h>
 
 /** \defgroup signal GNSS signal identifiers (SID)
  * \{ */

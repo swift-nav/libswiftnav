@@ -5,8 +5,8 @@
 #include "check_suites.h"
 #include "common/check_utils.h"
 
-#include <swiftnav/constants.h>
-#include <swiftnav/signal.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/signal.h>
 
 /* Include singal.c here to have a chance to turn off asserts.
    Otherwise the code lines with asserts cannot be covered by

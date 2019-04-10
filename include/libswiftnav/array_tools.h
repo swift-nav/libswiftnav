@@ -15,7 +15,7 @@
 
 #include <stdbool.h>
 
-#include <swiftnav/common.h>
+#include <libswiftnav/common.h>
 
 /** Check if value is in array.
  *

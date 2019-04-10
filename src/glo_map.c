@@ -12,8 +12,8 @@
 
 #include <assert.h>
 
-#include <swiftnav/glo_map.h>
-#include <swiftnav/signal.h>
+#include <libswiftnav/glo_map.h>
+#include <libswiftnav/signal.h>
 
 #define NUM_GLO_MAP_INDICES (NUM_SATS_GLO + 1)
 

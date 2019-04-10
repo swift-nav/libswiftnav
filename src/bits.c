@@ -13,7 +13,7 @@
 #include <limits.h>
 #include <string.h>
 
-#include <swiftnav/bits.h>
+#include <libswiftnav/bits.h>
 
 static const u8 bitn[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 

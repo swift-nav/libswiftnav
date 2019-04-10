@@ -13,8 +13,8 @@
 #include <inttypes.h>
 #include <string.h>
 
-#include <swiftnav/logging.h>
-#include <swiftnav/memcpy_s.h>
+#include <libswiftnav/logging.h>
+#include <libswiftnav/memcpy_s.h>
 
 #if !defined(_MSC_VER) && !defined(_CRT_MEMORY_DEFINED)
 

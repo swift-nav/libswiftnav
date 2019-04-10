@@ -16,8 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <swiftnav/common.h>
-#include <swiftnav/linear_algebra.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/linear_algebra.h>
 
 /* Todo(MP) -- Implement fast linear solve (all-in-one) with Cholesky
  * decomposition: we want to solve $A^{T} W A \hat{x} = A^{T} W y

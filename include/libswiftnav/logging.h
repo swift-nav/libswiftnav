@@ -35,7 +35,7 @@
 #define LIBSWIFTNAV_FORMAT_STRING
 #endif
 
-#include <swiftnav/common.h>
+#include <libswiftnav/common.h>
 
 #ifdef __cplusplus
 extern "C" {

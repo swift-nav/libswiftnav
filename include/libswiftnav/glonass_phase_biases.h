@@ -14,9 +14,9 @@
 #define PIKSI_FIRMWARE_PRIVATE_GLONASS_PHASE_BIASES_H
 #include <math.h>
 
-#include <swiftnav/common.h>
-#include <swiftnav/constants.h>
-#include <swiftnav/signal.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/signal.h>
 
 #ifdef __cplusplus
 extern "C" {

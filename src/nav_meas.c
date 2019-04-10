@@ -12,8 +12,8 @@
 
 #include <assert.h>
 
-#include <swiftnav/common.h>
-#include <swiftnav/nav_meas.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/nav_meas.h>
 
 /** Compare navigation message by PRN.
  * This function is designed to be used together with qsort() etc.

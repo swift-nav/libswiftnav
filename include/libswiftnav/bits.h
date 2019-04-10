@@ -13,7 +13,7 @@
 #ifndef LIBSWIFTNAV_BITS_H
 #define LIBSWIFTNAV_BITS_H
 
-#include <swiftnav/common.h>
+#include <libswiftnav/common.h>
 
 #ifdef __cplusplus
 extern "C" {

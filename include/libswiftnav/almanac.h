@@ -13,10 +13,10 @@
 #ifndef LIBSWIFTNAV_ALMANAC_H
 #define LIBSWIFTNAV_ALMANAC_H
 
-#include <swiftnav/common.h>
-#include <swiftnav/constants.h>
-#include <swiftnav/gnss_time.h>
-#include <swiftnav/signal.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/gnss_time.h>
+#include <libswiftnav/signal.h>
 
 #ifdef __cplusplus
 extern "C" {

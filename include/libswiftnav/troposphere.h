@@ -13,7 +13,7 @@
 #ifndef LIBSWIFTNAV_TROPOSPHERE_H
 #define LIBSWIFTNAV_TROPOSPHERE_H
 
-#include <swiftnav/gnss_time.h>
+#include <libswiftnav/gnss_time.h>
 
 #ifdef __cplusplus
 extern "C" {

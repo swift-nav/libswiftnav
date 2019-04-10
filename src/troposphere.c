@@ -12,9 +12,9 @@
 
 #include <math.h>
 
-#include <swiftnav/common.h>
-#include <swiftnav/constants.h>
-#include <swiftnav/troposphere.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/troposphere.h>
 
 /** \defgroup troposphere Tropospheric models
  * Implemenations of tropospheric delay correction models.

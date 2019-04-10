@@ -9,7 +9,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
-#include <swiftnav/glonass_phase_biases.h>
+#include <libswiftnav/glonass_phase_biases.h>
 
 bool glonass_biases_are_equal(const glo_biases_t biases1,
                               const glo_biases_t biases2) {

@@ -13,8 +13,8 @@
 #ifndef LIBSWIFTNAV_IONOSHPERE_H
 #define LIBSWIFTNAV_IONOSHPERE_H
 
-#include <swiftnav/common.h>
-#include <swiftnav/gnss_time.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/gnss_time.h>
 
 #ifdef __cplusplus
 #include <swiftnav/linear_algebra.h>

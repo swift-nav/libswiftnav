@@ -13,8 +13,8 @@
 #ifndef LIBSWIFTNAV_CH_MEAS_H
 #define LIBSWIFTNAV_CH_MEAS_H
 
-#include <swiftnav/common.h>
-#include <swiftnav/signal.h>
+#include <libswiftnav/common.h>
+#include <libswiftnav/signal.h>
 
 /** Measurement flag: code measurement is valid.
  * \sa chan_meas_flags_t */

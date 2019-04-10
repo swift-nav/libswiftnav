@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include <swiftnav/set.h>
+#include <libswiftnav/set.h>
 
 /* This whole file uses void * pointers to do pointer math.
  * Basically this file implements a generic set, and we

@@ -15,8 +15,8 @@
 #include <limits.h>
 #include <stdio.h>
 
-#include <swiftnav/constants.h>
-#include <swiftnav/shm.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/shm.h>
 #include "check_suites.h"
 
 START_TEST(test_shm_gps_decode_shi_ephemeris) {

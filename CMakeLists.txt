@@ -1,43 +1,25 @@
 cmake_minimum_required(VERSION 3.0)
-project(libswiftnav)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
-include(ClangTools)
+include("cmake/VersionFromGit.cmake")
+version_from_git()
+message(STATUS "Building libswiftnav version ${VERSION}")
+
+project(libswiftnav LANGUAGES C CXX VERSION ${VERSION})
+
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 include(FindCheck)
+include(GNUInstallDirs)
 
 set(MAX_CHANNELS "63" CACHE STRING "Maximum number of concurrent GNSS channels to support.")
 configure_file(src/max_channels.h.in max_channels.h)
 
-include(GNUInstallDirs)
-
-set(HDRS
-    include/swiftnav/almanac.h
-    include/swiftnav/array_tools.h
-    include/swiftnav/bits.h
-    include/swiftnav/ch_meas.h
-    include/swiftnav/common.h
-    include/swiftnav/constants.h
-    include/swiftnav/coord_system.h
-    include/swiftnav/correct_iono_tropo.h
-    include/swiftnav/edc.h
-    include/swiftnav/ephemeris.h
-    include/swiftnav/fifo_byte.h
-    include/swiftnav/glo_map.h
-    include/swiftnav/glonass_phase_biases.h
-    include/swiftnav/gnss_time.h
-    include/swiftnav/ionosphere.h
-    include/swiftnav/linear_algebra.h
-    include/swiftnav/logging.h
-    include/swiftnav/memcpy_s.h
-    include/swiftnav/nav_meas.h
-    include/swiftnav/pvt_result.h
-    include/swiftnav/sbas_raw_data.h
-    include/swiftnav/set.h
-    include/swiftnav/shm.h
-    include/swiftnav/sid_set.h
-    include/swiftnav/signal.h
-    include/swiftnav/single_epoch_solver.h
-    include/swiftnav/troposphere.h)
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+set(include_install_dir "${CMAKE_INSTALL_INCLUDEDIR}")
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(TARGETS_EXPORT_NAME "${PROJECT_NAME}Targets.cmake")
+set(namespace "${PROJECT_NAME}::")
 
 set(SRCS
     src/almanac.c
@@ -63,11 +45,12 @@ set(SRCS
     src/single_epoch_solver.c
     src/troposphere.c)
 
-add_library(swiftnav ${HDRS} ${SRCS})
-target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-install(FILES ${HDRS} DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/swiftnav)
-install(TARGETS swiftnav DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
+add_library(swiftnav ${SRCS})
+add_library(${namespace}swiftnav ALIAS swiftnav)
+
+target_include_directories(swiftnav
+    PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+    PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 set_property(TARGET swiftnav PROPERTY C_STANDARD 99)
 
@@ -99,3 +82,38 @@ endif()
 if(NOT CMAKE_CROSSCOMPILING AND NOT PIKSI_MULTI_UNIT_TEST)
     add_subdirectory(tests)
 endif(NOT CMAKE_CROSSCOMPILING AND NOT PIKSI_MULTI_UNIT_TEST)
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file("${version_config}" COMPATIBILITY SameMajorVersion)
+
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/Config.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}"
+  )
+
+install(
+    TARGETS swiftnav
+    EXPORT "${TARGETS_EXPORT_NAME}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    INCLUDES DESTINATION "${include_install_dir}"
+  )
+
+install(
+    DIRECTORY "${PROJECT_SOURCE_DIR}/include/libswiftnav"
+    DESTINATION "${include_install_dir}"
+  )
+
+install(
+    FILES "${project_config}" "${version_config}"
+    DESTINATION "${config_install_dir}"
+  )
+
+install(
+    EXPORT "${TARGETS_EXPORT_NAME}"
+    NAMESPACE "${namespace}"
+    DESTINATION "${config_install_dir}"
+  )

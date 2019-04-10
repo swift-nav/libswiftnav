@@ -14,15 +14,15 @@
 #include <math.h>
 #include <string.h>
 
-#include <swiftnav/almanac.h>
-#include <swiftnav/bits.h>
-#include <swiftnav/constants.h>
-#include <swiftnav/coord_system.h>
-#include <swiftnav/ephemeris.h>
-#include <swiftnav/gnss_time.h>
-#include <swiftnav/linear_algebra.h>
-#include <swiftnav/logging.h>
-#include <swiftnav/shm.h>
+#include <libswiftnav/almanac.h>
+#include <libswiftnav/bits.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/coord_system.h>
+#include <libswiftnav/ephemeris.h>
+#include <libswiftnav/gnss_time.h>
+#include <libswiftnav/linear_algebra.h>
+#include <libswiftnav/logging.h>
+#include <libswiftnav/shm.h>
 
 /** \defgroup almanac Almanac
  * Functions and calculations related to the GPS almanac.

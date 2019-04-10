@@ -14,7 +14,7 @@
 #define LIBSWIFTNAV_EDC_H
 
 #include <stdbool.h>
-#include <swiftnav/common.h>
+#include <libswiftnav/common.h>
 
 #ifdef __cplusplus
 extern "C" {

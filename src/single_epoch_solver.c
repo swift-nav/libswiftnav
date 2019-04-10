@@ -10,7 +10,7 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#include "swiftnav/single_epoch_solver.h"
+#include "libswiftnav/single_epoch_solver.h"
 
 #include <assert.h>
 #include <inttypes.h>
@@ -19,10 +19,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <swiftnav/constants.h>
-#include <swiftnav/coord_system.h>
-#include <swiftnav/linear_algebra.h>
-#include <swiftnav/logging.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/coord_system.h>
+#include <libswiftnav/linear_algebra.h>
+#include <libswiftnav/logging.h>
 
 #include "max_channels.h"
 

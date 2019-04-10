@@ -2,8 +2,8 @@
 #include <math.h>
 #include <time.h>
 
-#include <swiftnav/constants.h>
-#include <swiftnav/gnss_time.h>
+#include <libswiftnav/constants.h>
+#include <libswiftnav/gnss_time.h>
 #include "check_suites.h"
 #include "common/check_utils.h"
 
