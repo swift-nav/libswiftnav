@@ -90,7 +90,7 @@ else ()
     target_compile_options(swiftnav PRIVATE "-Wredundant-decls")
     target_compile_options(swiftnav PRIVATE "-Wformat-security")
     # require at least gcc 5.0
-    if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 5.0)
+    if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR CMAKE_C_COMPILER_VERSION VERSION_GREATER 5.0)
         target_compile_options(swiftnav PRIVATE "-Wfloat-conversion")
     endif()
 endif()
