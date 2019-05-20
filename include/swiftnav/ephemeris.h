@@ -31,6 +31,9 @@ extern "C" {
 #define INVALID_IODE 0xFF
 #define INVALID_IODC 0x3FF
 
+#define EPH_SOURCE_GAL_INAV 0
+#define EPH_SOURCE_GAL_FNAV 1
+
 /** \addtogroup ephemeris
  * \{ */
 
@@ -167,6 +170,7 @@ typedef struct {
   u32 fit_interval;  /**< Curve fit interval [s] */
   u8 valid;          /**< Ephemeris is valid. */
   u8 health_bits;    /**< Satellite health status. */
+  u8 source;         /**< Nav data source of ephemeris */
   union {
     ephemeris_kepler_t kepler; /**< Parameters specific to GPS. */
     ephemeris_xyz_t xyz;       /**< Parameters specific to SBAS. */
