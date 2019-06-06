@@ -1075,7 +1075,7 @@ void decode_ephemeris(const u32 frame_words[3][8],
                       double tot_tow) {
   assert(frame_words != NULL);
   assert(e != NULL);
-  assert(IS_GPS(e->sid));
+  assert(IS_GPS(e->sid) || IS_QZSS(e->sid));
   ephemeris_kepler_t *k = &e->kepler;
 
   /* Subframe 1: WN, URA, SV health, T_GD, IODC, t_oc, a_f2, a_f1, a_f0 */

@@ -167,6 +167,8 @@ static shm_state_t check_6bit_health(const u8 health_bits, const code_t code) {
   switch ((s8)code) {
     case CODE_GPS_L1CA:
     case CODE_AUX_GPS:
+    case CODE_QZS_L1CA:
+    case CODE_AUX_QZS:
       if (b == L1_C_SIGNAL_WEAK || b == L1_C_SIGNAL_DEAD ||
           b == L1_C_SIGNAL_NO_DATA || b == L1_L2_C_SIGNAL_WEAK ||
           b == L1_L2_C_SIGNAL_DEAD || b == L1_L2_C_SIGNAL_NO_DATA ||
@@ -179,6 +181,9 @@ static shm_state_t check_6bit_health(const u8 health_bits, const code_t code) {
     case CODE_GPS_L2CM:
     case CODE_GPS_L2CL:
     case CODE_GPS_L2CX:
+    case CODE_QZS_L2CM:
+    case CODE_QZS_L2CL:
+    case CODE_QZS_L2CX:
       if (b == L2_C_SIGNAL_WEAK || b == L2_C_SIGNAL_DEAD ||
           b == L2_C_SIGNAL_NO_DATA || b == L1_L2_C_SIGNAL_WEAK ||
           b == L1_L2_C_SIGNAL_DEAD || b == L1_L2_C_SIGNAL_NO_DATA ||
@@ -211,6 +216,9 @@ static shm_state_t check_6bit_health(const u8 health_bits, const code_t code) {
     case CODE_GPS_L5I:
     case CODE_GPS_L5Q:
     case CODE_GPS_L5X:
+    case CODE_QZS_L5I:
+    case CODE_QZS_L5Q:
+    case CODE_QZS_L5X:
       return SHM_STATE_HEALTHY;
 
     default:
