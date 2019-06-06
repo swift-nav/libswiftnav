@@ -31,7 +31,8 @@ __attribute__((format(printf, 2, 3))) static void default_log_(int level,
   va_list ap;
   fprintf(stderr, "%s: ", level_string[level]);
   va_start(ap, msg);
-  vfprintf(stderr, msg, ap);
+  vfprintf(stderr, msg, ap);  // NOLINT - clang-tidy insists that ap is
+                              // uninitialised when it clearly is
   va_end(ap);
   fprintf(stderr, "\n");
 }
@@ -53,7 +54,8 @@ __attribute__((format(printf, 4, 5))) static void default_detailed_log_(
   fprintf(stderr, "(lsn::%s:%d) ", file_path, line_number);
   fprintf(stderr, "%s: ", level_string[level]);
   va_start(ap, msg);
-  vfprintf(stderr, msg, ap);
+  vfprintf(stderr, msg, ap);  // NOLINT - clang-tidy insists that ap is
+                              // uninitialised when is clearly is
   va_end(ap);
   fprintf(stderr, "\n");
 }

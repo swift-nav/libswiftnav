@@ -1,14 +1,32 @@
 cmake_minimum_required(VERSION 3.0)
 project(libswiftnav)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/")
-include(ClangTools)
-include(FindCheck)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/" "${CMAKE_CURRENT_LIST_DIR}/cmake/common")
 
 set(MAX_CHANNELS "63" CACHE STRING "Maximum number of concurrent GNSS channels to support.")
 configure_file(src/max_channels.h.in max_channels.h)
 
 include(GNUInstallDirs)
+include(CCache)
+include(SwiftCmakeOptions)
+
+set(disable_tests FALSE)
+if(MSVC)
+  message(STATUS "MSVC detected, skipping unit tests")
+  set(disable_tests TRUE)
+endif()
+
+swift_create_project_options(
+    HAS_TESTS
+    HAS_TEST_LIBS
+    DISABLE_TEST_COMPONENTS ${disable_tests}
+    TEST_PACKAGES "Check"
+    )
+
+include(ClangFormat)
+swift_setup_clang_format()
+include(ClangTidy)
+swift_setup_clang_tidy(PATTERNS "src/*.c")
 
 set(HDRS
     include/swiftnav/almanac.h
@@ -96,6 +114,6 @@ else ()
 endif()
 
 # unit tests
-if(NOT CMAKE_CROSSCOMPILING AND NOT PIKSI_MULTI_UNIT_TEST)
-    add_subdirectory(tests)
-endif(NOT CMAKE_CROSSCOMPILING AND NOT PIKSI_MULTI_UNIT_TEST)
+if(libswiftnav_BUILD_TESTS OR libswiftnav_BUILD_TEST_LIBS)
+  add_subdirectory(tests)
+endif()
