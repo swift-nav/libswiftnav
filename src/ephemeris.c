@@ -799,7 +799,7 @@ static u8 ephemeris_valid_at_time(const ephemeris_t *e, const gps_time_t *t) {
   gps_time_t end = toe;
 
   const gps_time_t *toc = NULL;
-  if (IS_GPS(e->sid)) {
+  if (IS_GPS(e->sid) || IS_QZSS(e->sid)) {
     /* TOE is a middle of ephemeris validity interval */
     bgn.tow -= e->fit_interval / 2;
     end.tow += e->fit_interval / 2;
