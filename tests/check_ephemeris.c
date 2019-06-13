@@ -109,18 +109,16 @@ START_TEST(test_ephemeris_almanac_divergence) {
              &gps_eph_diverged, &t, div_sat_pos, _, _, _, _, &iodc, &iode));
 
     /* Check successful sat state calculation. */
-    if (!calc_alm_ok || !calc_eph_ok || !calc_eph_div_ok) {
-      fail_unless(false,
-                  "Failure computing sat state! \n"
-                  "Alm success: %" PRIu8
-                  " \n"
-                  "Eph success: %" PRIu8
-                  " \n"
-                  "Eph diverged success: %" PRIu8 " \n",
-                  calc_alm_ok,
-                  calc_eph_ok,
-                  calc_eph_div_ok);
-    }
+    fail_unless(calc_alm_ok && calc_eph_ok && calc_eph_div_ok,
+                "Failure computing sat state! \n"
+                "Alm success: %" PRIu8
+                " \n"
+                "Eph success: %" PRIu8
+                " \n"
+                "Eph diverged success: %" PRIu8 " \n",
+                calc_alm_ok,
+                calc_eph_ok,
+                calc_eph_div_ok);
 
     /* Almanac vs. diverged ephemeris comparison. */
 
