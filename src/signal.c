@@ -852,10 +852,10 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       QZS_FIRST_PRN,
                       "QZS L5I",
                       QZS_L5_HZ,
-                      0,
-                      0,
+                      GPS_L5_CHIPS_NUM,
+                      GPS_L5_CHIPPING_RATE,
                       false,
-                      0,
+                      GPS_L5_PRN_PERIOD_MS,
                       (float)QZS_L5_DOPPLER_MAX_HZ,
                       0.f, /* reference signal (see L5I in [1]) */
                       false},
