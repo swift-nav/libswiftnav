@@ -1,0 +1,10 @@
+coverage:
+  status:
+    project:
+      tests:
+        target: 100%
+        paths: "tests/"
+      libswiftnav:
+        paths: "!tests/"
+
+comment: off

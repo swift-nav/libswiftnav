@@ -26,12 +26,13 @@ if(libswiftnav_BUILD_TESTS)
       check_troposphere.c)
 
   add_executable(test-swiftnav-common ${HDRS} ${SRCS})
-  target_link_libraries(test-swiftnav-common check-utils
+  target_link_libraries(test-swiftnav-common PRIVATE check-utils
                         ${CHECK_LIBRARIES} pthread)
+  target_code_coverage(test-swiftnav-common AUTO ALL)
 
   set_property(TARGET test-swiftnav-common PROPERTY C_STANDARD 99)
 
-  # Add a target for running the tests. 
+  # Add a target for running the tests.
   add_custom_target(run-test-swiftnav-common COMMAND test-swiftnav-common)
   # And run them upon completion.
   add_custom_command(TARGET test-swiftnav-common POST_BUILD COMMAND test-swiftnav-common)

@@ -57,8 +57,8 @@ pipeline {
 
                     steps {
                         gitPrep()
-                        libswiftnavCmake()
                         script {
+                            builder.cmake()
                             builder.make(workDir: "build")
                         }
                         // Convert the test results into a Jenkins-parsable junit-XML format
@@ -77,8 +77,8 @@ pipeline {
 
                     steps {
                         gitPrep()
-                        libswiftnavCmake()
                         script {
+                            builder.cmake()
                             builder.make(workDir: "build")
                             builder.make(workDir: "build", target: "clang-format-all")
                         }
@@ -109,6 +109,28 @@ pipeline {
                         }
                     }
                 }
+                stage('Code Coverage') {
+                    agent {
+                        dockerfile {
+                            args dockerMountArgs
+                        }
+                    }
+
+                    steps {
+                        gitPrep()
+                        script {
+                            builder.cmake(cmake_args: "-DCODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug")
+                            builder.make(workDir: "build", target: "ccov-all")
+                        }
+                    }
+                    post {
+                        success {
+                            script {
+                                context.uploadCodeCov(repo: "libswiftnav", searchdir: "build")
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -124,17 +146,4 @@ pipeline {
             }
         }
     }
-}
-
-/**
- * Run cmake
- * @param args
- * @return
- */
-def libswiftnavCmake(Map args = [:]) {
-
-    sh """#!/bin/bash -ex
-    rm -rf build && mkdir -p build && cd build
-    cmake ..
-    """
 }

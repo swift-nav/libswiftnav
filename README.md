@@ -1,4 +1,5 @@
-[![Build Status](https://jenkins.ci.swift-nav.com/buildStatus/icon?job=swift-nav/libswiftnav/master)](https://jenkins.ci.swift-nav.com/job/swift-nav/job/libswiftnav/job/master/)
+[![Build Status](https://jenkins.ci.swift-nav.com/buildStatus/icon?job=swift-nav/libswiftnav/master&subject=Jenkins&style=flat)](https://jenkins.ci.swift-nav.com/job/swift-nav/job/libswiftnav/job/master/)
+[![](https://img.shields.io/codecov/c/github/swift-nav/libswiftnav/master.svg?label=codecov.io&logo=codecov&style=flat)](https://codecov.io/gh/swift-nav/libswiftnav)
 
 libswiftnav
 ===========
