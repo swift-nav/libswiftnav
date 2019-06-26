@@ -54,7 +54,6 @@ pipeline {
                             args dockerMountArgs
                         }
                     }
-
                     steps {
                         gitPrep()
                         script {
@@ -74,7 +73,6 @@ pipeline {
                             args dockerMountArgs
                         }
                     }
-
                     steps {
                         gitPrep()
                         script {
@@ -115,11 +113,10 @@ pipeline {
                             args dockerMountArgs
                         }
                     }
-
                     steps {
                         gitPrep()
                         script {
-                            builder.cmake(cmake_args: "-DCODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug")
+                            builder.cmake(buildType: "Debug", codeCoverage: "ON")
                             builder.make(workDir: "build", target: "ccov-all")
                         }
                     }
