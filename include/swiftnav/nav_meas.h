@@ -95,6 +95,11 @@ typedef struct {
   nav_meas_flags_t flags;      /**< Measurement flags */
 } navigation_measurement_t;
 
+/* Correction fixing consistency flags */
+#define VALID_CORRECTIONS (1 << 0)
+#define PARTIAL_FIXING (1 << 1)
+#define FULL_FIXING (1 << 2)
+
 /**
  * Structure for processing navigation measurements estimated standard deviation
  */
@@ -103,7 +108,7 @@ typedef struct {
   double iono_std;   /**< Observations ionospheric delay std [m] */
   double tropo_std;  /**< Observations tropospheric delay std [m] */
   double range_std;  /**< Observations orbit/clock delay std [m] */
-  u8 flags;          /**< Observations fixing flags [m] */
+  u8 flags;          /**< Observations fixing flags [m], see above */
 } measurement_std_t;
 
 int nav_meas_cmp(const void *a, const void *b);
