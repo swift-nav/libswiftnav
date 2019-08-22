@@ -375,6 +375,27 @@ static inline code_t sid_to_l1_code(gnss_signal_t sid) {
   return constellation_to_l1_code(sid_to_constellation(sid));
 }
 
+static inline code_t constellation_to_l5_code(constellation_t constellation) {
+  switch (constellation) {
+    case CONSTELLATION_GPS:
+      return CODE_GPS_L5I;
+    case CONSTELLATION_GAL:
+      return CODE_GAL_E5I;
+    case CONSTELLATION_SBAS:
+    case CONSTELLATION_GLO:
+    case CONSTELLATION_BDS:
+    case CONSTELLATION_QZS:
+    case CONSTELLATION_INVALID:
+    case CONSTELLATION_COUNT:
+    default:
+      return CODE_INVALID;
+  }
+}
+
+static inline code_t sid_to_l5_code(gnss_signal_t sid) {
+  return constellation_to_l5_code(sid_to_constellation(sid));
+}
+
 /** Determine if a code is valid.
  *
  * \param code    Code to use.
