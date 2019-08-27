@@ -381,10 +381,12 @@ static inline code_t constellation_to_l5_code(constellation_t constellation) {
       return CODE_GPS_L5I;
     case CONSTELLATION_GAL:
       return CODE_GAL_E5I;
+    case CONSTELLATION_BDS:
+      return CODE_BDS3_B5I;
+    case CONSTELLATION_QZS:
+      return CODE_QZS_L5I;
     case CONSTELLATION_SBAS:
     case CONSTELLATION_GLO:
-    case CONSTELLATION_BDS:
-    case CONSTELLATION_QZS:
     case CONSTELLATION_INVALID:
     case CONSTELLATION_COUNT:
     default:
