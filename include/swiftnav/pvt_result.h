@@ -44,6 +44,12 @@ extern "C" {
 #define VELOCITY_MODE_COMPUTED_DOPPLER 2
 #define VELOCITY_MODE_DEAD_RECKONING 3
 
+/* Define INS status types used in dr_runner */
+#define INS_STATUS_AWAITING_INIT 0
+#define INS_STATUS_ALIGNING 1
+#define INS_STATUS_READY 2
+#define INS_STATUS_OUTAGE_EXCEEDS_MAX 3
+
 /* These masks are used in the firmware. */
 #define POSITION_MODE_MASK 0x07 /* Bits 0-2 */
 #define VELOCITY_MODE_MASK 0x07 /* Bits 0-2 */
