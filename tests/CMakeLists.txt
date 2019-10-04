@@ -14,6 +14,7 @@ if(libswiftnav_BUILD_TESTS)
       check_ephemeris.c
       check_glo_map.c
       check_gnss_time.c
+      check_gnss_time_cpp.cc
       check_ionosphere.c
       check_linear_algebra.c
       check_main.c
