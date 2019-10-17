@@ -343,6 +343,10 @@ static inline bool operator>=(const gps_time_t &a, const gps_time_t &b) {
 static inline bool operator<=(const gps_time_t &a, const gps_time_t &b) {
   return a < b || a == b;
 }
+
+static inline double operator-(const gps_time_t &a, const gps_time_t &b) {
+  return gpsdifftime(&a, &b);
+}
 #endif
 
 #endif /* LIBSWIFTNAV_GNSS_TIME_H */
