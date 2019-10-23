@@ -9,6 +9,7 @@ configure_file(src/max_channels.h.in max_channels.h)
 include(GNUInstallDirs)
 include(CCache)
 include(SwiftCmakeOptions)
+include(TestTargets)
 
 set(disable_tests FALSE)
 if(MSVC)
