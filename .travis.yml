@@ -42,8 +42,7 @@ matrix:
       compiler: gcc-4.8
       addons: { apt: { packages: ["cmake",
                                   "gcc-4.8",
-                                  "g++-4.8",
-                                  "check"],
+                                  "g++-4.8"],
                        sources: ["ubuntu-toolchain-r-test"] } }
 
     # GCC 6 / Unit Test.
@@ -51,8 +50,7 @@ matrix:
       compiler: gcc-6
       addons: { apt: { packages: ["cmake",
                                   "gcc-6",
-                                  "g++-6",
-                                  "check"],
+                                  "g++-6"],
                        sources: ["ubuntu-toolchain-r-test"] } }
 
     # ------------------------------------------------------------------

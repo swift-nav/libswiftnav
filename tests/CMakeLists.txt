@@ -28,6 +28,6 @@ if(libswiftnav_BUILD_TESTS)
   swift_add_test(test-swiftnav-common
     POST_BUILD
     SRCS ${SRCS}
-    LINK check-utils ${CHECK_LIBRARIES} Threads::Threads
+    LINK check-utils check Threads::Threads
     )
 endif(libswiftnav_BUILD_TESTS)
