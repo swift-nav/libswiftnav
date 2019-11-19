@@ -23,6 +23,7 @@ extern "C" {
 /* Define Time types - currently aligned to SBP messages */
 #define NO_TIME 0
 #define GNSS_TIME 1
+#define PROPAGATED_TIME 2
 #define TIME_SOURCE_MASK 0x07 /* Bits 0-2 */
 #define DEFAULT_UTC 0
 #define NVM_UTC 1
