@@ -1,9 +1,9 @@
 #include <check.h>
 #include <math.h>
-#include <time.h>
-
 #include <swiftnav/constants.h>
 #include <swiftnav/gnss_time.h>
+#include <time.h>
+
 #include "check_suites.h"
 #include "common/check_utils.h"
 
@@ -1049,6 +1049,54 @@ START_TEST(test_time_conversions) {
 }
 END_TEST
 
+START_TEST(test_round_to_epoch) {
+  const double soln_freq = 10.0;
+
+  gps_time_t testcases[] = {
+      {567890.01, 1234},
+      {567890.0501, 1234},
+      {604800.06, 1234},
+  };
+
+  gps_time_t expectations[] = {
+      {567890.00, 1234},
+      {567890.10, 1234},
+      {0.1, 1235},
+  };
+
+  for (size_t i = 0; i < ARRAY_SIZE(testcases); ++i) {
+    gps_time_t rounded = round_to_epoch(&testcases[i], soln_freq);
+    fail_unless(within_epsilon(gpsdifftime(&rounded, &expectations[i]), 0.0),
+                "round_to_epoch failed",
+                i);
+  }
+}
+END_TEST
+
+START_TEST(test_floor_to_epoch) {
+  const double soln_freq = 10.0;
+
+  gps_time_t testcases[] = {
+      {567890.01, 1234},
+      {567890.0501, 1234},
+      {604800.06, 1234},
+  };
+
+  gps_time_t expectations[] = {
+      {567890.00, 1234},
+      {567890.00, 1234},
+      {0.0, 1235},
+  };
+
+  for (size_t i = 0; i < ARRAY_SIZE(testcases); ++i) {
+    gps_time_t rounded = floor_to_epoch(&testcases[i], soln_freq);
+    fail_unless(within_epsilon(gpsdifftime(&rounded, &expectations[i]), 0.0),
+                "floor_to_epoch failed",
+                i);
+  }
+}
+END_TEST
+
 Suite *gnss_time_test_suite(void) {
   Suite *s = suite_create("Time handling");
 
@@ -1065,6 +1113,8 @@ Suite *gnss_time_test_suite(void) {
   tcase_add_test(tc_core, test_gps2utc_time);
   tcase_add_test(tc_core, test_gps2utc_date);
   tcase_add_test(tc_core, test_time_conversions);
+  tcase_add_test(tc_core, test_round_to_epoch);
+  tcase_add_test(tc_core, test_floor_to_epoch);
   suite_add_tcase(s, tc_core);
 
   return s;

@@ -14,10 +14,9 @@
 #define LIBSWIFTNAV_GNSS_TIME_H
 
 #include <stdbool.h>
-#include <time.h>
-
 #include <swiftnav/common.h>
 #include <swiftnav/constants.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -320,6 +319,10 @@ double get_gps_utc_offset(const gps_time_t *t, const utc_params_t *p);
 double get_utc_gps_offset(const gps_time_t *utc_time, const utc_params_t *p);
 /* is the GPS time within a leap second event (ie 23:59:60.dddd) */
 bool is_leap_second_event(const gps_time_t *t, const utc_params_t *p);
+/* Rounds the GPS time to the nearest epoch */
+gps_time_t round_to_epoch(const gps_time_t *time, double soln_freq);
+/* Rounds the GPS time to the last epoch */
+gps_time_t floor_to_epoch(const gps_time_t *time, double soln_freq);
 
 #ifdef __cplusplus
 } /* extern "C" */

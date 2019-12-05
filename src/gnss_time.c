@@ -14,7 +14,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-
 #include <swiftnav/almanac.h>
 #include <swiftnav/bits.h>
 #include <swiftnav/constants.h>
@@ -908,6 +907,38 @@ bool is_leap_second_event(const gps_time_t *t, const utc_params_t *p) {
   }
   /* time is before the first known leap second event */
   return false;
+}
+
+/** Given a gps time, return the gps time of the nearest solution epoch
+ * \param time time to round
+ * \param soln_freq solution frequency
+ * \return The GPS time of nearest epoch
+ */
+gps_time_t round_to_epoch(const gps_time_t *time, double soln_freq) {
+  gps_time_t rounded_time = GPS_TIME_UNKNOWN;
+  /* round the time-of-week */
+  rounded_time.tow = round(time->tow * soln_freq) / soln_freq;
+  /* handle case where rounding caused tow roll-over */
+  normalize_gps_time(&rounded_time);
+  /* pick the correct week number */
+  gps_time_match_weeks(&rounded_time, time);
+  return rounded_time;
+}
+
+/** Given a gps time, return the gps time of the _last_ solution epoch
+ * \param time time to round
+ * \param soln_freq solution frequency
+ * \return The GPS time of _last_ epoch
+ */
+gps_time_t floor_to_epoch(const gps_time_t *time, double soln_freq) {
+  gps_time_t rounded_time = GPS_TIME_UNKNOWN;
+  /* round the time-of-week */
+  rounded_time.tow = floor(time->tow * soln_freq) / soln_freq;
+  /* handle case where rounding caused tow roll-over */
+  normalize_gps_time(&rounded_time);
+  /* pick the correct week number */
+  gps_time_match_weeks(&rounded_time, time);
+  return rounded_time;
 }
 
 /** \} */
