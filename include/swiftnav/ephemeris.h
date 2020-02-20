@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010, 2016 Swift Navigation Inc.
+ * Copyright (C) 2010, 2016, 2020 Swift Navigation Inc.
  * Contact: Swift Navigation <dev@swiftnav.com>
  *
  * This source is subject to the license found in the file 'LICENSE' which must
@@ -33,6 +33,10 @@ extern "C" {
 
 #define EPH_SOURCE_GAL_INAV 0
 #define EPH_SOURCE_GAL_FNAV 1
+
+#ifndef BDS_FIT_INTERVAL_SECONDS
+#define BDS_FIT_INTERVAL_SECONDS (3 * HOUR_SECS)
+#endif
 
 /** \addtogroup ephemeris
  * \{ */
@@ -180,6 +184,8 @@ typedef struct {
 
 /** \} */
 
+extern const float g_bds_ura_table[16];
+
 s8 calc_sat_state(const ephemeris_t *e,
                   const gps_time_t *t,
                   double pos[3],
@@ -220,6 +226,11 @@ u8 ephemeris_params_valid(const gps_time_t *bgn,
 void decode_ephemeris(const u32 frame_words[3][8],
                       ephemeris_t *e,
                       double tot_tow);
+
+void decode_bds_d1_ephemeris(const u32 words[3][10],
+                             gnss_signal_t sid,
+                             ephemeris_t *ephe);
+
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b);
 bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code);
 

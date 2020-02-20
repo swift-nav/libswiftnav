@@ -718,6 +718,76 @@ START_TEST(test_bds_iode) {
   END_TEST
 }
 
+START_TEST(test_ephemeris_bds) {
+  /* clang-format off */
+  static const ephemeris_t ephe_exp = {
+    .sid = {
+      .sat = 25,
+      .code = 12
+    },
+    .toe = {
+        .tow = 460800.000000,
+        .wn = 2091
+    },
+    .ura = 2.000000,
+    .fit_interval = 0,
+    .valid = 0,
+    .health_bits = 0,
+    .source = 0,
+    .kepler = {
+      .tgd = {
+        .bds_s = {-2.99999997e-10, -2.99999997e-10}
+      },
+      .crc = 167.140625,
+      .crs = -18.828125,
+      .cuc = -9.0105459094047546e-07,
+      .cus = 9.4850547611713409e-06,
+      .cic = -4.0978193283081055e-08,
+      .cis = 1.0104849934577942e-07,
+      .dn = 3.9023054038264214e-09,
+      .m0 = 0.39869951815527438,
+      .ecc = 0.00043709692545235157,
+      .sqrta = 5282.6194686889648,
+      .omega0 = 2.2431156200949509,
+      .omegadot = -6.6892072037584707e-09,
+      .w = 0.39590413040186828,
+      .inc = 0.95448398903792575,
+      .inc_dot = -6.2716898124832475e-10,
+      .af0 = -0.00050763087347149849,
+      .af1 = -1.3019807454384136e-11,
+      .af2 = 0.000000,
+      .toc = {
+        .tow = 460800,
+        .wn = 2091
+      },
+      .iodc = 160,
+      .iode = 160
+    }
+  };
+
+  const static u32 words[3][10] = {
+    {0x38901714, 0x5F81035, 0x5BEE184, 0x3FDF95, 0x3D0B09CA,
+     0x3C47CDE6, 0x19AC7AD, 0x24005E73, 0x2ED79F72, 0x38D7A13C},
+
+    {0x38902716, 0x610AAF9, 0x2EFE1C86, 0x1103E979, 0x18E80030,
+     0x394A8A9E, 0x4F9109A, 0x29C9FE18, 0x34BA516C, 0x13D2B18F},
+
+    {0x38903719, 0x62B0869, 0x4DC786, 0x1087FF8F, 0x3D47FD49,
+     0x2DAE0084, 0x1B3C9264, 0xB6C9161, 0x1B58811D, 0x2DC18C7}
+  };
+  /* clang-format on */
+
+  gnss_signal_t sid = {.sat = 25, .code = 12};
+
+  ephemeris_t ephe;
+  memset(&ephe, 0, sizeof(ephe));
+  decode_bds_d1_ephemeris(words, sid, &ephe);
+
+  fail_unless(ephemeris_equal(&ephe_exp, &ephe),
+              "BDS ephemerides should be equal");
+  END_TEST
+}
+
 Suite *ephemeris_suite(void) {
   Suite *s = suite_create("Ephemeris");
 
@@ -727,6 +797,7 @@ Suite *ephemeris_suite(void) {
   tcase_add_test(tc_core, test_ephemeris_health);
   tcase_add_test(tc_core, test_6bit_health_word);
   tcase_add_test(tc_core, test_bds_iode);
+  tcase_add_test(tc_core, test_ephemeris_bds);
   suite_add_tcase(s, tc_core);
 
   return s;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, 2016 Swift Navigation Inc.
+ * Copyright (C) 2015, 2016, 2020 Swift Navigation Inc.
  * Contact: Swift Navigation <dev@swiftnav.com>
  *
  * This source is subject to the license found in the file 'LICENSE' which must
@@ -64,6 +64,8 @@ double calc_ionosphere(const gps_time_t *t_gps,
                        const ionosphere_t *i);
 
 bool decode_iono_parameters(const u32 words[8], ionosphere_t *i);
+
+void decode_bds_d1_iono(const u32 words[10], ionosphere_t *iono);
 
 #ifdef __cplusplus
 } /* extern "C" */

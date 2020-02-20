@@ -164,4 +164,35 @@ bool decode_iono_parameters(const u32 words[8], ionosphere_t *i) {
   return retval;
 }
 
+/**
+ * Decodes Beidou D1 ionospheric parameters.
+ * \param words subframes (FraID) 1.
+ * \param iono ionospheric parameters.
+ */
+void decode_bds_d1_iono(const u32 words[10], ionosphere_t *iono) {
+  const u32 *sf1_word = &words[0];
+  s8 alpha[4];
+  alpha[0] = (((sf1_word[4]) >> 16) & 0xff);
+  alpha[1] = (((sf1_word[4]) >> 8) & 0xff);
+  alpha[2] = (((sf1_word[5]) >> 22) & 0xff);
+  alpha[3] = (((sf1_word[5]) >> 14) & 0xff);
+  s8 beta[4];
+  beta[0] = (((sf1_word[5]) >> 8) & 0x3f) << 2;
+  beta[0] |= (((sf1_word[6]) >> 28) & 0x3);
+  beta[1] = (((sf1_word[6]) >> 20) & 0xff);
+  beta[2] = (((sf1_word[6]) >> 12) & 0xff);
+  beta[3] = (((sf1_word[6]) >> 8) & 0xf) << 4;
+  beta[3] |= (((sf1_word[7]) >> 26) & 0xf);
+
+  iono->toa.wn = (((sf1_word[2]) >> 17) & 0x1fff) + BDS_WEEK_TO_GPS_WEEK;
+  iono->a0 = (alpha[0] * C_1_2P30);
+  iono->a1 = (alpha[1] * C_1_2P27);
+  iono->a2 = (alpha[2] * C_1_2P24);
+  iono->a3 = (alpha[3] * C_1_2P24);
+  iono->b0 = (double)(beta[0] * C_2P11);
+  iono->b1 = (double)(beta[1] * C_2P14);
+  iono->b2 = (double)(beta[2] * C_2P16);
+  iono->b3 = (double)(beta[3] * C_2P16);
+}
+
 /** \} */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010, 2016 Swift Navigation Inc.
+ * Copyright (C) 2010, 2016, 2020 Swift Navigation Inc.
  * Contact: Swift Navigation <dev@swiftnav.com>
  *
  * This source is subject to the license found in the file 'LICENSE' which must
@@ -40,6 +40,27 @@
   "%s ephemeris (v:%d, fi:%d, [%d, %f]), [%d, %f]"
 
 u32 decode_fit_interval(u8 fit_interval_flag, u16 iodc);
+
+/**
+ * Beidou URA table.
+ * Reference: BDS-SIS-ICD-2.1
+ */
+const float g_bds_ura_table[16] = {[0] = 2.0f,
+                                   [1] = 2.8f,
+                                   [2] = 4.0f,
+                                   [3] = 5.7f,
+                                   [4] = 8.0f,
+                                   [5] = 11.3f,
+                                   [6] = 16.0f,
+                                   [7] = 32.0f,
+                                   [8] = 64.0f,
+                                   [9] = 128.0f,
+                                   [10] = 256.0f,
+                                   [11] = 512.0f,
+                                   [12] = 1024.0f,
+                                   [13] = 2048.0f,
+                                   [14] = 4096.0f,
+                                   [15] = INVALID_URA_VALUE};
 
 /**
  * Helper to sign extend 14-bit value
@@ -1247,6 +1268,122 @@ void decode_ephemeris(const u32 frame_words[3][8],
   }
 
   e->valid = iode_valid && toe_valid;
+}
+
+/**
+ * Decodes Beidou D1 ephemeris.
+ * \param words subframes (FraID) 1,2,3.
+ * \param sid signal ID.
+ * \param ephe decoded ephemeris data.
+ */
+void decode_bds_d1_ephemeris(const u32 words[3][10],
+                             gnss_signal_t sid,
+                             ephemeris_t *ephe) {
+  ephemeris_kepler_t *k = &ephe->kepler;
+
+  /* subframe (FraID) 1 decoding */
+
+  const u32 *sf1_word = &words[0][0];
+  u8 sath1 = (((sf1_word[1]) >> 17) & 0x1);
+  u8 urai = (((sf1_word[1]) >> 8) & 0xf);
+  u16 weekno = (((sf1_word[2]) >> 17) & 0x1fff);
+  u32 toc = (((sf1_word[2]) >> 8) & 0x1ff) << 8;
+  toc |= (((sf1_word[3]) >> 22) & 0xff);
+  u16 tgd1 = (((sf1_word[3]) >> 12) & 0x3ff);
+  u16 tgd2 = (((sf1_word[3]) >> 8) & 0xf) << 6;
+  tgd2 |= (((sf1_word[4]) >> 24) & 0x3f);
+  u32 a[3];
+  a[2] = (((sf1_word[7]) >> 15) & 0x7ff);
+  a[0] = (((sf1_word[7]) >> 8) & 0x7f) << 17;
+  a[0] |= (((sf1_word[8]) >> 13) & 0x1ffff);
+  a[1] = (((sf1_word[8]) >> 8) & 0x1f) << 17;
+  a[1] |= (((sf1_word[9]) >> 13) & 0x1ffff);
+
+  /* Ephemeris params */
+  ephe->sid = sid;
+  ephe->health_bits = sath1;
+  ephe->ura = g_bds_ura_table[urai];
+  ephe->toe.wn = BDS_WEEK_TO_GPS_WEEK + weekno;
+  /* Keplerian params */
+  k->tgd.bds_s[0] = BITS_SIGN_EXTEND_32(10, tgd1) * 1e-10f;
+  k->tgd.bds_s[1] = BITS_SIGN_EXTEND_32(10, tgd2) * 1e-10f;
+  k->toc.wn = ephe->toe.wn;
+  k->toc.tow = (double)toc * C_2P3;
+  k->af0 = BITS_SIGN_EXTEND_32(24, a[0]) * C_1_2P33;
+  k->af1 = BITS_SIGN_EXTEND_32(22, a[1]) * C_1_2P50;
+  k->af2 = BITS_SIGN_EXTEND_32(11, a[2]) * C_1_2P66;
+  /* RTCM recommendation, BDS IODC = mod(toc / 720, 240)
+   * Note scale factor effect, (toc * 8) / 720 -> (toc / 90) */
+  k->iodc = (toc / 90) % 240;
+
+  /* subframe (FraID) 2 decoding */
+
+  const u32 *sf2_word = &words[1][0];
+  u32 deltan = (((sf2_word[1]) >> 8) & 0x3ff) << 6;
+  deltan |= (((sf2_word[2]) >> 24) & 0x3f);
+  u32 cuc = (((sf2_word[2]) >> 8) & 0xffff) << 2;
+  cuc |= (((sf2_word[3]) >> 28) & 0x3);
+  u32 m0 = (((sf2_word[3]) >> 8) & 0xfffff) << 12;
+  m0 |= (((sf2_word[4]) >> 18) & 0xfff);
+  u32 ecc = (((sf2_word[4]) >> 8) & 0x3ff) << 22;
+  ecc |= (((sf2_word[5]) >> 8) & 0x3fffff);
+  u32 cus = (((sf2_word[6]) >> 12) & 0x3ffff);
+  u32 crc = (((sf2_word[6]) >> 8) & 0xf) << 14;
+  crc |= (((sf2_word[7]) >> 16) & 0x3fff);
+  u32 crs = (((sf2_word[7]) >> 8) & 0xff) << 10;
+  crs |= (((sf2_word[8]) >> 20) & 0x3ff);
+  u32 sqrta = (((sf2_word[8]) >> 8) & 0xfff) << 20;
+  sqrta |= (((sf2_word[9]) >> 10) & 0xfffff);
+  u32 toe_msb = (((sf2_word[9]) >> 8) & 0x3);
+
+  /* Beidou specific data */
+  u32 split_toe = toe_msb << 15U;
+  /* Keplerian params */
+  k->dn = BITS_SIGN_EXTEND_32(16, deltan) * C_1_2P43 * GPS_PI;
+  k->cuc = BITS_SIGN_EXTEND_32(18, cuc) * C_1_2P31;
+  k->m0 = BITS_SIGN_EXTEND_32(32, m0) * C_1_2P31 * GPS_PI;
+  k->ecc = ecc * C_1_2P33;
+  k->cus = BITS_SIGN_EXTEND_32(18, cus) * C_1_2P31;
+  k->crc = BITS_SIGN_EXTEND_32(18, crc) * C_1_2P6;
+  k->crs = BITS_SIGN_EXTEND_32(18, crs) * C_1_2P6;
+  k->sqrta = sqrta * C_1_2P19;
+
+  /* subframe (FraID) 3 decoding */
+
+  const u32 *sf3_word = &words[2][0];
+  u32 toe_lsb = (((sf3_word[1]) >> 8) & 0x3ff) << 5;
+  toe_lsb |= (((sf3_word[2]) >> 25) & 0x1f);
+  u32 i0 = (((sf3_word[2]) >> 8) & 0x1ffff) << 15;
+  i0 |= (((sf3_word[3]) >> 15) & 0x7fff);
+  u32 cic = (((sf3_word[3]) >> 8) & 0x7f) << 11;
+  cic |= (((sf3_word[4]) >> 19) & 0x7ff);
+  u32 omegadot = (((sf3_word[4]) >> 8) & 0x7ff) << 13;
+  omegadot |= (((sf3_word[5]) >> 17) & 0x1fff);
+  u32 cis = (((sf3_word[5]) >> 8) & 0x1ff) << 9;
+  cis |= (((sf3_word[6]) >> 21) & 0x1ff);
+  u32 idot = (((sf3_word[6]) >> 8) & 0x1fff) << 1;
+  idot |= (((sf3_word[7]) >> 29) & 0x1);
+  u32 omegazero = (((sf3_word[7]) >> 8) & 0x1fffff) << 11;
+  omegazero |= (((sf3_word[8]) >> 19) & 0x7ff);
+  u32 omega = (((sf3_word[8]) >> 8) & 0x7ff) << 21;
+  omega |= (((sf3_word[9]) >> 9) & 0x1fffff);
+
+  /* Beidou specific data */
+  split_toe |= toe_lsb;
+  /* Ephemeris params */
+  ephe->toe.tow = split_toe * C_2P3;
+  /* RTCM recommendation, BDS IODE = mod(toe / 720, 240)
+   * Note scale factor effect, (toe * 8) / 720 -> (toe / 90) */
+  k->iode = (split_toe / 90) % 240;
+
+  /* Keplerian params */
+  k->inc = BITS_SIGN_EXTEND_32(32, i0) * C_1_2P31 * GPS_PI;
+  k->cic = BITS_SIGN_EXTEND_32(18, cic) * C_1_2P31;
+  k->omegadot = BITS_SIGN_EXTEND_32(24, omegadot) * C_1_2P43 * GPS_PI;
+  k->cis = BITS_SIGN_EXTEND_32(18, cis) * C_1_2P31;
+  k->inc_dot = BITS_SIGN_EXTEND_32(14, idot) * C_1_2P43 * GPS_PI;
+  k->omega0 = BITS_SIGN_EXTEND_32(32, omegazero) * C_1_2P31 * GPS_PI;
+  k->w = BITS_SIGN_EXTEND_32(32, omega) * C_1_2P31 * GPS_PI;
 }
 
 static bool ephemeris_xyz_equal(const ephemeris_xyz_t *a,
