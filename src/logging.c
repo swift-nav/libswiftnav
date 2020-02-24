@@ -65,6 +65,12 @@ pfn_detailed_log detailed_log_ = default_detailed_log_;
 
 void logging_set_implementation(pfn_log impl_log,
                                 pfn_detailed_log impl_detailed_log) {
+  if (impl_log == NULL && impl_detailed_log == NULL) {
+    log_ = default_log_;
+    detailed_log_ = default_detailed_log_;
+    return;
+  }
+
   assert(impl_log != NULL);
   assert(impl_detailed_log != NULL);
   log_ = impl_log;
