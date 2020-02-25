@@ -921,14 +921,24 @@ typedef struct {
   u8 prn_list[MAX_SBAS_SATS_PER_SYSTEM];
 } sbas_prn_table_t;
 
-/** Active SBAS PRNs as of March 2018, sources:
- *  http://gpsworld.com/the-almanac/
- *  https://egnos-user-support.essp-sas.eu/new_egnos_ops/egnos_system_realtime
- */
+/** Active SBAS PRNs as of February 2020 */
 static const sbas_prn_table_t sbas_prn_table[SBAS_COUNT] = {
-    [SBAS_WAAS] = {{131, 135, 138}},  /* PRN 131 in test mode */
-    [SBAS_EGNOS] = {{120, 123, 136}}, /* PRN 136 in test mode */
-    [SBAS_GAGAN] = {{127, 128, 132}}, /* PRN 132 is in reserve */
+    /* https://www.nstb.tc.faa.gov/RT_WaasSatelliteStatus.htm */
+    [SBAS_WAAS] = {{131, 133, 138}},
+    /*
+     * https://egnos-user-support.essp-sas.eu/new_egnos_ops/egnos_system_realtime
+     * https://egnos-user-support.essp-sas.eu/new_egnos_ops/signal_in_space
+     */
+    [SBAS_EGNOS] = {{123, 126, 136}},
+    /*
+     * https://en.wikipedia.org/wiki/GPS-aided_GEO_augmented_navigation
+     * GSAT-8 (GAGAN/PRN 127)
+     *   https://www.pulsesat.com/satellites/s/90931db0-ccf5-4d97-ab85-033742837df2/
+     * GSAT-10 (GAGAN/PRN 128)
+     *   https://www.pulsesat.com/satellites/s/a4ec8035-624e-4344-a22c-90d64b047b62/
+     */
+    [SBAS_GAGAN] = {{127, 128}},
+    /* https://en.wikipedia.org/wiki/MTSAT_Satellite_Augmentation_System */
     [SBAS_MSAS] = {{129, 137}},
 };
 
