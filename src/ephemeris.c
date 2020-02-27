@@ -1686,17 +1686,10 @@ s8 get_tgd_correction(const ephemeris_t *eph,
         *tgd = (float)(gamma * eph->kepler.tgd.gal_s[0]);
         return 0;
       }
-      if (CODE_GAL_E1B == sid->code || CODE_GAL_E1C == sid->code ||
-          CODE_GAL_E1X == sid->code || CODE_GAL_E7I == sid->code ||
-          CODE_GAL_E7Q == sid->code || CODE_GAL_E7X == sid->code) {
-        /* The clock corrections from INAV are for the (E1,E5b) combination, so
-         * use the matching group delay correction for all the other signals */
-        *tgd = (float)(gamma * eph->kepler.tgd.gal_s[1]);
-        return 0;
-      }
-      log_debug_sid(*sid, "TGD not applied for the signal");
-
-      return -1;
+      /* The clock corrections from INAV are for the (E1,E5b) combination, so
+       * use the matching group delay correction for all the other signals */
+      *tgd = (float)(gamma * eph->kepler.tgd.gal_s[1]);
+      return 0;
     case CONSTELLATION_INVALID:
     case CONSTELLATION_SBAS:
     case CONSTELLATION_COUNT:
