@@ -1386,6 +1386,98 @@ void decode_bds_d1_ephemeris(const u32 words[3][10],
   k->w = BITS_SIGN_EXTEND_32(32, omega) * C_1_2P31 * GPS_PI;
 }
 
+static float sisa_map(u8 sisa) {
+  float ura = INVALID_URA_VALUE;
+  if (sisa < 50) {
+    ura = sisa * 0.01f;
+  } else if (sisa < 75) {
+    ura = 0.5f + (sisa - 50) * 0.02f;
+  } else if (sisa < 100) {
+    ura = 1.0f + (sisa - 75) * 0.04f;
+  } else if (sisa < 126) {
+    ura = 2.0f + (sisa - 100) * 0.16f;
+  } else if (INVALID_GAL_SISA_INDEX != sisa) {
+    /* Note: SISA Index 126...254 are considered as Spare. */
+    ura = 6.0f;
+  }
+  if (URA_VALID(ura)) {
+    ura = rintf(ura / 0.01f) * 0.01f;
+  }
+  return ura;
+}
+
+/**
+ * Decodes GAL ephemeris.
+ * \param page GAL pages 1-5. Page 5 is needed to extract
+ *             Galileo system time (GST) and make corrections
+ *             to TOE and TOC if needed.
+ * \param eph the decoded ephemeris is placed here.
+ */
+void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
+                          ephemeris_t *eph) {
+  ephemeris_kepler_t *kep = &eph->kepler;
+  kep->iode = getbitu(page[0], 6, 10);
+  kep->iodc = kep->iode;
+  eph->fit_interval = GAL_FIT_INTERVAL_SECONDS;
+  /* word type 1 */
+  u32 toe = getbitu(page[0], 16, 14);
+  u32 m0 = getbitu(page[0], 30, 32);
+  u32 ecc = getbitu(page[0], 62, 32);
+  u32 sqrta = getbitu(page[0], 94, 32);
+  eph->toe.tow = toe * 60.0;
+  kep->m0 = BITS_SIGN_EXTEND_32(32, m0) * C_1_2P31 * GPS_PI;
+  kep->ecc = ecc * C_1_2P33;
+  kep->sqrta = sqrta * C_1_2P19;
+  /* word type 2 */
+  u32 omega0 = getbitu(page[1], 16, 32);
+  u32 i0 = getbitu(page[1], 48, 32);
+  u32 omega = getbitu(page[1], 80, 32);
+  u32 idot = getbitu(page[1], 112, 14);
+  kep->omega0 = BITS_SIGN_EXTEND_32(32, omega0) * C_1_2P31 * GPS_PI;
+  kep->inc = BITS_SIGN_EXTEND_32(32, i0) * C_1_2P31 * GPS_PI;
+  kep->w = BITS_SIGN_EXTEND_32(32, omega) * C_1_2P31 * GPS_PI;
+  kep->inc_dot = BITS_SIGN_EXTEND_32(14, idot) * C_1_2P43 * GPS_PI;
+  /* word type 3 */
+  u32 omegadot = getbitu(page[2], 16, 24);
+  u32 deltan = getbitu(page[2], 40, 16);
+  u32 cuc = getbitu(page[2], 56, 16);
+  u32 cus = getbitu(page[2], 72, 16);
+  u32 crc = getbitu(page[2], 88, 16);
+  u32 crs = getbitu(page[2], 104, 16);
+  u32 sisa = getbitu(page[2], 120, 8);
+  kep->omegadot = BITS_SIGN_EXTEND_32(24, omegadot) * C_1_2P43 * GPS_PI;
+  kep->dn = BITS_SIGN_EXTEND_32(16, deltan) * C_1_2P43 * GPS_PI;
+  kep->cuc = BITS_SIGN_EXTEND_32(16, cuc) * C_1_2P29;
+  kep->cus = BITS_SIGN_EXTEND_32(16, cus) * C_1_2P29;
+  kep->crc = BITS_SIGN_EXTEND_32(16, crc) * C_1_2P5;
+  kep->crs = BITS_SIGN_EXTEND_32(16, crs) * C_1_2P5;
+  eph->ura = sisa_map(sisa);
+  /* word type 4 */
+  u32 sat = getbitu(page[3], 16, 6);
+  u32 cic = getbitu(page[3], 22, 16);
+  u32 cis = getbitu(page[3], 38, 16);
+  u32 toc = getbitu(page[3], 54, 14);
+  u32 af0 = getbitu(page[3], 68, 31);
+  u32 af1 = getbitu(page[3], 99, 21);
+  u32 af2 = getbitu(page[3], 120, 6);
+  eph->sid.sat = sat;
+  kep->cic = BITS_SIGN_EXTEND_32(16, cic) * C_1_2P29;
+  kep->cis = BITS_SIGN_EXTEND_32(16, cis) * C_1_2P29;
+  kep->toc.tow = toc * 60.0;
+  kep->af0 = BITS_SIGN_EXTEND_32(31, af0) * C_1_2P34;
+  kep->af1 = BITS_SIGN_EXTEND_32(21, af1) * C_1_2P46;
+  kep->af2 = BITS_SIGN_EXTEND_32(6, af2) * C_1_2P59;
+
+  gps_time_t t;
+  t.wn = (s16)getbitu(page[4], 73, 12) + GAL_WEEK_TO_GPS_WEEK;
+  t.tow = (double)getbitu(page[4], 85, 20);
+
+  /* Match TOE week number with the time of transmission, fixes the case
+   * near week roll-over where time of ephemeris is across the week boundary */
+  gps_time_match_weeks(&eph->toe, &t);
+  gps_time_match_weeks(&kep->toc, &t);
+}
+
 static bool ephemeris_xyz_equal(const ephemeris_xyz_t *a,
                                 const ephemeris_xyz_t *b) {
   return (memcmp(a, b, sizeof(ephemeris_xyz_t)) == 0);

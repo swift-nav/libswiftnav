@@ -38,6 +38,32 @@ extern "C" {
 #define BDS_FIT_INTERVAL_SECONDS (3 * HOUR_SECS)
 #endif
 
+#ifndef GAL_WEEK_TO_GPS_WEEK
+/** GST week offset to GPS */
+#define GAL_WEEK_TO_GPS_WEEK 1024
+#endif
+
+#ifndef GAL_FIT_INTERVAL_SECONDS
+/**
+ * Galileo fit_interval definition
+ * "Galileo Open Service: Service Definition Document"
+ * Issue 1 Revision 0, 2016 December
+ * Section 2.4.1
+ * https://www.gsc-europa.eu/system/files/galileo_documents/Galileo-OS-SDD.pdf
+ */
+#define GAL_FIT_INTERVAL_SECONDS (4 * HOUR_SECS)
+#endif
+
+#ifndef GAL_INAV_CONTENT_BIT
+/** Number of bits in one Galileo I/NAV page content */
+#define GAL_INAV_CONTENT_BIT 128
+#endif
+
+#ifndef GAL_INAV_CONTENT_BYTE
+/** Number of Bytes in one Galileo I/NAV page content */
+#define GAL_INAV_CONTENT_BYTE ((GAL_INAV_CONTENT_BIT + CHAR_BIT - 1) / CHAR_BIT)
+#endif
+
 /** \addtogroup ephemeris
  * \{ */
 
@@ -230,6 +256,9 @@ void decode_ephemeris(const u32 frame_words[3][8],
 void decode_bds_d1_ephemeris(const u32 words[3][10],
                              gnss_signal_t sid,
                              ephemeris_t *ephe);
+
+void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
+                          ephemeris_t *eph);
 
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b);
 bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code);

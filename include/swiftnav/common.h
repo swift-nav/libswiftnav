@@ -14,6 +14,7 @@
 #define LIBSWIFTNAV_COMMON_H
 
 #include <assert.h>
+#include <limits.h>
 #include <stdint.h>
 
 #ifdef LSN_USE_HEAP

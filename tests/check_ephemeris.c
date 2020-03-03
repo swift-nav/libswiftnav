@@ -788,6 +788,74 @@ START_TEST(test_ephemeris_bds) {
   END_TEST
 }
 
+START_TEST(test_ephemeris_gal) {
+  /* clang-format off */
+  static const ephemeris_t ephe_exp = {
+    .sid = {
+      .sat = 8,
+      .code = 14
+    },
+    .toe = {
+      .tow = 135000.,
+      .wn = 2090
+    },
+    .ura = 3.120000,
+    .fit_interval = 14400,
+    .valid = 1,
+    .health_bits = 0,
+    .source = 0,
+    .kepler = {
+      .tgd = {
+        .gal_s = {0, 0}
+      },
+      .crs = -54.0625,
+      .crc = 62.375,
+      .cuc = -2.3748725652694702e-06,
+      .cus = 1.2902542948722839e-05,
+      .cic = 7.4505805969238281e-09,
+      .cis = 4.6566128730773926e-08,
+      .dn = 2.9647663515616992e-09,
+      .m0 = 1.1731263781996162,
+      .ecc = 0.00021702353842556477,
+      .sqrta = 5440.6276874542236,
+      .omega0 = 0.7101536200630526,
+      .omegadot = -5.363080536688408e-09,
+      .w = 0.39999676368790066,
+      .inc = 0.95957029480011957,
+      .inc_dot = 4.3751822439020375e-10,
+      .af0 = 0.0062288472545333198,
+      .af1 = -5.4427573559223666e-12,
+      .af2 = 0,
+
+      .toc = {
+        .tow = 135000,
+        .wn = 2090
+      },
+      .iode = 97,
+      .iodc = 97
+    }
+  };
+
+  const static u8 words[5][GAL_INAV_CONTENT_BYTE] = {
+    { 0x4, 0x61, 0x23, 0x28, 0xBF, 0x30, 0x9B, 0xA0,  0x0, 0x71, 0xC8, 0x6A, 0xA8, 0x14, 0x16, 0x7},
+    { 0x8, 0x61, 0x1C, 0xEF, 0x2B, 0xC3, 0x27, 0x18, 0xAE, 0x65, 0x10, 0x4C, 0x1E, 0x1A, 0x13, 0x25},
+    { 0xC, 0x61, 0xFF, 0xC5, 0x58, 0x20, 0x6D, 0xFB,  0x5, 0x1B,  0xF,  0x7, 0xCC, 0xF9, 0x3E, 0x6B},
+    { 0x10, 0x61, 0x20,  0x0, 0x10,  0x0, 0x64, 0x8C, 0xA0, 0xCC, 0x1B, 0x5B, 0xBF, 0xFE, 0x81, 0x1},
+    { 0x14, 0x50, 0x80, 0x20,  0x5, 0x81, 0xF4, 0x7C, 0x80, 0x21, 0x51,  0x9, 0xB6, 0xAA, 0xAA, 0xAA}
+  };
+  /* clang-format on */
+
+  ephemeris_t ephe;
+  memset(&ephe, 0, sizeof(ephe));
+  decode_gal_ephemeris(words, &ephe);
+  ephe.sid.code = CODE_GAL_E1B;
+  ephe.valid = 1;
+
+  fail_unless(ephemeris_equal(&ephe_exp, &ephe),
+              "GAL ephemerides should be equal");
+  END_TEST
+}
+
 Suite *ephemeris_suite(void) {
   Suite *s = suite_create("Ephemeris");
 
@@ -798,6 +866,7 @@ Suite *ephemeris_suite(void) {
   tcase_add_test(tc_core, test_6bit_health_word);
   tcase_add_test(tc_core, test_bds_iode);
   tcase_add_test(tc_core, test_ephemeris_bds);
+  tcase_add_test(tc_core, test_ephemeris_gal);
   suite_add_tcase(s, tc_core);
 
   return s;
