@@ -31,6 +31,8 @@ swift_setup_clang_tidy(PATTERNS "src/*.c")
 include(CodeCoverage)
 add_code_coverage_all_targets()
 
+option(LIBSWIFTNAV_ENABLE_STDERR_LOGGING "Enable logging to stderr by default" ON)
+
 set(HDRS
     include/swiftnav/almanac.h
     include/swiftnav/array_tools.h
@@ -88,6 +90,9 @@ add_library(swiftnav ${HDRS} ${SRCS})
 target_code_coverage(swiftnav AUTO ALL)
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+if(LIBSWIFTNAV_ENABLE_STDERR_LOGGING)
+  target_compile_definitions(swiftnav PRIVATE "LIBSWIFTNAV_ENABLE_STDERR_LOGGING")
+endif()
 install(FILES ${HDRS} DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/swiftnav)
 install(TARGETS swiftnav DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 

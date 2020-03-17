@@ -99,7 +99,7 @@ extern const char *level_string[];
  */
 #define log_emerg(log_fmt_str, ...)                \
   do {                                             \
-    if (LOG_LEVEL >= LOG_EMERG) {                  \
+    if (log_ != NULL && LOG_LEVEL >= LOG_EMERG) {  \
       log_(LOG_EMERG, log_fmt_str, ##__VA_ARGS__); \
     }                                              \
   } while (false)
@@ -109,7 +109,7 @@ extern const char *level_string[];
  */
 #define log_alert(log_fmt_str, ...)                \
   do {                                             \
-    if (LOG_LEVEL >= LOG_ALERT) {                  \
+    if (log_ != NULL && LOG_LEVEL >= LOG_ALERT) {  \
       log_(LOG_ALERT, log_fmt_str, ##__VA_ARGS__); \
     }                                              \
   } while (false)
@@ -119,7 +119,7 @@ extern const char *level_string[];
  */
 #define log_crit(log_fmt_str, ...)                \
   do {                                            \
-    if (LOG_LEVEL >= LOG_CRIT) {                  \
+    if (log_ != NULL && LOG_LEVEL >= LOG_CRIT) {  \
       log_(LOG_CRIT, log_fmt_str, ##__VA_ARGS__); \
     }                                             \
   } while (false)
@@ -129,7 +129,7 @@ extern const char *level_string[];
  */
 #define log_error(log_fmt_str, ...)                \
   do {                                             \
-    if (LOG_LEVEL >= LOG_ERROR) {                  \
+    if (log_ != NULL && LOG_LEVEL >= LOG_ERROR) {  \
       log_(LOG_ERROR, log_fmt_str, ##__VA_ARGS__); \
     }                                              \
   } while (false)
@@ -139,7 +139,7 @@ extern const char *level_string[];
  */
 #define log_warn(log_fmt_str, ...)                \
   do {                                            \
-    if (LOG_LEVEL >= LOG_WARN) {                  \
+    if (log_ != NULL && LOG_LEVEL >= LOG_WARN) {  \
       log_(LOG_WARN, log_fmt_str, ##__VA_ARGS__); \
     }                                             \
   } while (false)
@@ -149,7 +149,7 @@ extern const char *level_string[];
  */
 #define log_notice(log_fmt_str, ...)                \
   do {                                              \
-    if (LOG_LEVEL >= LOG_NOTICE) {                  \
+    if (log_ != NULL && LOG_LEVEL >= LOG_NOTICE) {  \
       log_(LOG_NOTICE, log_fmt_str, ##__VA_ARGS__); \
     }                                               \
   } while (false)
@@ -159,7 +159,7 @@ extern const char *level_string[];
  */
 #define log_info(log_fmt_str, ...)                \
   do {                                            \
-    if (LOG_LEVEL >= LOG_INFO) {                  \
+    if (log_ != NULL && LOG_LEVEL >= LOG_INFO) {  \
       log_(LOG_INFO, log_fmt_str, ##__VA_ARGS__); \
     }                                             \
   } while (false)
@@ -167,11 +167,11 @@ extern const char *level_string[];
 /** Log a debugging message.
  * \param args `printf` style format and arguments.
  */
-#define log_debug(log_fmt_str, ...)                \
-  do {                                             \
-    if (DEBUG || LOG_LEVEL >= LOG_DEBUG) {         \
-      log_(LOG_DEBUG, log_fmt_str, ##__VA_ARGS__); \
-    }                                              \
+#define log_debug(log_fmt_str, ...)                          \
+  do {                                                       \
+    if (log_ != NULL && (DEBUG || LOG_LEVEL >= LOG_DEBUG)) { \
+      log_(LOG_DEBUG, log_fmt_str, ##__VA_ARGS__);           \
+    }                                                        \
   } while (false)
 
 /** Truncates the path to the base file name before logging
@@ -180,10 +180,12 @@ extern const char *level_string[];
  * \param line      line number where the logger was called
  * \param args      `printf` style format and argumebts
  */
-#define detailed_log_truncated_(log_level, full_path, line, ...)         \
-  do {                                                                   \
-    char path[255] = full_path;                                          \
-    detailed_log_(log_level, truncate_path_(path), line, ##__VA_ARGS__); \
+#define detailed_log_truncated_(log_level, full_path, line, ...)           \
+  do {                                                                     \
+    if (detailed_log_ != NULL) {                                           \
+      char path[255] = full_path;                                          \
+      detailed_log_(log_level, truncate_path_(path), line, ##__VA_ARGS__); \
+    }                                                                      \
   } while (false)
 
 /** Log an emergency (with file path and line number).
