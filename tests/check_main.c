@@ -19,6 +19,7 @@ int main(void) {
   srunner_add_suite(sr, linear_algebra_suite());
   srunner_add_suite(sr, troposphere_suite());
   srunner_add_suite(sr, ephemeris_suite());
+  srunner_add_suite(sr, decode_glo_suite());
   srunner_add_suite(sr, set_suite());
   srunner_add_suite(sr, gnss_time_test_suite());
   srunner_add_suite(sr, gnss_time_cpp_test_suite());

@@ -9,6 +9,7 @@ if(libswiftnav_BUILD_TESTS)
       check_almanac.c
       check_bits.c
       check_coord_system.c
+      check_decode_glo.c
       check_edc.c
       check_ephemeris.c
       check_glo_map.c

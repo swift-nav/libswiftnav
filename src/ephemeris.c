@@ -19,6 +19,7 @@
 #include <swiftnav/bits.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
+#include <swiftnav/decode_glo.h>
 #include <swiftnav/edc.h>
 #include <swiftnav/ephemeris.h>
 #include <swiftnav/linear_algebra.h>
@@ -29,7 +30,7 @@
  * Functions and calculations related to the GPS ephemeris.
  * \{ */
 
-/* maximum step length in seconds for Runge-Kutta aglorithm */
+/* maximum step length in seconds for Runge-Kutta algorithm */
 #define GLO_MAX_STEP_LENGTH 30
 
 /* maximum steps for Runge-Kutta algorithm,
@@ -1476,6 +1477,38 @@ void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
    * near week roll-over where time of ephemeris is across the week boundary */
   gps_time_match_weeks(&eph->toe, &t);
   gps_time_match_weeks(&kep->toc, &t);
+}
+
+/**
+ * Decodes GLO ephemeris.
+ * \param strings GLO navigation strings 1-5
+ * \param sid identifier of the satellite
+ * \param glo2gps_cb callback for GLO to GPS time conversion
+ * \param eph the decoded ephemeris is placed here.
+ */
+void decode_glo_ephemeris(const glo_string_t strings[5],
+                          const gnss_signal_t sid,
+                          glo2gps_with_utc_params_t glo2gps_cb,
+                          ephemeris_t *eph) {
+  eph->toe = GPS_TIME_UNKNOWN;
+  eph->sid = sid;
+  eph->valid = 0;
+
+  glo_time_t tk;
+  glo_time_t toe;
+  u8 age_of_data_days;
+  float tau_gps_s;
+
+  bool ret = decode_glo_string_1(&strings[0], eph, &tk);
+  ret &= decode_glo_string_2(&strings[1], eph, &toe);
+  ret &= decode_glo_string_3(&strings[2], eph, &toe);
+  ret &= decode_glo_string_4(&strings[3], eph, &tk, &toe, &age_of_data_days);
+  ret &= decode_glo_string_5(&strings[4], eph, &tk, &toe, &tau_gps_s);
+
+  if (ret) {
+    eph->toe = glo2gps_cb(&toe);
+    eph->valid = 1;
+  }
 }
 
 static bool ephemeris_xyz_equal(const ephemeris_xyz_t *a,

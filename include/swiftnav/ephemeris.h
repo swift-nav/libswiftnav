@@ -208,6 +208,17 @@ typedef struct {
   };
 } ephemeris_t;
 
+#define GLO_NAV_STR_BITS 85 /**< Length of GLO navigation string */
+#define GLO_NAV_STR_WORDS 3 /**< Number of u32 words for nav string buffer */
+
+typedef struct {
+  u32 word[GLO_NAV_STR_WORDS];
+} glo_string_t;
+
+/* Callback type for converting GLO time to GPS time using stored UTC parameters
+ */
+typedef gps_time_t (*glo2gps_with_utc_params_t)(const glo_time_t *glo_t);
+
 /** \} */
 
 extern const float g_bds_ura_table[16];
@@ -258,6 +269,11 @@ void decode_bds_d1_ephemeris(const u32 words[3][10],
                              ephemeris_t *ephe);
 
 void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
+                          ephemeris_t *eph);
+
+void decode_glo_ephemeris(const glo_string_t strings[5],
+                          const gnss_signal_t sid,
+                          glo2gps_with_utc_params_t glo2gps_cb,
                           ephemeris_t *eph);
 
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b);

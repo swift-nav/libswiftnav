@@ -11,6 +11,7 @@ Suite* bits_suite(void);
 Suite* edc_suite(void);
 Suite* linear_algebra_suite(void);
 Suite* ephemeris_suite(void);
+Suite* decode_glo_suite(void);
 Suite* ionosphere_suite(void);
 Suite* set_suite(void);
 Suite* gnss_time_test_suite(void);
