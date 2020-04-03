@@ -82,11 +82,8 @@ static s8 calc_sat_state_xyz_almanac(const almanac_t *a,
   memcpy(e.xyz.pos, a->xyz.pos, sizeof(e.xyz.pos));
   memcpy(e.xyz.vel, a->xyz.vel, sizeof(e.xyz.vel));
   memcpy(e.xyz.acc, a->xyz.acc, sizeof(e.xyz.acc));
-  u8 iode;
-  u16 iodc;
 
-  return calc_sat_state(
-      &e, t, pos, vel, acc, clock_err, clock_rate_err, &iodc, &iode);
+  return calc_sat_state(&e, t, pos, vel, acc, clock_err, clock_rate_err);
 }
 
 /** Calculate satellite position, velocity and clock offset from GPS ephemeris.
@@ -131,11 +128,8 @@ static s8 calc_sat_state_kepler_almanac(const almanac_t *a,
   e.kepler.af0 = a->kepler.af0;
   e.kepler.af1 = a->kepler.af1;
   e.kepler.toc = a->toa;
-  u16 iodc;
-  u8 iode;
 
-  return calc_sat_state(
-      &e, t, pos, vel, acc, clock_err, clock_rate_err, &iodc, &iode);
+  return calc_sat_state(&e, t, pos, vel, acc, clock_err, clock_rate_err);
 }
 
 /** Calculate satellite position, velocity and clock offset from almanac.

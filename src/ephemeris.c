@@ -40,8 +40,13 @@
 #define SIN_5 0.0871557427476582
 #define COS_5 0.9961946980917456
 
+#define EPHEMERIS_NULL_LOG_MESSAGE "null ephemeris"
+
 #define EPHEMERIS_INVALID_LOG_MESSAGE \
   "%s ephemeris (v:%d, fi:%d, [%d, %f]), [%d, %f]"
+
+#define EPHEMERIS_INVALID_IOD_LOG_MESSAGE \
+  "invalid IOD ephemeris (v:%d, fi:%d, [%d, %f], iodc:%d, iode:%d), [%d, %f]"
 
 /* Galileo OS SIS ICD, Table 71 */
 enum gal_data_validity_status_t {
@@ -136,9 +141,7 @@ static s8 calc_sat_state_xyz(const ephemeris_t *e,
                              double vel[3],
                              double acc[3],
                              double *clock_err,
-                             double *clock_rate_err,
-                             u16 *iodc,
-                             u8 *iode) {
+                             double *clock_rate_err) {
   /* TODO should t be in GPS or SBAS time? */
   /* TODO what is the SBAS valid ttime interval? */
 
@@ -164,10 +167,6 @@ static s8 calc_sat_state_xyz(const ephemeris_t *e,
   acc[0] = ex->acc[0];
   acc[1] = ex->acc[1];
   acc[2] = ex->acc[2];
-
-  /* SBAS doesn't have an IODE so just set to 0. */
-  *iodc = 0;
-  *iode = 0;
 
   return 0;
 }
@@ -229,9 +228,7 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
                              double vel[3],
                              double acc[3],
                              double *clock_err,
-                             double *clock_rate_err,
-                             u16 *iodc,
-                             u8 *iode) {
+                             double *clock_rate_err) {
   assert(e != NULL);
   assert(t != NULL);
   assert(pos != NULL);
@@ -307,9 +304,6 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
   calc_ecef_vel_acc(ecef_vel_acc, pos, vel, e->glo.acc);
   memcpy(acc, &ecef_vel_acc[3], sizeof(double) * 3);
 
-  *iodc = e->glo.iod;
-  *iode = e->glo.iod;
-
   return 0;
 }
 
@@ -343,9 +337,7 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
                                 double vel[3],
                                 double acc[3],
                                 double *clock_err,
-                                double *clock_rate_err,
-                                u16 *iodc,
-                                u8 *iode) {
+                                double *clock_rate_err) {
   const ephemeris_kepler_t *k = &e->kepler;
 
   /* Calculate satellite clock terms */
@@ -363,7 +355,6 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
    * L1 and L2 need to take the group delay into account */
   *clock_err = k->af0 + dt * (k->af1 + dt * k->af2) - tgd;
   *clock_rate_err = k->af1 + 2.0 * dt * k->af2;
-  *iodc = k->iodc;
 
   /* Seconds from the time from ephemeris reference epoch (toe) */
   dt = gpsdifftime(t, &e->toe) - *clock_err;
@@ -557,8 +548,6 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
   acc[2] = sin(inc) * (-y * inc_dot * inc_dot + y_acc) +
            cos(inc) * (y * inc_acc + 2 * inc_dot * y_dot);
 
-  *iode = k->iode;
-
   return 0;
 }
 
@@ -589,13 +578,11 @@ s8 calc_sat_state(const ephemeris_t *e,
                   double vel[3],
                   double acc[3],
                   double *clock_err,
-                  double *clock_rate_err,
-                  u16 *iodc,
-                  u8 *iode) {
+                  double *clock_rate_err) {
   const satellite_orbit_type_t orbit_type = MEO;
 
   return calc_sat_state_orbit_type(
-      e, t, orbit_type, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
+      e, t, orbit_type, pos, vel, acc, clock_err, clock_rate_err);
 }
 
 /** Calculate satellite position, velocity and clock offset from ephemeris
@@ -626,9 +613,7 @@ s8 calc_sat_state_orbit_type(const ephemeris_t *e,
                              double vel[3],
                              double acc[3],
                              double *clock_err,
-                             double *clock_rate_err,
-                             u16 *iodc,
-                             u8 *iode) {
+                             double *clock_rate_err) {
   assert(pos != NULL);
   assert(vel != NULL);
   assert(clock_err != NULL);
@@ -641,7 +626,7 @@ s8 calc_sat_state_orbit_type(const ephemeris_t *e,
   }
 
   return calc_sat_state_n(
-      e, t, orbit_type, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
+      e, t, orbit_type, pos, vel, acc, clock_err, clock_rate_err);
 }
 
 /** Calculate satellite position, velocity and clock offset from ephemeris
@@ -672,9 +657,7 @@ s8 calc_sat_state_n(const ephemeris_t *e,
                     double vel[3],
                     double acc[3],
                     double *clock_err,
-                    double *clock_rate_err,
-                    u16 *iodc,
-                    u8 *iode) {
+                    double *clock_rate_err) {
   assert(pos != NULL);
   assert(vel != NULL);
   assert(clock_err != NULL);
@@ -686,22 +669,12 @@ s8 calc_sat_state_n(const ephemeris_t *e,
     case CONSTELLATION_BDS:
     case CONSTELLATION_GAL:
     case CONSTELLATION_QZS:
-      return calc_sat_state_kepler(e,
-                                   t,
-                                   orbit_type,
-                                   pos,
-                                   vel,
-                                   acc,
-                                   clock_err,
-                                   clock_rate_err,
-                                   iodc,
-                                   iode);
+      return calc_sat_state_kepler(
+          e, t, orbit_type, pos, vel, acc, clock_err, clock_rate_err);
     case CONSTELLATION_SBAS:
-      return calc_sat_state_xyz(
-          e, t, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
+      return calc_sat_state_xyz(e, t, pos, vel, acc, clock_err, clock_rate_err);
     case CONSTELLATION_GLO:
-      return calc_sat_state_glo(
-          e, t, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
+      return calc_sat_state_glo(e, t, pos, vel, acc, clock_err, clock_rate_err);
     case CONSTELLATION_INVALID:
     case CONSTELLATION_COUNT:
     default:
@@ -736,8 +709,6 @@ s8 calc_sat_az_el(const ephemeris_t *e,
   double sat_pos[3];
   double sat_vel[3];
   double sat_acc[3];
-  u16 iodc;
-  u8 iode;
   double clock_err, clock_rate_err;
   s8 ret;
   if (check_e) {
@@ -748,9 +719,7 @@ s8 calc_sat_az_el(const ephemeris_t *e,
                                     sat_vel,
                                     sat_acc,
                                     &clock_err,
-                                    &clock_rate_err,
-                                    &iodc,
-                                    &iode);
+                                    &clock_rate_err);
   } else {
     ret = calc_sat_state_n(e,
                            t,
@@ -759,9 +728,7 @@ s8 calc_sat_az_el(const ephemeris_t *e,
                            sat_vel,
                            sat_acc,
                            &clock_err,
-                           &clock_rate_err,
-                           &iodc,
-                           &iode);
+                           &clock_rate_err);
   }
   if (ret != 0) {
     return ret;
@@ -797,19 +764,9 @@ s8 calc_sat_doppler(const ephemeris_t *e,
   double clock_err, clock_rate_err;
   double vec_ref_sat_pos[3];
   double vec_ref_sat_vel[3];
-  u16 iodc;
-  u8 iode;
 
-  s8 ret = calc_sat_state_orbit_type(e,
-                                     t,
-                                     orbit_type,
-                                     sat_pos,
-                                     sat_vel,
-                                     sat_acc,
-                                     &clock_err,
-                                     &clock_rate_err,
-                                     &iodc,
-                                     &iode);
+  s8 ret = calc_sat_state_orbit_type(
+      e, t, orbit_type, sat_pos, sat_vel, sat_acc, &clock_err, &clock_rate_err);
   if (ret != 0) {
     return ret;
   }
@@ -897,6 +854,46 @@ ephemeris_status_t get_ephemeris_status_t(const ephemeris_t *e) {
   if (!ephemeris_healthy(e, e->sid.code)) {
     return EPH_UNHEALTHY;
   }
+  switch (sid_to_constellation(e->sid)) {
+    case CONSTELLATION_GPS:
+    case CONSTELLATION_QZS:
+      if (e->kepler.iodc > GPS_IODC_MAX || e->kepler.iode > GPS_IODE_MAX ||
+          (e->kepler.iodc & GPS_IODE_MAX) != (e->kepler.iode & GPS_IODE_MAX)) {
+        return EPH_INVALID_IOD;
+      }
+      break;
+    case CONSTELLATION_BDS:
+      if (e->source == EPH_SOURCE_BDS_D1_D2_NAV) {
+        if (e->kepler.iodc > BDS2_IODC_MAX || e->kepler.iode > BDS2_IODE_MAX) {
+          return EPH_INVALID_IOD;
+        }
+      } else {
+        if (e->kepler.iodc > BDS3_IODC_MAX || e->kepler.iode > BDS3_IODE_MAX ||
+            (e->kepler.iodc & BDS3_IODE_MAX) !=
+                (e->kepler.iode & BDS3_IODE_MAX)) {
+          return EPH_INVALID_IOD;
+        }
+      }
+      break;
+    case CONSTELLATION_GAL:
+      if (e->kepler.iodc > GAL_IOD_NAV_MAX ||
+          e->kepler.iode > GAL_IOD_NAV_MAX ||
+          e->kepler.iodc != e->kepler.iode) {
+        return EPH_INVALID_IOD;
+      }
+      break;
+    case CONSTELLATION_SBAS:
+      break;
+    case CONSTELLATION_GLO:
+      if (e->glo.iod > GLO_IOD_MAX) {
+        return EPH_INVALID_IOD;
+      }
+      break;
+    case CONSTELLATION_INVALID:
+    case CONSTELLATION_COUNT:
+    default:
+      return EPH_INVALID_SID;
+  }
   return EPH_VALID;
 }
 
@@ -930,6 +927,8 @@ static u8 ephemeris_valid_at_time(const ephemeris_t *e, const gps_time_t *t) {
     /* TOE is a middle of ephemeris validity interval */
     bgn.tow -= e->fit_interval / 2;
     end.tow += e->fit_interval / 2;
+  } else if (IS_SBAS(e->sid)) {
+    return 1;
   } else {
     assert(0);
     return 0;
@@ -979,15 +978,7 @@ ephemeris_status_t ephemeris_valid_detailed(const ephemeris_t *e,
 
   switch (eph_status) {
     case EPH_NULL:
-      log_error_sid(e->sid,
-                    EPHEMERIS_INVALID_LOG_MESSAGE,
-                    "null",
-                    (int)e->valid,
-                    (int)e->fit_interval,
-                    (int)e->toe.wn,
-                    e->toe.tow,
-                    (int)t->wn,
-                    t->tow);
+      log_error(EPHEMERIS_NULL_LOG_MESSAGE);
       break;
     case EPH_INVALID:
       log_info_sid(e->sid,
@@ -1030,6 +1021,29 @@ ephemeris_status_t ephemeris_valid_detailed(const ephemeris_t *e,
                    (int)e->fit_interval,
                    (int)e->toe.wn,
                    e->toe.tow,
+                   (int)t->wn,
+                   t->tow);
+      break;
+    case EPH_INVALID_SID:
+      log_info_sid(e->sid,
+                   EPHEMERIS_INVALID_LOG_MESSAGE,
+                   "sid invalid",
+                   (int)e->valid,
+                   (int)e->fit_interval,
+                   (int)e->toe.wn,
+                   e->toe.tow,
+                   (int)t->wn,
+                   t->tow);
+      break;
+    case EPH_INVALID_IOD:
+      log_info_sid(e->sid,
+                   EPHEMERIS_INVALID_IOD_LOG_MESSAGE,
+                   (int)e->valid,
+                   (int)e->fit_interval,
+                   (int)e->toe.wn,
+                   e->toe.tow,
+                   e->kepler.iodc,
+                   e->kepler.iode,
                    (int)t->wn,
                    t->tow);
       break;
@@ -1365,6 +1379,7 @@ void decode_ephemeris(const u32 frame_words[3][8],
   }
 
   e->valid = iode_valid && toe_valid;
+  e->source = EPH_SOURCE_GPS_LNAV;
 }
 
 /**
@@ -1411,7 +1426,7 @@ void decode_bds_d1_ephemeris(const u32 words[3][10],
   k->af2 = BITS_SIGN_EXTEND_32(11, a[2]) * C_1_2P66;
   /* RTCM recommendation, BDS IODC = mod(toc / 720, 240)
    * Note scale factor effect, (toc * 8) / 720 -> (toc / 90) */
-  k->iodc = (toc / 90) % 240;
+  k->iodc = (toc / 90) % BDS2_IODC_MAX;
 
   /* subframe (FraID) 2 decoding */
 
@@ -1471,7 +1486,7 @@ void decode_bds_d1_ephemeris(const u32 words[3][10],
   ephe->toe.tow = split_toe * C_2P3;
   /* RTCM recommendation, BDS IODE = mod(toe / 720, 240)
    * Note scale factor effect, (toe * 8) / 720 -> (toe / 90) */
-  k->iode = (split_toe / 90) % 240;
+  k->iode = (split_toe / 90) % BDS2_IODE_MAX;
 
   /* Keplerian params */
   k->inc = BITS_SIGN_EXTEND_32(32, i0) * C_1_2P31 * GPS_PI;
@@ -1481,6 +1496,8 @@ void decode_bds_d1_ephemeris(const u32 words[3][10],
   k->inc_dot = BITS_SIGN_EXTEND_32(14, idot) * C_1_2P43 * GPS_PI;
   k->omega0 = BITS_SIGN_EXTEND_32(32, omegazero) * C_1_2P31 * GPS_PI;
   k->w = BITS_SIGN_EXTEND_32(32, omega) * C_1_2P31 * GPS_PI;
+
+  ephe->source = EPH_SOURCE_BDS_D1_D2_NAV;
 }
 
 static float sisa_map(u8 sisa) {
@@ -1504,7 +1521,7 @@ static float sisa_map(u8 sisa) {
 }
 
 /**
- * Decodes GAL ephemeris.
+ * Decodes GAL I/NAV ephemeris.
  * \param page GAL pages 1-5. Page 5 is needed to extract
  *             Galileo system time (GST) and make corrections
  *             to TOE and TOC if needed.
@@ -1589,6 +1606,8 @@ void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
    * near week roll-over where time of ephemeris is across the week boundary */
   gps_time_match_weeks(&eph->toe, &t);
   gps_time_match_weeks(&kep->toc, &t);
+
+  eph->source = EPH_SOURCE_GAL_INAV;
 }
 
 /**
@@ -1621,6 +1640,8 @@ void decode_glo_ephemeris(const glo_string_t strings[5],
     eph->toe = glo2gps(&toe, utc_params);
     eph->valid = 1;
   }
+
+  eph->source = EPH_SOURCE_GLO_FDMA;
 }
 
 static bool ephemeris_xyz_equal(const ephemeris_xyz_t *a,
@@ -1805,11 +1826,20 @@ bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code) {
   return ret;
 }
 
-/* Based on the BNC implementation here:
+/* Compute a 24 bit CRC of the BDS 2 ephemeris following the CNES algorithm
+ * detailed in https://doi.org/10.1007/s10291-017-0678-6 and
+ * https://doi.org/10.1109/ACCESS.2019.2938252
+ *
+ * Based on the BNC implementation here:
  * https://github.com/swift-nav/PPP_Wizard14/blob/
  * b05025517fa3f5ee4334171b97ab7475db319215/RTRover/rtrover_broadcast.cpp#L391
+ *
+ * \param eph a BDS 2 ephemeris
+ * \return a 24 bit CRC value
  */
-static u32 get_iodcrc(const ephemeris_t *eph) {
+u32 get_bds2_iod_crc(const ephemeris_t *eph) {
+  assert(sid_to_constellation(eph->sid) == CONSTELLATION_BDS);
+
   unsigned char buffer[80];
   s32 numbits = 0;
 
@@ -1902,31 +1932,6 @@ static u32 get_iodcrc(const ephemeris_t *eph) {
   numbits += 5;
 
   return crc24q(buffer, numbits / 8, 0);
-}
-
-/** Get the ephemeris iod. For BDS, returns a crc value uniquely identifying
- *  the satellite ephemeris set; for all other constellations, returns the IODE
- *
- * \param a eph Ephemeris
- * \return Issue of Data
- */
-u32 get_ephemeris_iod_or_iodcrc(const ephemeris_t *eph) {
-  switch (sid_to_constellation(eph->sid)) {
-    case CONSTELLATION_BDS:
-      return get_iodcrc(eph);
-    case CONSTELLATION_GPS:
-    case CONSTELLATION_GAL:
-    case CONSTELLATION_QZS:
-      return (u32)eph->kepler.iode;
-    case CONSTELLATION_GLO:
-      return (u32)(eph->glo.iod);
-    case CONSTELLATION_INVALID:
-    case CONSTELLATION_SBAS:
-    case CONSTELLATION_COUNT:
-    default:
-      assert(!"Unsupported constellation");
-      return 0;
-  }
 }
 
 /** Get the time group delay to be applied to the satellite clock correction

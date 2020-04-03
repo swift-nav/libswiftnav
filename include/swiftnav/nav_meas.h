@@ -65,6 +65,12 @@ extern "C" {
 typedef u16 nav_meas_flags_t;
 
 /**
+ * Used to indicate that the eph_key, sat_pos, sat_vel, sat_acc, sat_clock_err
+ * and sat_clock_err_rate fields have not yet been initialised.
+ */
+#define NAV_MEAS_INVALID_EPH_KEY 0xFFFF
+
+/**
  * Structure for processing navigation measurements
  */
 typedef struct {
@@ -83,10 +89,9 @@ typedef struct {
   double sat_pos[3];           /**< SV ECEF position [m] */
   double sat_vel[3];           /**< SV ECEF velocity [m/s] */
   double sat_acc[3];           /**< SV ECEF accel [m/s/s] */
-  u8 IODE;                     /**< Issue of Data Ephemeris [unitless] */
+  u16 eph_key;                 /**< Ephemeris key [unitless] */
   double sat_clock_err;        /**< SV clock error [s] */
   double sat_clock_err_rate;   /**< SV clock error rate [s/s] */
-  u16 IODC;                    /**< Issue of Data Clock [unitless] */
   double cn0;                  /**< Carrier to noise ratio [dB-Hz] */
   double lock_time;            /**< PLL lock time [s] */
   double elevation;            /**< Approximate satellite elevation [deg] */

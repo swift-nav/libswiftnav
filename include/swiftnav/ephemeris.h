@@ -28,15 +28,39 @@ extern "C" {
 #define INVALID_GAL_SISA_INDEX 0xFF
 #define URA_VALID(x) ((x) >= 0)
 
-#define INVALID_IODE 0xFF
-#define INVALID_IODC 0x3FF
+#define EPH_SOURCE_NUM_BITS 2
+
+#define EPH_SOURCE_GPS_LNAV 0
+#define EPH_SOURCE_GPS_CNAV 1
+#define EPH_SOURCE_GPS_CNAV2 2
+
+#define EPH_SOURCE_QZS_LNAV EPH_SOURCE_GPS_LNAV
+#define EPH_SOURCE_QZS_CNAV EPH_SOURCE_GPS_CNAV
+#define EPH_SOURCE_QZS_CNAV2 EPH_SOURCE_GPS_CNAV2
 
 #define EPH_SOURCE_GAL_INAV 0
 #define EPH_SOURCE_GAL_FNAV 1
 
+#define EPH_SOURCE_BDS_D1_D2_NAV 0
+#define EPH_SOURCE_BDS_BCNAV1 1
+#define EPH_SOURCE_BDS_BCNAV2 2
+
+#define EPH_SOURCE_GLO_FDMA 0
+#define EPH_SOURCE_GLO_CDMA 1
+
+#define BDS2_IODE_MAX 240
+#define BDS2_IODC_MAX 240
+
+#define BDS3_IODE_MAX 0xFF
+#define BDS3_IODC_MAX 0x3FF
+
 #ifndef BDS_FIT_INTERVAL_SECONDS
 #define BDS_FIT_INTERVAL_SECONDS (3 * HOUR_SECS)
 #endif
+
+#define GAL_IOD_NAV_MAX 0x3FF
+
+#define GLO_IOD_MAX 0x7F
 
 #ifndef GAL_WEEK_TO_GPS_WEEK
 /** GST week offset to GPS */
@@ -66,6 +90,9 @@ extern "C" {
 
 /** \addtogroup ephemeris
  * \{ */
+
+#define GPS_IODE_MAX 0xFF
+#define GPS_IODC_MAX 0x3FF
 
 /** IS-GPS-200H Table 20-I: maximum t_oc 604784 [s] */
 #define GPS_LNAV_EPH_TOC_MAX 604784
@@ -123,6 +150,8 @@ typedef enum {
   EPH_FIT_INTERVAL_EQ_0,
   EPH_UNHEALTHY,
   EPH_TOO_OLD,
+  EPH_INVALID_SID,
+  EPH_INVALID_IOD,
   EPH_VALID
 } ephemeris_status_t;
 
@@ -163,8 +192,48 @@ typedef struct {
   double af1;      /**< Drift of the sat clock [s/s] **/
   double af2;      /**< Acceleration of the sat clock [s/s^2] **/
   gps_time_t toc;  /**< Reference time of clock. */
-  u16 iodc;        /**< Issue of data clock. */
-  u16 iode;        /**< Issue of data ephemeris. */
+  u16 iodc;        /**< Issue of data clock. Not suitable as a lookup key,
+                        see get_ephemeris_key().
+       
+                        Source of value:
+                        - GPS LNAV: IS-GPS-200K Table 20-I “IODC”
+                        - GPS CNAV: IS-GPS-200K Table 30-III “t_oc”
+                        - GPS CNAV-2: IS-GPS-800F Table 3.5-1 “t_oe”
+                        - Galileo I/NAV: Galileo OS SIS ICD Issue 1.3 Tables 39 to 42
+                      “IOD_nav”
+                        - Galileo F/NAV: Galileo OS SIS ICD Issue 1.3 Tables 27 to 30
+                      “IOD_nav”
+                        - BDS D1 NAV: BDS-SIS-ICD-2.1 Table 5-7 “t_oc” where IODE = mod
+                      (t_oe / 720, 240) per RTCM/CSNO recommendation
+                        - BDS D2 NAV: BDS-SIS-ICD-2.1 Table 5-7 “t_oc” where IODC = mod
+                      (t_oc / 720, 240) per RTCM/CSNO recommendation
+                        - BDS B-CNAV1: BDS-SIS-ICD-B1C-1.0 Table 6-2 “IODC”
+                        - BDS B-CNAV2: BDS-SIS-ICD-B2a-1.0 Table 6-1 “IODC”
+                        - QZSS LNAV: IS-QZSS-PNT-003 Table 4.1.2-4 “IODC”
+                        - QZSS CNAV: IS-QZSS-PNT-003 Table 4.3.2-8 “t_oc”
+                        - QZSS CNAV-2: IS-QZSS-PNT-003 Table 4.2.2-4 “t_oe”
+                        */
+  u16 iode;        /**< Issue of data ephemeris. Not suitable as a lookup key,
+                        see get_ephemeris_key().
+       
+                        Source of value:
+                        - GPS LNAV: IS-GPS-200K Table 20-II “IODE”
+                        - GPS CNAV: IS-GPS-750F Table 20-I “t_oe”
+                        - GPS CNAV-2: IS-GPS-800F Table 3.5-1 “t_oe”
+                        - Galileo I/NAV: Galileo OS SIS ICD Issue 1.3 Tables 39 to 42
+                      “IOD_nav”
+                        - Galileo F/NAV: Galileo OS SIS ICD Issue 1.3 Tables 27 to 30
+                      “IOD_nav”
+                        - BDS D1 NAV: BDS-SIS-ICD-2.1 Table 5-10 “t_oe” where IODE =
+                      mod (t_oe / 720, 240) per RTCM/CSNO recommendation
+                        - BDS D2 NAV: BDS-SIS-ICD-2.1 Table 5-10 “t_oe” where IODE =
+                      mod (t_oe / 720, 240) per RTCM/CSNO recommendation
+                        - BDS B-CNAV1: BDS-SIS-ICD-B1C-1.0 Table 6-2 “IODE”
+                        - BDS B-CNAV2: BDS-SIS-ICD-B2a-1.0 Table 6-1 “IODE”
+                        - QZSS LNAV: IS-QZSS-PNT-003 Tables 4.1.2-7 to 4.1.2-8 “IODE”
+                        - QZSS CNAV: IS-QZSS-PNT-003 Table 4.3.2-4 “t_oe”
+                        - QZSS CNAV-2: IS-QZSS-PNT-003 Table 4.2.2-4 “t_oe”
+                        */
 } ephemeris_kepler_t;
 
 /** Structure containing the SBAS ephemeris for one satellite. */
@@ -189,7 +258,13 @@ typedef struct {
   double acc[3]; /**< Acceleration vector of the SV at tb in PZ-90.02
                       coordinates system [m/s^2] */
   u16 fcn;       /**< Frequency slot associated with the GLO SV */
-  u8 iod;        /**< Issue of ephemeris data */
+  u8 iod;        /**< Issue of data. Not suitable as a lookup key,
+                      see get_ephemeris_key()
+       
+                      Source of value:
+                      - GLONASS FDMA: GLONASS ICD L1 L2 Edition 5.1 Table 4.5 “t_b”
+                      - GLONASS CDMA: GLONASS ICD CDMA L1 Edition 1.0 Table 5.2 “t_b”
+                 */
 } ephemeris_glo_t;
 
 /** Structure containing the ephemeris for one satellite. */
@@ -233,9 +308,7 @@ s8 calc_sat_state(const ephemeris_t *e,
                   double vel[3],
                   double acc[3],
                   double *clock_err,
-                  double *clock_rate_err,
-                  u16 *iodc,
-                  u8 *iode);
+                  double *clock_rate_err);
 s8 calc_sat_state_orbit_type(const ephemeris_t *e,
                              const gps_time_t *t,
                              const satellite_orbit_type_t orbit_type,
@@ -243,9 +316,7 @@ s8 calc_sat_state_orbit_type(const ephemeris_t *e,
                              double vel[3],
                              double acc[3],
                              double *clock_err,
-                             double *clock_rate_err,
-                             u16 *iodc,
-                             u8 *iode);
+                             double *clock_rate_err);
 s8 calc_sat_state_n(const ephemeris_t *e,
                     const gps_time_t *t,
                     const satellite_orbit_type_t orbit_type,
@@ -253,9 +324,7 @@ s8 calc_sat_state_n(const ephemeris_t *e,
                     double vel[3],
                     double acc[3],
                     double *clock_err,
-                    double *clock_rate_err,
-                    u16 *iodc,
-                    u8 *iode);
+                    double *clock_rate_err);
 s8 calc_sat_az_el(const ephemeris_t *e,
                   const gps_time_t *t,
                   const double ref[3],
@@ -299,7 +368,8 @@ bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code);
 u8 encode_ura(float ura);
 float decode_ura_index(const u8 index);
 
-u32 get_ephemeris_iod_or_iodcrc(const ephemeris_t *eph);
+u32 get_bds2_iod_crc(const ephemeris_t *eph);
+
 s8 get_tgd_correction(const ephemeris_t *eph,
                       const gnss_signal_t *sid,
                       float *tgd);

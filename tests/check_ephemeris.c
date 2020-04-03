@@ -22,6 +22,7 @@ static const ephemeris_t gps_eph = {
     .fit_interval = 14400,
     .valid = 1,
     .health_bits = 0,
+    .source = EPH_SOURCE_GPS_LNAV,
     .kepler = {.tgd.gps_s = {5.122274160385132E-9, 0.0},
                .crc = 198.9375,
                .crs = 10.28125,
@@ -96,25 +97,15 @@ START_TEST(test_ephemeris_almanac_divergence) {
     double alm_sat_pos[3];
     double eph_sat_pos[3];
     double div_sat_pos[3];
-    u8 iode;
-    u16 iodc;
 
     bool calc_alm_ok =
         (0 == calc_sat_state_almanac(&gps_alm, &t, alm_sat_pos, _, _, _, _));
     bool calc_eph_ok =
         (0 ==
-         calc_sat_state_n(
-             &gps_eph, &t, orbit_type, eph_sat_pos, _, _, _, _, &iodc, &iode));
-    bool calc_eph_div_ok = (0 == calc_sat_state_n(&gps_eph_diverged,
-                                                  &t,
-                                                  orbit_type,
-                                                  div_sat_pos,
-                                                  _,
-                                                  _,
-                                                  _,
-                                                  _,
-                                                  &iodc,
-                                                  &iode));
+         calc_sat_state_n(&gps_eph, &t, orbit_type, eph_sat_pos, _, _, _, _));
+    bool calc_eph_div_ok =
+        (0 == calc_sat_state_n(
+                  &gps_eph_diverged, &t, orbit_type, div_sat_pos, _, _, _, _));
 
     /* Check successful sat state calculation. */
     fail_unless(calc_alm_ok && calc_eph_ok && calc_eph_div_ok,
@@ -714,18 +705,6 @@ START_TEST(test_6bit_health_word) {
 }
 END_TEST
 
-// BNC_IODE was calculated using the code in
-// https://github.com/swift-nav/PPP_Wizard14/blob/b05025517fa3f5ee4334171b97ab7475db319215/RTRover/rtrover_broadcast.cpp#L391
-START_TEST(test_bds_iode) {
-  ephemeris_t bds_eph = gps_eph;
-  bds_eph.sid.code = CODE_BDS2_B1;
-  u32 our_IODE = get_ephemeris_iod_or_iodcrc(&bds_eph);
-  u32 BNC_IODE = 14700972;
-  fail_unless(our_IODE == BNC_IODE, "test_bds_iode test failed");
-
-  END_TEST
-}
-
 START_TEST(test_ephemeris_bds) {
   /* clang-format off */
   static const ephemeris_t ephe_exp = {
@@ -741,7 +720,7 @@ START_TEST(test_ephemeris_bds) {
     .fit_interval = 0,
     .valid = 0,
     .health_bits = 0,
-    .source = 0,
+    .source = EPH_SOURCE_BDS_D1_D2_NAV,
     .kepler = {
       .tgd = {
         .bds_s = {-2.99999997e-10, -2.99999997e-10}
@@ -811,7 +790,7 @@ START_TEST(test_ephemeris_gal) {
     .fit_interval = 14400,
     .valid = 1,
     .health_bits = 0,
-    .source = 0,
+    .source = EPH_SOURCE_GAL_INAV,
     .kepler = {
       .tgd = {
         .gal_s = {-5.5879354476928711e-09, -6.5192580223083496e-09}
@@ -864,6 +843,269 @@ START_TEST(test_ephemeris_gal) {
   END_TEST
 }
 
+START_TEST(test_ephemeris_valid) {
+  const gps_time_t t_valid = gps_eph.toe;
+  const gps_time_t t_late = {
+      .wn = t_valid.wn,
+      .tow = t_valid.tow + (double)gps_eph.fit_interval / 2.0 + 1.0};
+  const gps_time_t t_late_gal = {
+      .wn = t_valid.wn,
+      .tow = t_valid.tow + (double)gps_eph.fit_interval + 1.0};
+  ephemeris_t eph;
+
+  fail_unless(ephemeris_valid(NULL, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(NULL, &t_valid) == EPH_NULL);
+
+  eph = gps_eph;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_QZS_L1CA;
+  eph.source = EPH_SOURCE_QZS_LNAV;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_GAL_E1B;
+  eph.source = EPH_SOURCE_GAL_INAV;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_BDS2_B1;
+  eph.source = EPH_SOURCE_BDS_D1_D2_NAV;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_GLO_L1OF;
+  eph.source = EPH_SOURCE_GLO_FDMA;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_SBAS_L1CA;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.valid = false;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID);
+
+  eph = gps_eph;
+  eph.toe.wn = 0;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_WN_EQ_0);
+
+  eph = gps_eph;
+  eph.fit_interval = 0;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) ==
+              EPH_FIT_INTERVAL_EQ_0);
+
+  eph = gps_eph;
+  eph.health_bits = 0x3F;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_UNHEALTHY);
+
+  eph = gps_eph;
+  eph.kepler.iodc = 1;
+  eph.kepler.iode = 3;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.kepler.iodc = GPS_IODC_MAX;
+  eph.kepler.iode = GPS_IODE_MAX;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.kepler.iodc = GPS_IODC_MAX + 1;
+  eph.kepler.iode = 1;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.kepler.iodc = GPS_IODC_MAX + 1;
+  eph.kepler.iode = GPS_IODE_MAX + 1;
+  ;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  fail_unless(ephemeris_valid(&eph, &t_late) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_late) == EPH_TOO_OLD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_QZS_L1CA;
+  eph.source = EPH_SOURCE_QZS_LNAV;
+  eph.health_bits = 0x3F;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_UNHEALTHY);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_QZS_L1CA;
+  eph.source = EPH_SOURCE_QZS_LNAV;
+  eph.kepler.iodc = 1;
+  eph.kepler.iode = 3;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_QZS_L1CA;
+  eph.source = EPH_SOURCE_QZS_LNAV;
+  eph.kepler.iodc = GPS_IODC_MAX;
+  eph.kepler.iode = GPS_IODE_MAX;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_QZS_L1CA;
+  eph.source = EPH_SOURCE_QZS_LNAV;
+  eph.kepler.iodc = GPS_IODC_MAX + 1;
+  eph.kepler.iode = 1;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_QZS_L1CA;
+  eph.source = EPH_SOURCE_QZS_LNAV;
+  eph.kepler.iodc = GPS_IODC_MAX + 1;
+  eph.kepler.iode = GPS_IODE_MAX + 1;
+  ;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_QZS_L1CA;
+  eph.source = EPH_SOURCE_QZS_LNAV;
+  fail_unless(ephemeris_valid(&eph, &t_late) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_late) == EPH_TOO_OLD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_GAL_E1B;
+  eph.source = EPH_SOURCE_GAL_INAV;
+  eph.health_bits = 1;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_UNHEALTHY);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_GAL_E1B;
+  eph.source = EPH_SOURCE_GAL_INAV;
+  eph.kepler.iodc = 1;
+  eph.kepler.iode = 3;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_GAL_E1B;
+  eph.source = EPH_SOURCE_GAL_INAV;
+  eph.kepler.iodc = GAL_IOD_NAV_MAX;
+  eph.kepler.iode = GAL_IOD_NAV_MAX;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_GAL_E1B;
+  eph.source = EPH_SOURCE_GAL_INAV;
+  eph.kepler.iodc = GAL_IOD_NAV_MAX + 1;
+  eph.kepler.iode = GAL_IOD_NAV_MAX + 1;
+  ;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_GAL_E1B;
+  eph.source = EPH_SOURCE_GAL_INAV;
+  fail_unless(ephemeris_valid(&eph, &t_late_gal) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_late_gal) == EPH_TOO_OLD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_BDS2_B1;
+  eph.source = EPH_SOURCE_BDS_D1_D2_NAV;
+  eph.health_bits = 1;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_UNHEALTHY);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_BDS2_B1;
+  eph.source = EPH_SOURCE_BDS_D1_D2_NAV;
+  eph.kepler.iodc = 1;
+  eph.kepler.iode = 3;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_BDS2_B1;
+  eph.source = EPH_SOURCE_BDS_D1_D2_NAV;
+  eph.kepler.iodc = BDS2_IODC_MAX;
+  eph.kepler.iode = BDS2_IODE_MAX;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_BDS2_B1;
+  eph.source = EPH_SOURCE_BDS_D1_D2_NAV;
+  eph.kepler.iodc = BDS2_IODC_MAX + 1;
+  eph.kepler.iode = BDS2_IODE_MAX + 1;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_BDS2_B1;
+  eph.source = EPH_SOURCE_BDS_D1_D2_NAV;
+  fail_unless(ephemeris_valid(&eph, &t_late_gal) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_late_gal) == EPH_TOO_OLD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_BDS3_B1CI;
+  eph.source = EPH_SOURCE_BDS_BCNAV1;
+  eph.kepler.iodc = 1;
+  eph.kepler.iode = 3;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_BDS3_B1CI;
+  eph.source = EPH_SOURCE_BDS_BCNAV1;
+  eph.kepler.iodc = BDS3_IODC_MAX;
+  eph.kepler.iode = BDS3_IODE_MAX;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_BDS3_B1CI;
+  eph.source = EPH_SOURCE_BDS_BCNAV1;
+  eph.kepler.iodc = BDS3_IODC_MAX + 1;
+  eph.kepler.iode = BDS3_IODE_MAX + 1;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_GLO_L1OF;
+  eph.source = EPH_SOURCE_GLO_FDMA;
+  eph.health_bits = 1;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_UNHEALTHY);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_GLO_L1OF;
+  eph.source = EPH_SOURCE_GLO_FDMA;
+  fail_unless(ephemeris_valid(&eph, &t_late) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_late) == EPH_TOO_OLD);
+
+  eph = gps_eph;
+  eph.sid.code = CODE_SBAS_L1CA;
+  eph.health_bits = 1;
+  fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
+  fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_UNHEALTHY);
+
+  END_TEST
+}
+
 Suite *ephemeris_suite(void) {
   Suite *s = suite_create("Ephemeris");
 
@@ -872,9 +1114,9 @@ Suite *ephemeris_suite(void) {
   tcase_add_test(tc_core, test_ephemeris_equal);
   tcase_add_test(tc_core, test_ephemeris_health);
   tcase_add_test(tc_core, test_6bit_health_word);
-  tcase_add_test(tc_core, test_bds_iode);
   tcase_add_test(tc_core, test_ephemeris_bds);
   tcase_add_test(tc_core, test_ephemeris_gal);
+  tcase_add_test(tc_core, test_ephemeris_valid);
   suite_add_tcase(s, tc_core);
 
   return s;

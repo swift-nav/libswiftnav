@@ -58,6 +58,7 @@ double TAU = -9.71024855971336365e-05;
 void e_out(void) {
   log_debug("GLO Ephemeris:\n");
   log_debug("\tSID: %u (code %u)\n", eph.sid.sat, eph.sid.code);
+  log_debug("\tSource: %u\n", eph.source);
   log_debug("\tGPS time: TOE %f, WN %d\n", eph.toe.tow, eph.toe.wn);
   log_debug("\tURA: %f\n", eph.ura);
   log_debug("\tFit interval: %u\n", eph.fit_interval);
