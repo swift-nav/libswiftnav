@@ -48,9 +48,4 @@ function build() {
   cd ../
 }
 
-function git_update_submodules() {
-  git submodule update --init --recursive
-}
-
-git_update_submodules
 build

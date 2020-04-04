@@ -36,19 +36,19 @@ typedef enum {
 
 memcpy_s_t memcpy_s(void *dest, size_t destsize, const void *src, size_t count);
 
-#define MEMCPY_S(d, ds, src, c)                                \
-  do {                                                         \
-    memcpy_s_t memcpy_s_res = memcpy_s(d, ds, src, c);         \
-    if (MEMCPY_S_OK != memcpy_s_res) {                         \
-      log_error("MEMCPY_S failed with code %d", memcpy_s_res); \
-      assert(false);                                           \
-    }                                                          \
-  } while (false)
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 #endif /* _CRT_MEMORY_DEFINED */
+
+#define MEMCPY_S(d, ds, src, c)                                \
+  do {                                                         \
+    int memcpy_s_res = memcpy_s(d, ds, src, c);                \
+    if (0 != memcpy_s_res) {                                   \
+      log_error("MEMCPY_S failed with code %d", memcpy_s_res); \
+      assert(false);                                           \
+    }                                                          \
+  } while (false)
 
 #endif /* LIBSWIFTNAV_MEMCPY_S_H */

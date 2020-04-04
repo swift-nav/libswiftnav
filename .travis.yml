@@ -1,3 +1,5 @@
+# yamllint disable rule:line-length
+---
 # Copyright (C) 2018 Swift Navigation Inc.
 # Contact: Swift Navigation <dev@swiftnav.com>
 #
@@ -8,15 +10,14 @@
 # **********************************************************************
 
 # Travis does not yet fully support bionic, so we need to keep it at Xenial until fixed.
-dist:  xenial
-sudo:  false
+dist: xenial
+sudo: false
 group: stable
 
 language: c
 
-# Travis doesn't need the submodule(s) for this repo
 git:
-  submodules: false
+  submodules: true
 
 cache:
   apt: true
@@ -40,18 +41,16 @@ matrix:
     # extensions for Python 2.7
     - env: TEST_SUITE=unit CXX=g++-4.8
       compiler: gcc-4.8
-      addons: { apt: { packages: ["cmake",
-                                  "gcc-4.8",
-                                  "g++-4.8"],
-                       sources: ["ubuntu-toolchain-r-test"] } }
+      addons: {apt: {packages: ["cmake",
+                                "gcc-4.8",
+                                "g++-4.8"],
+                     sources: ["ubuntu-toolchain-r-test"]}}
 
     # GCC 6 / Unit Test.
     - env: TEST_SUITE=unit
       compiler: gcc-6
-      addons: { apt: { packages: ["cmake",
-                                  "gcc-6",
-                                  "g++-6"],
-                       sources: ["ubuntu-toolchain-r-test"] } }
+      dist: bionic
+      addons: {apt: {packages: ["cmake", "gcc-6", "g++-6"]}}
 
     # ------------------------------------------------------------------
     # Lint and check compilation builds with Clang
@@ -59,12 +58,12 @@ matrix:
     # CLANG / Lint
     - env: TEST_SUITE=lint
       compiler: clang-6.0
-      addons: { apt: { packages: ["cmake",
-                                  "clang-6.0",
-                                  "clang-format-6.0",
-                                  "clang-tidy-6.0",
-                                  "libc++-dev",
-                                  "libc++abi-dev"] } }
+      addons: {apt: {packages: ["cmake",
+                                "clang-6.0",
+                                "clang-format-6.0",
+                                "clang-tidy-6.0",
+                                "libc++-dev",
+                                "libc++abi-dev"]}}
 
     - os: osx
       osx_image: xcode10.1
@@ -80,6 +79,21 @@ matrix:
       script:
         - ./msvc.bat 64
         - ls -la ./build/Release/swiftnav.lib || exit 1
+
+    - os: windows
+      env:
+        - CMAKE_GENERATOR="MinGW Makefiles"
+        - CC=gcc
+        - CXX=g++
+      before_install:
+        - choco uninstall -y mingw
+        - choco install -y --no-progress mingw --version=6.4.0
+      before_script:
+        - rm "C:/Program Files/Git/usr/bin/sh.exe"
+      script:
+        - cmake -B build -S . -G "$CMAKE_GENERATOR"
+        - cmake --build build
+
 
 # **********************************************************************
 # INSTALL AND BUILD STEPS:

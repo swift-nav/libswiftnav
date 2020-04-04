@@ -29,7 +29,8 @@
  * \return true if the time is valid
  */
 bool gps_time_valid(const gps_time_t *t) {
-  return isfinite(t->tow) && t->tow >= 0 && t->tow < WEEK_SECS && t->wn >= 0;
+  return isfinite((float)t->tow) && t->tow >= 0 && t->tow < WEEK_SECS &&
+         t->wn >= 0;
 }
 
 /** Tell whether a `time_t` struct is a valid Unix time.
@@ -38,7 +39,7 @@ bool gps_time_valid(const gps_time_t *t) {
  * \return true if the time is valid
  */
 bool unix_time_valid(const time_t *t) {
-  return (isfinite((double)*t) && ((*t) >= 0) &&
+  return (isfinite((float)*t) && ((*t) >= 0) &&
           ((*t) > (GPS_WEEK_REFERENCE * WEEK_SECS) + GPS_EPOCH));
 }
 
