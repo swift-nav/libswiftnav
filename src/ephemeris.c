@@ -1483,12 +1483,12 @@ void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
  * Decodes GLO ephemeris.
  * \param strings GLO navigation strings 1-5
  * \param sid identifier of the satellite
- * \param glo2gps_cb callback for GLO to GPS time conversion
+ * \param utc_params pointer to UTC parameters (NULL for factory values)
  * \param eph the decoded ephemeris is placed here.
  */
 void decode_glo_ephemeris(const glo_string_t strings[5],
                           const gnss_signal_t sid,
-                          glo2gps_with_utc_params_t glo2gps_cb,
+                          const utc_params_t *utc_params,
                           ephemeris_t *eph) {
   eph->toe = GPS_TIME_UNKNOWN;
   eph->sid = sid;
@@ -1506,7 +1506,7 @@ void decode_glo_ephemeris(const glo_string_t strings[5],
   ret &= decode_glo_string_5(&strings[4], eph, &tk, &toe, &tau_gps_s);
 
   if (ret) {
-    eph->toe = glo2gps_cb(&toe);
+    eph->toe = glo2gps(&toe, utc_params);
     eph->valid = 1;
   }
 }

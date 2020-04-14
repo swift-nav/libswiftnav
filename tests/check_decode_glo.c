@@ -209,15 +209,10 @@ START_TEST(error_correction_glo) {
   END_TEST
 }
 
-static gps_time_t glo2gps_wrapper(const glo_time_t *t) {
-  /* return time with factory UTC parameters */
-  return glo2gps(t, /* utc_params = */ NULL);
-}
-
 START_TEST(test_decode_ephemeris_glo) {
   gnss_signal_t sid = SID_UNKNOWN;
 
-  decode_glo_ephemeris(strings_in, sid, glo2gps_wrapper, &eph);
+  decode_glo_ephemeris(strings_in, sid, /* utc_params = */ NULL, &eph);
 
   e_out();
   END_TEST

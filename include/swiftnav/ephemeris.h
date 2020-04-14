@@ -273,7 +273,7 @@ void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
 
 void decode_glo_ephemeris(const glo_string_t strings[5],
                           const gnss_signal_t sid,
-                          glo2gps_with_utc_params_t glo2gps_cb,
+                          const utc_params_t *utc_params,
                           ephemeris_t *eph);
 
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b);
