@@ -1,6 +1,8 @@
 #include <check.h>
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include <swiftnav/bits.h>
 #include "check_suites.h"
@@ -70,15 +72,42 @@ END_TEST
 
 START_TEST(test_setbitu) {
   u8 test_data[10];
+  u8 zeroes[10];
 
   u32 ret;
+  unsigned seed = time(NULL);
 
-  setbitu(test_data, 10, 13, 0x11A2);
-  ret = getbitu(test_data, 10, 13);
-  fail_unless(ret == 0x11A2, "test case 1 expected 0x11A2, got 0x%04X", ret);
+  srand(seed);
 
-  /* TODO: Check that setbitu doesn't write to bits other than those in the bit
-   * field. */
+  memset(zeroes, 0, sizeof(zeroes));
+  memset(test_data, 0, sizeof(test_data));
+
+  for (unsigned len = 0; len <= 32; len++) {
+    for (unsigned pos = 0; pos < 48; pos++) {
+      u32 data = rand();
+
+      /* Set 'data' and check that we get the same value when we read it
+       * back */
+      setbitu(test_data, pos, len, data);
+      /* Mask off bits higher than 'len' since they shouldn't be set when we
+       * read back */
+      data &= (len == 32 ? ~0 : ((1 << len) - 1));
+      ret = getbitu(test_data, pos, len);
+      fail_unless(
+          ret == data,
+          "test case 1 expected %04X, got 0x%04X (len %u, pos %u, seed %u)",
+          data,
+          ret,
+          len,
+          pos,
+          seed);
+
+      /* Clear data and make sure that no additional bits have changed */
+      setbitu(test_data, pos, len, 0);
+      fail_unless(!memcmp(test_data, zeroes, sizeof(test_data)),
+                  "test case 2 not completely zeroed");
+    }
+  }
 }
 END_TEST
 

@@ -108,20 +108,64 @@ s32 getbits(const u8 *buff, u32 pos, u8 len) {
  * \param pos Position in buffer of start of bit field in bits.
  * \param len Length of bit field in bits.
  * \param data Unsigned integer to be packed into bit field.
+ *
+ * Note: the naive implementation of this function would be to set
+ * each bit in the output individually, e.g.:
+ *
+ *  for (u32 i = pos; i < pos + len; i++, mask >>= 1) {
+ *    if (data & mask) {
+ *      buff[i / 8] |= 1u << (7 - i % 8);
+ *    } else {
+ *      buff[i / 8] &= ~(1u << (7 - i % 8));
+ *    }
+ *  }
+ *
+ * However this approach would read and write to memory 'len' times.
+ * The approach used here updates the output byte-wise, meaning that a
+ * maximum of 5 read/writes to memory are needed.
  */
 void setbitu(u8 *buff, u32 pos, u32 len, u32 data) {
-  u32 mask = 1u << (len - 1);
-
   if (len <= 0 || 32 < len) {
     return;
   }
 
-  for (u32 i = pos; i < pos + len; i++, mask >>= 1) {
-    if (data & mask) {
-      buff[i / 8] |= 1u << (7 - i % 8);
-    } else {
-      buff[i / 8] &= ~(1u << (7 - i % 8));
-    }
+  /* skip untouched bytes */
+  buff += pos / 8;
+
+  /* number of bits remaining in pos + len */
+  u8 shift = (pos % 8) + len;
+  /* round up to get total number of bits we are interested in */
+  u8 count = ((shift + 7) >> 3) << 3;
+  /* compute difference to nearest multiple of 8 */
+  shift = count - shift;
+
+  /* mask of bits to take from 'data' */
+  u32 data_mask = (len == 32 ? ~0 : ((1 << len) - 1));
+  /* in case 'data' has more bits than specified in 'len' */
+  data &= data_mask;
+
+  /* special handling for the case where a fifth output byte is needed
+   * (needed to prevent bits from being lost during shift left) */
+  if (count == 40) {
+    count -= 8;
+
+    u8 mask = data_mask >> (count - shift);
+    u8 bits = data >> (count - shift);
+
+    *buff = (*buff & ~mask) | bits;
+    buff++;
+  }
+
+  /* main loop: compute a mask of bits to clear and bits to set, then
+   * apply the mask and bits in-place */
+  while (count) {
+    count -= 8;
+
+    u8 mask = (data_mask << shift) >> count;
+    u8 bits = (data << shift) >> count;
+
+    *buff = (*buff & ~mask) | bits;
+    buff++;
   }
 }
 
