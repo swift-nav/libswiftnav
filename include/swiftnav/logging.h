@@ -72,8 +72,9 @@ typedef void (*pfn_detailed_log)(int level,
                                  LIBSWIFTNAV_FORMAT_STRING const char *msg,
                                  ...) __attribute__((format(printf, 4, 5)));
 
-extern LIBSWIFTNAV_DECLSPEC pfn_log log_;
-extern LIBSWIFTNAV_DECLSPEC pfn_detailed_log detailed_log_;
+extern LIBSWIFTNAV_DECLSPEC pfn_log __attribute__((format(printf, 2, 3))) log_;
+extern LIBSWIFTNAV_DECLSPEC pfn_detailed_log
+    __attribute__((format(printf, 4, 5))) detailed_log_;
 
 /**
  * Provide custom implementation for the underlying log functions.
