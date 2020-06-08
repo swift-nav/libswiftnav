@@ -1468,6 +1468,19 @@ void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
   kep->af0 = BITS_SIGN_EXTEND_32(31, af0) * C_1_2P34;
   kep->af1 = BITS_SIGN_EXTEND_32(21, af1) * C_1_2P46;
   kep->af2 = BITS_SIGN_EXTEND_32(6, af2) * C_1_2P59;
+  /* word type 5 */
+  u16 bgd_e5a_e1 = getbitu(page[4], 47, 10); /* E5a/E1 BGD */
+  u16 bgd_e5b_e1 = getbitu(page[4], 57, 10); /* E5b/E1 BGD */
+
+#if 0
+  u16 E5b_hs = getbitu(page[4], 67, 2); /* E5b Health Status */
+  u16 E1b_hs = getbitu(page[4], 69, 2); /* E1b Health Status */
+  u16 E5b_dvs = getbitu(page[4], 71, 1); /* E5b Data Validity */
+  u16 E1b_dvs = getbitu(page[4], 72, 1); /* E1b Data Validity */
+#endif
+
+  kep->tgd.gal_s[0] = (float)BITS_SIGN_EXTEND_32(10, bgd_e5a_e1) / powf(2, 32);
+  kep->tgd.gal_s[1] = (float)BITS_SIGN_EXTEND_32(10, bgd_e5b_e1) / powf(2, 32);
 
   gps_time_t t;
   t.wn = (s16)getbitu(page[4], 73, 12) + GAL_WEEK_TO_GPS_WEEK;
