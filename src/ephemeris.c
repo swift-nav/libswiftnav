@@ -1513,17 +1513,92 @@ void decode_glo_ephemeris(const glo_string_t strings[5],
 
 static bool ephemeris_xyz_equal(const ephemeris_xyz_t *a,
                                 const ephemeris_xyz_t *b) {
-  return (memcmp(a, b, sizeof(ephemeris_xyz_t)) == 0);
+  return fabs(a->pos[0] - b->pos[0]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->pos[1] - b->pos[1]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->pos[2] - b->pos[2]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->vel[0] - b->vel[0]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->vel[1] - b->vel[1]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->vel[2] - b->vel[2]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->acc[0] - b->acc[0]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->acc[1] - b->acc[1]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->acc[2] - b->acc[2]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->a_gf0 - b->a_gf0) < FLOAT_EQUALITY_EPS &&
+         fabs(a->a_gf1 - b->a_gf1) < FLOAT_EQUALITY_EPS;
 }
 
-static bool ephemeris_kepler_equal(const ephemeris_kepler_t *a,
+static bool ephemeris_kepler_equal(const constellation_t constel,
+                                   const ephemeris_kepler_t *a,
                                    const ephemeris_kepler_t *b) {
-  return (memcmp(a, b, sizeof(ephemeris_kepler_t)) == 0);
+  switch (constel) {
+    case CONSTELLATION_GPS:
+      if (fabsf(a->tgd.gps_s[0] - b->tgd.gps_s[0]) > FLOAT_EQUALITY_EPS ||
+          fabsf(a->tgd.gps_s[1] - b->tgd.gps_s[1]) > FLOAT_EQUALITY_EPS) {
+        return false;
+      }
+      break;
+    case CONSTELLATION_QZS:
+      if (fabsf(a->tgd.qzss_s[0] - b->tgd.qzss_s[0]) > FLOAT_EQUALITY_EPS ||
+          fabsf(a->tgd.qzss_s[1] - b->tgd.qzss_s[1]) > FLOAT_EQUALITY_EPS) {
+        return false;
+      }
+      break;
+    case CONSTELLATION_GAL:
+      if (fabsf(a->tgd.gal_s[0] - b->tgd.gal_s[0]) > FLOAT_EQUALITY_EPS ||
+          fabsf(a->tgd.gal_s[1] - b->tgd.gal_s[1]) > FLOAT_EQUALITY_EPS) {
+        return false;
+      }
+      break;
+    case CONSTELLATION_BDS:
+      if (fabsf(a->tgd.bds_s[0] - b->tgd.bds_s[0]) > FLOAT_EQUALITY_EPS ||
+          fabsf(a->tgd.bds_s[1] - b->tgd.bds_s[1]) > FLOAT_EQUALITY_EPS) {
+        return false;
+      }
+      break;
+    case CONSTELLATION_SBAS:
+    case CONSTELLATION_GLO:
+    case CONSTELLATION_COUNT:
+    case CONSTELLATION_INVALID:
+    default:
+      log_error("Invalid constellation given to ephemeris_kepler_equal\n");
+      assert(false);
+  }
+  return fabs(a->crc - b->crc) < FLOAT_EQUALITY_EPS &&
+         fabs(a->crs - b->crs) < FLOAT_EQUALITY_EPS &&
+         fabs(a->cuc - b->cuc) < FLOAT_EQUALITY_EPS &&
+         fabs(a->cus - b->cus) < FLOAT_EQUALITY_EPS &&
+         fabs(a->cic - b->cic) < FLOAT_EQUALITY_EPS &&
+         fabs(a->cis - b->cis) < FLOAT_EQUALITY_EPS &&
+         fabs(a->dn - b->dn) < FLOAT_EQUALITY_EPS &&
+         fabs(a->m0 - b->m0) < FLOAT_EQUALITY_EPS &&
+         fabs(a->ecc - b->ecc) < FLOAT_EQUALITY_EPS &&
+         fabs(a->sqrta - b->sqrta) < FLOAT_EQUALITY_EPS &&
+         fabs(a->omega0 - b->omega0) < FLOAT_EQUALITY_EPS &&
+         fabs(a->omegadot - b->omegadot) < FLOAT_EQUALITY_EPS &&
+         fabs(a->w - b->w) < FLOAT_EQUALITY_EPS &&
+         fabs(a->inc - b->inc) < FLOAT_EQUALITY_EPS &&
+         fabs(a->inc_dot - b->inc_dot) < FLOAT_EQUALITY_EPS &&
+         fabs(a->af0 - b->af0) < FLOAT_EQUALITY_EPS &&
+         fabs(a->af1 - b->af1) < FLOAT_EQUALITY_EPS &&
+         fabs(a->af2 - b->af2) < FLOAT_EQUALITY_EPS &&
+         fabs(a->toc.tow - b->toc.tow) < FLOAT_EQUALITY_EPS &&
+         a->toc.wn == b->toc.wn && a->iodc == b->iodc && a->iode == b->iode;
 }
 
 static bool ephemeris_glo_equal(const ephemeris_glo_t *a,
                                 const ephemeris_glo_t *b) {
-  return (memcmp(a, b, sizeof(ephemeris_glo_t)) == 0);
+  return fabs(a->gamma - b->gamma) < FLOAT_EQUALITY_EPS &&
+         fabs(a->tau - b->tau) < FLOAT_EQUALITY_EPS &&
+         fabs(a->d_tau - b->d_tau) < FLOAT_EQUALITY_EPS &&
+         fabs(a->pos[0] - b->pos[0]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->pos[1] - b->pos[1]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->pos[2] - b->pos[2]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->vel[0] - b->vel[0]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->vel[1] - b->vel[1]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->vel[2] - b->vel[2]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->acc[0] - b->acc[0]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->acc[1] - b->acc[1]) < FLOAT_EQUALITY_EPS &&
+         fabs(a->acc[2] - b->acc[2]) < FLOAT_EQUALITY_EPS && a->fcn == b->fcn &&
+         a->iod == b->iod;
 }
 
 /** Are the two ephemerides the same?
@@ -1543,10 +1618,10 @@ bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b) {
   switch (sid_to_constellation(a->sid)) {
     case CONSTELLATION_GPS:
     case CONSTELLATION_QZS:
-      return ephemeris_kepler_equal(&a->kepler, &b->kepler);
     case CONSTELLATION_BDS:
     case CONSTELLATION_GAL:
-      return ephemeris_kepler_equal(&a->kepler, &b->kepler);
+      return ephemeris_kepler_equal(
+          sid_to_constellation(a->sid), &a->kepler, &b->kepler);
     case CONSTELLATION_SBAS:
       return ephemeris_xyz_equal(&a->xyz, &b->xyz);
     case CONSTELLATION_GLO:
