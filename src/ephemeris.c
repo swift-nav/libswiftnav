@@ -1486,19 +1486,18 @@ void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
   u16 bgd_e5a_e1 = getbitu(page[4], 47, 10); /* E5a/E1 BGD */
   u16 bgd_e5b_e1 = getbitu(page[4], 57, 10); /* E5b/E1 BGD */
 
-  u16 E5b_hs = getbitu(page[4], 67, 2); /* E5b Health Status */
-  u16 E1b_hs = getbitu(page[4], 69, 2); /* E1b Health Status */
-  if ((E5b_hs == GAL_HS_SIGNAL_OK ||
-       E5b_hs == GAL_HS_SIGNAL_WILL_BE_OUT_OF_SERVICE) &&
-      (E1b_hs == GAL_HS_SIGNAL_OK ||
-       E1b_hs == GAL_HS_SIGNAL_WILL_BE_OUT_OF_SERVICE)) {
-    kep->tgd.gal_s[0] =
-        (float)BITS_SIGN_EXTEND_32(10, bgd_e5a_e1) * (float)C_1_2P32;
-    kep->tgd.gal_s[1] =
-        (float)BITS_SIGN_EXTEND_32(10, bgd_e5b_e1) * (float)C_1_2P32;
-  } else {
-    eph->valid = 0;
-  }
+  kep->tgd.gal_s[0] =
+      (float)BITS_SIGN_EXTEND_32(10, bgd_e5a_e1) * (float)C_1_2P32;
+  kep->tgd.gal_s[1] =
+      (float)BITS_SIGN_EXTEND_32(10, bgd_e5b_e1) * (float)C_1_2P32;
+
+  u16 e5b_hs = getbitu(page[4], 67, 2); /* E5b Health Status */
+  u16 e1b_hs = getbitu(page[4], 69, 2); /* E1b Health Status */
+
+  eph->valid = (bool)((e5b_hs == GAL_HS_SIGNAL_OK ||
+                       e5b_hs == GAL_HS_SIGNAL_WILL_BE_OUT_OF_SERVICE) &&
+                      (e1b_hs == GAL_HS_SIGNAL_OK ||
+                       e1b_hs == GAL_HS_SIGNAL_WILL_BE_OUT_OF_SERVICE));
 
   gps_time_t t;
   t.wn = (s16)getbitu(page[4], 73, 12) + GAL_WEEK_TO_GPS_WEEK;
