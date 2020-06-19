@@ -223,6 +223,10 @@ typedef gps_time_t (*glo2gps_with_utc_params_t)(const glo_time_t *glo_t);
 
 extern const float g_bds_ura_table[16];
 
+/* BDS satellites can be either geostationary (GEO), geosynchronous (IGSO) or
+ medium earth orbit (MEO) */
+typedef enum { GEO, IGSO, MEO } satellite_orbit_type_t;
+
 s8 calc_sat_state(const ephemeris_t *e,
                   const gps_time_t *t,
                   double pos[3],
