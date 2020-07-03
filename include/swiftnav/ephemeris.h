@@ -126,6 +126,10 @@ typedef enum {
   EPH_VALID
 } ephemeris_status_t;
 
+/* BDS satellites can be either geostationary (GEO), geosynchronous (IGSO) or
+ medium earth orbit (MEO) */
+typedef enum { GEO, IGSO, MEO } satellite_orbit_type_t;
+
 /** Structure containing the GPS ephemeris for one satellite. */
 typedef struct {
   union {
@@ -206,6 +210,7 @@ typedef struct {
     ephemeris_xyz_t xyz;       /**< Parameters specific to SBAS. */
     ephemeris_glo_t glo;       /**< Parameters specific to GLONASS. */
   };
+  satellite_orbit_type_t orb_type; /**< orbit type. */
 } ephemeris_t;
 
 #define GLO_NAV_STR_BITS 85 /**< Length of GLO navigation string */
@@ -222,10 +227,6 @@ typedef gps_time_t (*glo2gps_with_utc_params_t)(const glo_time_t *glo_t);
 /** \} */
 
 extern const float g_bds_ura_table[16];
-
-/* BDS satellites can be either geostationary (GEO), geosynchronous (IGSO) or
- medium earth orbit (MEO) */
-typedef enum { GEO, IGSO, MEO } satellite_orbit_type_t;
 
 s8 calc_sat_state(const ephemeris_t *e,
                   const gps_time_t *t,
