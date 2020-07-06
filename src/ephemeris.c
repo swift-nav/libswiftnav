@@ -493,8 +493,6 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
       om = k->omega0 + dt * om_dot - GPS_OMEGAE_DOT * e->toe.tow;
       break;
     case CONSTELLATION_BDS:
-      /* note that the condition is to be refined in near future to consider
-       * GEOs in BDS3 */
       if (e->orb_type == GEO) {
         om_dot = k->omegadot;
       }
