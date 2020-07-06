@@ -522,7 +522,7 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
 
   /* transform GEO user-defined inertial system to BDCS, similar applies to
    * velocity and acceleration */
-  if (sid_to_constellation(e->sid)==CONSTELLATION_BDS && e->sid.sat<=5) {
+  if (e->orb_type == GEO) {
     double pos_bds[3];
     double sin_ome = sin(BDS2_OMEGAE_DOT*dt);
     double cos_ome = cos(BDS2_OMEGAE_DOT*dt);
