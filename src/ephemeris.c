@@ -37,9 +37,6 @@
  * based on modeling https://github.com/swift-nav/exafore_planning/issues/681 */
 #define GLO_MAX_STEP_NUM 30
 
-#define SIN_5 -0.0871557427476582
-#define COS_5  0.9961946980917456
-
 #define EPHEMERIS_INVALID_LOG_MESSAGE \
   "%s ephemeris (v:%d, fi:%d, [%d, %f]), [%d, %f]"
 
@@ -493,12 +490,7 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
       om = k->omega0 + dt * om_dot - GPS_OMEGAE_DOT * e->toe.tow;
       break;
     case CONSTELLATION_BDS:
-      if (e->orb_type == GEO) {
-        om_dot = k->omegadot;
-      }
-      else {
-        om_dot = k->omegadot - BDS2_OMEGAE_DOT;
-      }
+      om_dot = k->omegadot - BDS2_OMEGAE_DOT;
       om = k->omega0 + dt * om_dot -
            BDS2_OMEGAE_DOT * (e->toe.tow - BDS_SECOND_TO_GPS_SECOND);
       break;
@@ -517,21 +509,6 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
   pos[0] = x * cos(om) - y * cos(inc) * sin(om);
   pos[1] = x * sin(om) + y * cos(inc) * cos(om);
   pos[2] = y * sin(inc);
-
-  /* transform GEO user-defined inertial system to BDCS, similar applies to
-   * velocity and acceleration */
-  if (e->orb_type == GEO) {
-    double pos_bds[3];
-    double sin_ome = sin(BDS2_OMEGAE_DOT*dt);
-    double cos_ome = cos(BDS2_OMEGAE_DOT*dt);
-    pos_bds[0] =  pos[0]*cos_ome+pos[1]*sin_ome*COS_5+pos[2]*sin_ome*SIN_5;
-    pos_bds[1] = -pos[0]*sin_ome+pos[1]*cos_ome*COS_5+pos[2]*cos_ome*SIN_5;
-    pos_bds[2] = -pos[1]*SIN_5+pos[2]*COS_5;
-
-    pos[0] = pos_bds[0];
-    pos[1] = pos_bds[1];
-    pos[2] = pos_bds[2];
-  }
 
   /* Compute the satellite's velocity in Earth-Centered Earth-Fixed
    * coordiates. */
