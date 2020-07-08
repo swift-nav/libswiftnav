@@ -33,7 +33,7 @@ extern "C" {
  * refer to https://igscb.jpl.nasa.gov/pipermail/igsmail/2012/007771.html and
  * https://igscb.jpl.nasa.gov/pipermail/igsmail/2015/008391.html */
 #define NUM_SATS_GLO 28
-#define NUM_SATS_BDS 37
+#define NUM_SATS_BDS 64
 #define NUM_SATS_GAL 36
 #define NUM_SATS_QZS 10
 
