@@ -224,6 +224,14 @@ START_TEST(test_signal_properties) {
       {.sid = {.code = CODE_GPS_L2P, .sat = 24},
        .valid = true,
        .str = "GPS L2P 24"},
+      {.sid = {.code = CODE_BDS2_B1, .sat = 0}, .valid = false},
+      {.sid = {.code = CODE_BDS2_B1, .sat = 1},
+       .valid = true,
+       .str = "BDS B1 1"},
+      {.sid = {.code = CODE_BDS2_B1, .sat = 41},
+       .valid = true,
+       .str = "BDS B1 41"},
+      {.sid = {.code = CODE_BDS2_B1, .sat = 65}, .valid = false},
   };
 
   for (u32 i = 0; i < sizeof(test_cases) / sizeof(test_cases[0]); i++) {
