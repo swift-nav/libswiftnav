@@ -31,9 +31,9 @@ bool nav_meas_flags_valid(nav_meas_flags_t flags) {
   return ~all_valid & flags;
 }
 
-bool pseudorange_valid(navigation_measurement_t meas) {
-  return (meas.flags & NAV_MEAS_FLAG_CODE_VALID) &&
-         !(meas.flags & NAV_MEAS_FLAG_RAIM_EXCLUSION);
+bool pseudorange_valid(const navigation_measurement_t *meas) {
+  return (meas->flags & NAV_MEAS_FLAG_CODE_VALID) &&
+         !(meas->flags & NAV_MEAS_FLAG_RAIM_EXCLUSION);
 }
 
 /** Convert navigation_measurement_t.lock_time into SBP lock time.

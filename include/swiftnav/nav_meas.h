@@ -113,7 +113,7 @@ typedef struct {
 
 int nav_meas_cmp(const void *a, const void *b);
 bool nav_meas_flags_valid(nav_meas_flags_t flags);
-bool pseudorange_valid(navigation_measurement_t meas);
+bool pseudorange_valid(const navigation_measurement_t *meas);
 
 u8 encode_lock_time(double nm_lock_time);
 double decode_lock_time(u8 sbp_lock_time);
