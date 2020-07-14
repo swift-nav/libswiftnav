@@ -37,6 +37,9 @@
  * based on modeling https://github.com/swift-nav/exafore_planning/issues/681 */
 #define GLO_MAX_STEP_NUM 30
 
+#define SIN_5 0.0871557427476582
+#define COS_5 0.9961946980917456
+
 #define EPHEMERIS_INVALID_LOG_MESSAGE \
   "%s ephemeris (v:%d, fi:%d, [%d, %f]), [%d, %f]"
 
@@ -322,6 +325,7 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
  *
  * \param e Pointer to an ephemeris structure for the satellite of interest
  * \param t GPS time at which to calculate the satellite state
+ * \param orbit_type satellite orbit type [unitless]
  * \param pos Array into which to write calculated satellite position [m]
  * \param vel Array into which to write calculated satellite velocity [m/s]
  * \param clock_err Pointer to where to store the calculated satellite clock
@@ -334,6 +338,7 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
  */
 static s8 calc_sat_state_kepler(const ephemeris_t *e,
                                 const gps_time_t *t,
+                                const satellite_orbit_type_t orbit_type,
                                 double pos[3],
                                 double vel[3],
                                 double acc[3],
@@ -490,7 +495,11 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
       om = k->omega0 + dt * om_dot - GPS_OMEGAE_DOT * e->toe.tow;
       break;
     case CONSTELLATION_BDS:
-      om_dot = k->omegadot - BDS2_OMEGAE_DOT;
+      if (orbit_type == GEO) {
+        om_dot = k->omegadot;
+      } else {
+        om_dot = k->omegadot - BDS2_OMEGAE_DOT;
+      }
       om = k->omega0 + dt * om_dot -
            BDS2_OMEGAE_DOT * (e->toe.tow - BDS_SECOND_TO_GPS_SECOND);
       break;
@@ -509,6 +518,23 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
   pos[0] = x * cos(om) - y * cos(inc) * sin(om);
   pos[1] = x * sin(om) + y * cos(inc) * cos(om);
   pos[2] = y * sin(inc);
+
+  /* transform GEO user-defined inertial system to BDCS, similar applies to
+   * velocity and acceleration */
+  if (orbit_type == GEO) {
+    double pos_bds[3];
+    double sin_ome = sin(BDS2_OMEGAE_DOT * dt);
+    double cos_ome = cos(BDS2_OMEGAE_DOT * dt);
+    pos_bds[0] = pos[0] * cos_ome + pos[1] * sin_ome * COS_5 +
+                 pos[2] * sin_ome * (-SIN_5);
+    pos_bds[1] = -pos[0] * sin_ome + pos[1] * cos_ome * COS_5 +
+                 pos[2] * cos_ome * (-SIN_5);
+    pos_bds[2] = -pos[1] * (-SIN_5) + pos[2] * COS_5;
+
+    pos[0] = pos_bds[0];
+    pos[1] = pos_bds[1];
+    pos[2] = pos_bds[2];
+  }
 
   /* Compute the satellite's velocity in Earth-Centered Earth-Fixed
    * coordiates. */
@@ -541,6 +567,8 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
  * Dispatch to internal function for Kepler/XYZ ephemeris depending on
  * constellation.
  *
+ * Assuming a MEO satellite
+ *
  * \param e Pointer to an ephemeris structure for the satellite of interest
  * \param t GPS time at which to calculate the satellite state
  * \param pos Array into which to write calculated satellite position [m]
@@ -564,6 +592,43 @@ s8 calc_sat_state(const ephemeris_t *e,
                   double *clock_rate_err,
                   u16 *iodc,
                   u8 *iode) {
+  const satellite_orbit_type_t orbit_type = MEO;
+
+  return calc_sat_state_orbit_type(
+      e, t, orbit_type, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
+}
+
+/** Calculate satellite position, velocity and clock offset from ephemeris
+ *  considering the satellite orbit type.
+ *
+ * Dispatch to internal function for Kepler/XYZ ephemeris depending on
+ * constellation.
+ *
+ * \param e Pointer to an ephemeris structure for the satellite of interest
+ * \param t GPS time at which to calculate the satellite state
+ * \param orbit_type satellite orbit type [unitless]
+ * \param pos Array into which to write calculated satellite position [m]
+ * \param vel Array into which to write calculated satellite velocity [m/s]
+ * \param clock_err Pointer to where to store the calculated satellite clock
+ *                  error [s]
+ * \param clock_rate_err Pointer to where to store the calculated satellite
+ *                       clock error [s/s]
+ * \param iodc Issue of data clock [unitless]
+ * \param iode Issue of data ephemeris [unitless]
+ *
+ * \return  0 on success,
+ *         -1 if ephemeris is invalid
+ */
+s8 calc_sat_state_orbit_type(const ephemeris_t *e,
+                             const gps_time_t *t,
+                             const satellite_orbit_type_t orbit_type,
+                             double pos[3],
+                             double vel[3],
+                             double acc[3],
+                             double *clock_err,
+                             double *clock_rate_err,
+                             u16 *iodc,
+                             u8 *iode) {
   assert(pos != NULL);
   assert(vel != NULL);
   assert(clock_err != NULL);
@@ -576,7 +641,7 @@ s8 calc_sat_state(const ephemeris_t *e,
   }
 
   return calc_sat_state_n(
-      e, t, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
+      e, t, orbit_type, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
 }
 
 /** Calculate satellite position, velocity and clock offset from ephemeris
@@ -587,6 +652,7 @@ s8 calc_sat_state(const ephemeris_t *e,
  *
  * \param e Pointer to an ephemeris structure for the satellite of interest
  * \param t GPS time at which to calculate the satellite state
+ * \param orbit_type satellite orbit type [unitless]
  * \param pos Array into which to write calculated satellite position [m]
  * \param vel Array into which to write calculated satellite velocity [m/s]
  * \param clock_err Pointer to where to store the calculated satellite clock
@@ -601,6 +667,7 @@ s8 calc_sat_state(const ephemeris_t *e,
  */
 s8 calc_sat_state_n(const ephemeris_t *e,
                     const gps_time_t *t,
+                    const satellite_orbit_type_t orbit_type,
                     double pos[3],
                     double vel[3],
                     double acc[3],
@@ -619,8 +686,16 @@ s8 calc_sat_state_n(const ephemeris_t *e,
     case CONSTELLATION_BDS:
     case CONSTELLATION_GAL:
     case CONSTELLATION_QZS:
-      return calc_sat_state_kepler(
-          e, t, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
+      return calc_sat_state_kepler(e,
+                                   t,
+                                   orbit_type,
+                                   pos,
+                                   vel,
+                                   acc,
+                                   clock_err,
+                                   clock_rate_err,
+                                   iodc,
+                                   iode);
     case CONSTELLATION_SBAS:
       return calc_sat_state_xyz(
           e, t, pos, vel, acc, clock_err, clock_rate_err, iodc, iode);
@@ -643,6 +718,7 @@ s8 calc_sat_state_n(const ephemeris_t *e,
  * \param ref  ECEF coordinates of the reference point from which the azimuth
  *             and elevation is to be determined, passed as [X, Y, Z], all in
  *             meters.
+ * \param orbit_type    satellite orbit type [unitless]
  * \param az   Pointer to where to store the calculated azimuth output [rad].
  * \param el   Pointer to where to store the calculated elevation output [rad].
  * \param check_e set this parameter as "true" if ephemeris validity check
@@ -653,6 +729,7 @@ s8 calc_sat_state_n(const ephemeris_t *e,
 s8 calc_sat_az_el(const ephemeris_t *e,
                   const gps_time_t *t,
                   const double ref[3],
+                  const satellite_orbit_type_t orbit_type,
                   double *az,
                   double *el,
                   bool check_e) {
@@ -664,18 +741,20 @@ s8 calc_sat_az_el(const ephemeris_t *e,
   double clock_err, clock_rate_err;
   s8 ret;
   if (check_e) {
-    ret = calc_sat_state(e,
-                         t,
-                         sat_pos,
-                         sat_vel,
-                         sat_acc,
-                         &clock_err,
-                         &clock_rate_err,
-                         &iodc,
-                         &iode);
+    ret = calc_sat_state_orbit_type(e,
+                                    t,
+                                    orbit_type,
+                                    sat_pos,
+                                    sat_vel,
+                                    sat_acc,
+                                    &clock_err,
+                                    &clock_rate_err,
+                                    &iodc,
+                                    &iode);
   } else {
     ret = calc_sat_state_n(e,
                            t,
+                           orbit_type,
                            sat_pos,
                            sat_vel,
                            sat_acc,
@@ -701,6 +780,7 @@ s8 calc_sat_az_el(const ephemeris_t *e,
  *                 Doppler is to be determined, passed as [X, Y, Z], all in
  *                 meters.
  * \param ref_vel ECEF speed vector of the receiver, m/s.
+ * \param orbit_type satellite orbit type [unitless]
  * \param doppler The Doppler shift [Hz].
  * \return  0 on success,
  *         -1 if ephemeris is not valid or too old
@@ -709,6 +789,7 @@ s8 calc_sat_doppler(const ephemeris_t *e,
                     const gps_time_t *t,
                     const double ref_pos[3],
                     const double ref_vel[3],
+                    const satellite_orbit_type_t orbit_type,
                     double *doppler) {
   double sat_pos[3];
   double sat_vel[3];
@@ -719,15 +800,16 @@ s8 calc_sat_doppler(const ephemeris_t *e,
   u16 iodc;
   u8 iode;
 
-  s8 ret = calc_sat_state(e,
-                          t,
-                          sat_pos,
-                          sat_vel,
-                          sat_acc,
-                          &clock_err,
-                          &clock_rate_err,
-                          &iodc,
-                          &iode);
+  s8 ret = calc_sat_state_orbit_type(e,
+                                     t,
+                                     orbit_type,
+                                     sat_pos,
+                                     sat_vel,
+                                     sat_acc,
+                                     &clock_err,
+                                     &clock_rate_err,
+                                     &iodc,
+                                     &iode);
   if (ret != 0) {
     return ret;
   }

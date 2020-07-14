@@ -85,6 +85,7 @@ START_TEST(test_ephemeris_almanac_divergence) {
   gps_time_t t_start = gps_eph.toe;
   t_start.tow += -(double)gps_eph.fit_interval / 2.0;
   normalize_gps_time(&t_start);
+  const satellite_orbit_type_t orbit_type = MEO;
 
   gps_time_t t = t_start;
 
@@ -102,11 +103,18 @@ START_TEST(test_ephemeris_almanac_divergence) {
         (0 == calc_sat_state_almanac(&gps_alm, &t, alm_sat_pos, _, _, _, _));
     bool calc_eph_ok =
         (0 ==
-         calc_sat_state_n(&gps_eph, &t, eph_sat_pos, _, _, _, _, &iodc, &iode));
-    bool calc_eph_div_ok =
-        (0 ==
          calc_sat_state_n(
-             &gps_eph_diverged, &t, div_sat_pos, _, _, _, _, &iodc, &iode));
+             &gps_eph, &t, orbit_type, eph_sat_pos, _, _, _, _, &iodc, &iode));
+    bool calc_eph_div_ok = (0 == calc_sat_state_n(&gps_eph_diverged,
+                                                  &t,
+                                                  orbit_type,
+                                                  div_sat_pos,
+                                                  _,
+                                                  _,
+                                                  _,
+                                                  _,
+                                                  &iodc,
+                                                  &iode));
 
     /* Check successful sat state calculation. */
     fail_unless(calc_alm_ok && calc_eph_ok && calc_eph_div_ok,
