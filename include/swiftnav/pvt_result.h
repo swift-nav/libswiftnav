@@ -50,6 +50,8 @@ extern "C" {
 #define INS_STATUS_ALIGNING 1
 #define INS_STATUS_READY 2
 #define INS_STATUS_OUTAGE_EXCEEDS_MAX 3
+#define INS_STATUS_SEEDING 4
+#define INS_STATUS_FASTSTARTING 5
 #define INS_MODE_MASK 0x7                  /* Bit 0-2 */
 #define INS_GNSS_FIX_AVAILABILITY_MASK 0x8 /* Bit 3 */
 
