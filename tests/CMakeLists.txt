@@ -17,6 +17,7 @@ if(libswiftnav_BUILD_TESTS)
       check_gnss_time_cpp.cc
       check_ionosphere.c
       check_linear_algebra.c
+      check_log.c
       check_main.c
       check_nav_meas.c
       check_set.c

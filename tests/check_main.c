@@ -21,14 +21,13 @@ int main(void) {
   srunner_add_suite(sr, ephemeris_suite());
   srunner_add_suite(sr, decode_glo_suite());
   srunner_add_suite(sr, set_suite());
-  srunner_add_suite(sr, gnss_time_test_suite());
-  srunner_add_suite(sr, gnss_time_cpp_test_suite());
   srunner_add_suite(sr, signal_test_suite());
   srunner_add_suite(sr, glo_map_test_suite());
   srunner_add_suite(sr, shm_suite());
   srunner_add_suite(sr, pvt_test_suite());
   srunner_add_suite(sr, nav_meas_test_suite());
   srunner_add_suite(sr, sid_set_test_suite());
+  srunner_add_suite(sr, log_suite());
 
   srunner_set_fork_status(sr, CK_NOFORK);
   srunner_run_all(sr, CK_NORMAL);

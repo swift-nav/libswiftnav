@@ -24,6 +24,7 @@ Suite* pvt_test_suite(void);
 Suite* nav_meas_test_suite(void);
 Suite* nav_meas_calc_test_suite(void);
 Suite* sid_set_test_suite(void);
+Suite* log_suite(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

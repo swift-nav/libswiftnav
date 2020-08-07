@@ -51,6 +51,11 @@ extern "C" {
 #define LOG_LEVEL LOG_INFO
 #endif
 
+/* LOG_RATE_THRESH set to 1000 tics by default. */
+#ifndef LOG_RATE_THRESH
+#define LOG_RATE_THRESH (1000u)
+#endif
+
 /** \defgroup logging Logging
  * Logging
  *
@@ -302,6 +307,16 @@ extern const char *level_string[];
   } while (false)
 
 /** \} */
+
+#define LOG_RATE_LIMIT(this_tow, cmd)               \
+  do {                                              \
+    static u32 last_tow = 0xffffffff;               \
+    if ((last_tow) == 0xffffffff ||                 \
+        (this_tow - last_tow) >= LOG_RATE_THRESH) { \
+      cmd;                                          \
+      last_tow = this_tow;                          \
+    }                                               \
+  } while (0)
 
 #ifdef __cplusplus
 } /* extern "C" */
