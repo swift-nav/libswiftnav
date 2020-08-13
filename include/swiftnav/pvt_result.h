@@ -55,6 +55,11 @@ extern "C" {
 #define INS_MODE_MASK 0x7                  /* Bit 0-2 */
 #define INS_GNSS_FIX_AVAILABILITY_MASK 0x8 /* Bit 3 */
 
+/* Define GROUP_META flags used in fusion */
+#define GROUP_META_TIME_SOURCE 0x3     /* Bits 0-1 */
+#define GROUP_META_SOLUTION_SOURCE 0xC /* Bits 2-3 */
+#define GROUP_META_TIME_QUALITY 0x30   /* Bits 4-5 */
+
 /* These masks are used in the firmware. */
 #define POSITION_MODE_MASK 0x07 /* Bits 0-2 */
 #define VELOCITY_MODE_MASK 0x07 /* Bits 0-2 */
