@@ -63,21 +63,9 @@ extern "C" {
 #define GROUP_META_ID_UNKNOWN 0
 #define GROUP_META_ID_FUSION_BESTPOS 1
 #define GROUP_META_ID_GNSS 2
-/* msg_group_meta.flags[0:1] */
-#define GROUP_META_TIME_REF_GPS 0
-#define GROUP_META_TIME_REF_SENSOR_INIT 1
-#define GROUP_META_TIME_REF_UNKNOWN 2
-#define GROUP_META_TIME_REF_PPS 3
-/* msg_group_meta.flags[2:3] */
-#define GROUP_META_SOLUTION_SOURCE_NONE 0
-#define GROUP_META_SOLUTION_SOURCE_GNSS_ONLY 1
-#define GROUP_META_SOLUTION_SOURCE_FUZED 2
-/* msg_group_meta.flags[4:5] */
-#define GROUP_META_TIME_QUALITY_UNKNOWN_OR_CPU 0
-#define GROUP_META_TIME_QUALITY_COARSE 1
-#define GROUP_META_TIME_QUALITY_PROPAGATED 2
-#define GROUP_META_TIME_QUALITY_FINER 3
-#define GROUP_META_TIME_QUALITY_FINER_MASK 48
+#define GROUP_META_N_GROUP_MSGS 15
+/* max number of elements in msg_group_soln_meta.sol_in array */
+#define SOLN_META_MAX_N_SOL_IN 20
 
 /* Define SOLN_META flags used in fusion */
 #define SOLN_META_ALIGNMENT_STATUS_UNKNOWN_OR_ALIGNED 0
