@@ -63,7 +63,7 @@ extern "C" {
 #define GROUP_META_ID_UNKNOWN 0
 #define GROUP_META_ID_FUSION_BESTPOS 1
 #define GROUP_META_ID_GNSS 2
-#define GROUP_META_N_GROUP_MSGS 15
+#define GROUP_META_N_GROUP_MSGS 14
 /* max number of elements in msg_group_soln_meta.sol_in array */
 #define SOLN_META_MAX_N_SOL_IN 20
 
