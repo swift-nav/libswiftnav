@@ -54,6 +54,11 @@ extern "C" {
 #define INS_STATUS_FASTSTARTING 5
 #define INS_MODE_MASK 0x7                  /* Bit 0-2 */
 #define INS_GNSS_FIX_AVAILABILITY_MASK 0x8 /* Bit 3 */
+/* Bits 11-13 */
+#define INS_STATUS_MOTION_STATE_UNKNOWN 0
+#define INS_STATUS_MOTION_STATE_ARBITRARY_MOTION 1
+#define INS_STATUS_MOTION_STATE_STRAIGHT_MOTION 2
+#define INS_STATUS_MOTION_STATE_STATIONARY 3
 
 /* Define GROUP_META flags used in fusion */
 #define GROUP_META_TIME_REF_MASK 0x3        /* Bits 0-1 */
