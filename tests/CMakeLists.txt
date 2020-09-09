@@ -12,6 +12,7 @@ if(libswiftnav_BUILD_TESTS)
       check_decode_glo.c
       check_edc.c
       check_ephemeris.c
+      check_geoid_model.c
       check_glo_map.c
       check_gnss_time.c
       check_gnss_time_cpp.cc

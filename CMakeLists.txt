@@ -46,6 +46,7 @@ set(HDRS
     include/swiftnav/edc.h
     include/swiftnav/ephemeris.h
     include/swiftnav/fifo_byte.h
+    include/swiftnav/geoid_model.h
     include/swiftnav/glo_map.h
     include/swiftnav/glonass_phase_biases.h
     include/swiftnav/gnss_time.h
@@ -72,6 +73,7 @@ set(SRCS
     src/edc.c
     src/ephemeris.c
     src/fifo_byte.c
+    src/geoid_model.c
     src/glo_map.c
     src/glonass_phase_biases.c
     src/gnss_time.c

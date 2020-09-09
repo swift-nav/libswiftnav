@@ -17,6 +17,7 @@ Suite* set_suite(void);
 Suite* gnss_time_test_suite(void);
 Suite* gnss_time_cpp_test_suite(void);
 Suite* signal_test_suite(void);
+Suite* geoid_model_suite_suite(void);
 Suite* glo_map_test_suite(void);
 Suite* shm_suite(void);
 Suite* troposphere_suite(void);

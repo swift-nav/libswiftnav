@@ -22,6 +22,7 @@ int main(void) {
   srunner_add_suite(sr, decode_glo_suite());
   srunner_add_suite(sr, set_suite());
   srunner_add_suite(sr, signal_test_suite());
+  srunner_add_suite(sr, geoid_model_suite_suite());
   srunner_add_suite(sr, glo_map_test_suite());
   srunner_add_suite(sr, shm_suite());
   srunner_add_suite(sr, pvt_test_suite());
