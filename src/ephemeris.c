@@ -1840,7 +1840,7 @@ bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code) {
 u32 get_bds2_iod_crc(const ephemeris_t *eph) {
   assert(sid_to_constellation(eph->sid) == CONSTELLATION_BDS);
 
-  unsigned char buffer[80];
+  unsigned char buffer[80] = {0};
   s32 numbits = 0;
 
   setbits(buffer,
