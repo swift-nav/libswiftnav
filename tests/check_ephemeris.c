@@ -211,13 +211,12 @@ START_TEST(test_ephemeris_equal) {
   memset(&a, 0, sizeof(a));
 
   a.ura = 1;
-  fail_unless(!ephemeris_equal(&a, &b),
-              "Ephemerides should not be equal (ura)");
+  fail_unless(ephemeris_equal(&a, &b), "Ephemerides should be equal (ura)");
   memset(&a, 0, sizeof(a));
 
   a.fit_interval = 1;
-  fail_unless(!ephemeris_equal(&a, &b),
-              "Ephemerides should not be equal (fit_interval)");
+  fail_unless(ephemeris_equal(&a, &b),
+              "Ephemerides should be equal (fit_interval)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;

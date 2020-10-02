@@ -1741,8 +1741,9 @@ static bool ephemeris_glo_equal(const ephemeris_glo_t *a,
  * \return true if they are equal
  */
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b) {
-  if (!sid_is_equal(a->sid, b->sid) || (a->ura != b->ura) ||
-      (a->fit_interval != b->fit_interval) || (a->valid != b->valid) ||
+  /* fit_interval and ura are ignored as some receivers (e.g. Trimble) do
+     not always agree on the value of those fields. See SR-142 */
+  if (!sid_is_equal(a->sid, b->sid) || (a->valid != b->valid) ||
       (a->health_bits != b->health_bits) || (a->toe.wn != b->toe.wn) ||
       (a->toe.tow != b->toe.tow)) {
     return false;
