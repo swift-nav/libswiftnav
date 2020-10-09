@@ -895,6 +895,15 @@ static const char *constellation_table[CONSTELLATION_COUNT] = {
     [CONSTELLATION_QZS] = "QZS",
     [CONSTELLATION_GAL] = "GAL"};
 
+static const char *sub_constellation_table[SUB_CONSTELLATION_COUNT] = {
+    [SUB_CONSTELLATION_GPS] = "GPS",
+    [SUB_CONSTELLATION_SBAS] = "SBAS",
+    [SUB_CONSTELLATION_GLO] = "GLO",
+    [SUB_CONSTELLATION_BDS2] = "BDS2",
+    [SUB_CONSTELLATION_BDS3] = "BDS3",
+    [SUB_CONSTELLATION_QZS] = "QZS",
+    [SUB_CONSTELLATION_GAL] = "GAL"};
+
 const char *constellation_to_string(const constellation_t cons) {
   return constellation_table[cons];
 }
@@ -906,6 +915,20 @@ constellation_t constellation_string_to_enum(const char *constellation_string) {
     }
   }
   return CONSTELLATION_INVALID;
+}
+
+const char *sub_constellation_to_string(const sub_constellation_t sub_cons) {
+  return constellation_table[sub_cons];
+}
+
+sub_constellation_t sub_constellation_string_to_enum(
+    const char *sub_constellation_string) {
+  for (s32 i = 0; i < (s32)SUB_CONSTELLATION_COUNT; ++i) {
+    if (strcmp(sub_constellation_string, sub_constellation_table[i]) == 0) {
+      return (sub_constellation_t)i;
+    }
+  }
+  return SUB_CONSTELLATION_INVALID;
 }
 
 code_t code_string_to_enum(const char *code_label) {

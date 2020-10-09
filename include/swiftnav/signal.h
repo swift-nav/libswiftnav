@@ -174,6 +174,18 @@ typedef enum constellation_e {
   CONSTELLATION_COUNT,
 } constellation_t;
 
+typedef enum sub_constellation_e {
+  SUB_CONSTELLATION_INVALID = -1,
+  SUB_CONSTELLATION_GPS,
+  SUB_CONSTELLATION_SBAS,
+  SUB_CONSTELLATION_GLO,
+  SUB_CONSTELLATION_BDS2,
+  SUB_CONSTELLATION_BDS3,
+  SUB_CONSTELLATION_QZS,
+  SUB_CONSTELLATION_GAL,
+  SUB_CONSTELLATION_COUNT,
+} sub_constellation_t;
+
 static inline char constellation_to_char(constellation_t cons) {
   switch (cons) {
     case CONSTELLATION_GPS:
@@ -217,6 +229,11 @@ static inline constellation_t char_to_constellation(char cons) {
 const char *constellation_to_string(const constellation_t cons);
 
 constellation_t constellation_string_to_enum(const char *constellation_string);
+
+const char *sub_constellation_to_string(const sub_constellation_t sub_cons);
+
+sub_constellation_t sub_constellation_string_to_enum(
+    const char *sub_constellation_string);
 
 /** Code identifier. */
 typedef enum code_e {
