@@ -11,8 +11,10 @@
  */
 
 #include <assert.h>
+#include <inttypes.h>
 
 #include <swiftnav/glo_map.h>
+#include <swiftnav/logging.h>
 #include <swiftnav/signal.h>
 
 #define NUM_GLO_MAP_INDICES (NUM_SATS_GLO + 1)
@@ -67,8 +69,13 @@ bool glo_map_valid(const gnss_signal_t sid) {
  * @param[in] glo_slot_id GLO orbital slot
  */
 void glo_map_set_slot_id(u16 fcn, u16 glo_slot_id) {
-  assert(glo_slot_id_is_valid(glo_slot_id));
-  assert(glo_fcn_is_valid(fcn));
+  if (!glo_slot_id_is_valid(glo_slot_id) || !glo_fcn_is_valid(fcn)) {
+    log_debug("GLO PRN %" PRIu16 " or frequency slot %" PRIu16
+              " is out of range, ignoring",
+              glo_slot_id,
+              fcn);
+    return;
+  }
 
   glo_map_lock();
   glo_sv_id_fcn_map[glo_slot_id] = fcn;
