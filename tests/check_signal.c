@@ -277,10 +277,8 @@ START_TEST(test_signal_compare) {
   qsort(sids, NUM_SIGNALS, sizeof(gnss_signal_t), cmp_sid_sid);
 
   for (u32 i = 1; i < NUM_SIGNALS; i++) {
-    fail_unless(!(sid_is_equal(sids[i], sids[i - 1]) &&
-                  !code_equiv(sids[i].code, sids[i - 1].code)),
-                "signal index %d not unique",
-                i);
+    fail_unless(
+        !(sid_is_equal(sids[i], sids[i - 1])), "signal index %d not unique", i);
     fail_unless(sid_compare(sids[i], sids[i - 1]) >= 0,
                 "signal index %d not in order",
                 i);
@@ -307,53 +305,6 @@ START_TEST(test_signal_construction) {
                   code,
                   code_index);
     }
-  }
-}
-END_TEST
-
-START_TEST(test_code_equivalence) {
-  const struct test_case {
-    gnss_signal_t sid_a;
-    gnss_signal_t sid_b;
-    bool equiv;
-    char str[20];
-  } test_cases[] = {
-      {.sid_a = {.code = CODE_GPS_L2P, .sat = 1},
-       .sid_b = {.code = CODE_GPS_L2P, .sat = 1},
-       .equiv = true,
-       .str = "GPS L2P GPS L2P"},
-      {.sid_a = {.code = CODE_GPS_L1P, .sat = 1},
-       .sid_b = {.code = CODE_GPS_L1P, .sat = 1},
-       .equiv = true,
-       .str = "GPS L1P GPS L1P"},
-      {.sid_a = {.code = CODE_GPS_L2P, .sat = 1},
-       .sid_b = {.code = CODE_GPS_L2CM, .sat = 1},
-       .equiv = true,
-       .str = "GPS L2P GPS L2CM"},
-      {.sid_a = {.code = CODE_GPS_L1P, .sat = 1},
-       .sid_b = {.code = CODE_GPS_L1CA, .sat = 1},
-       .equiv = true,
-       .str = "GPS L1P GPS L1CA"},
-      {.sid_a = {.code = CODE_GPS_L1P, .sat = 1},
-       .sid_b = {.code = CODE_GPS_L2CM, .sat = 1},
-       .equiv = false,
-       .str = "GPS L2P L1P GPS L2CM"},
-      {.sid_a = {.code = CODE_GPS_L2P, .sat = 1},
-       .sid_b = {.code = CODE_GPS_L1CA, .sat = 1},
-       .equiv = false,
-       .str = "GPS L2P GPS L1CA"},
-      {.sid_a = {.code = CODE_GLO_L1OF, .sat = 0},
-       .sid_b = {.code = CODE_GPS_L1CA, .sat = 0},
-       .equiv = false,
-       .str = "GLO L1CA GPS L1CA"},
-  };
-  for (u32 i = 0; i < sizeof(test_cases) / sizeof(test_cases[0]); i++) {
-    const struct test_case *t = &test_cases[i];
-    fail_unless(code_equiv(t->sid_a.code, t->sid_b.code) == t->equiv,
-                "Signal test for %s failed! Expected %d, got %d",
-                t->str,
-                t->equiv,
-                code_equiv(t->sid_a.code, t->sid_a.code));
   }
 }
 END_TEST
@@ -562,7 +513,6 @@ Suite *signal_test_suite(void) {
   tcase_add_test(tc_core, test_signal_properties);
   tcase_add_test(tc_core, test_signal_compare);
   tcase_add_test(tc_core, test_signal_construction);
-  tcase_add_test(tc_core, test_code_equivalence);
   tcase_add_test(tc_core, test_signal_sid_to_carr_freq);
   tcase_add_test(tc_core, test_signal_code_to_chip_count);
   tcase_add_test(tc_core, test_signal_code_to_chip_rate);

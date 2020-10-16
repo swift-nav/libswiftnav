@@ -309,38 +309,6 @@ typedef enum sbas_system_e {
 
 typedef bool (*sid_eq_fn)(const gnss_signal_t a);
 
-/** Are tracking codes equal or being treated as equivalent? L2CM/L1CA
- * observations on the rover, and L2P/L1P observations on the base are treated
- * as equivalent signals.
- *
- * \remark pcode_equiv and is_l2_sid are related to handling of L2P and L2CM
- *         observations here:
- *         https://github.com/swift-nav/estimation_team_planning/issues/215. In
- *         the future, we'll want to correct/canonicalize L2P signals using
- *         has_mixed_l2_obs in signal.h.
- *
- * \param a     code a
- * \param b     code b
- * \return  True if a and b are both in the same frequency band, but have
- *          different tracking modes.
- */
-static inline bool code_equiv(const code_t a, const code_t b) {
-  /* TODO GLO: Check GLO status. */
-  if (a == b) {
-    return true;
-  } else if (a == CODE_GPS_L2CM && b == CODE_GPS_L2P) {
-    return true;
-  } else if (a == CODE_GPS_L2P && b == CODE_GPS_L2CM) {
-    return true;
-  } else if (a == CODE_GPS_L1P && b == CODE_GPS_L1CA) {
-    return true;
-  } else if (a == CODE_GPS_L1CA && b == CODE_GPS_L1P) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 bool is_gps(const code_t code);
 bool is_sbas(const code_t code);
 bool is_glo(const code_t code);
@@ -417,7 +385,7 @@ static inline int sid_compare(const gnss_signal_t a, const gnss_signal_t b) {
    * constellation/frequency/satellite */
   if ((code_valid(a.code)) && code_valid(b.code)) {
     if (sid_to_constellation(a) == sid_to_constellation(b)) {
-      if (code_equiv(a.code, b.code)) {
+      if (a.code == b.code) {
         return a.sat - b.sat;
       } else {
         return a.code - b.code;
@@ -426,7 +394,7 @@ static inline int sid_compare(const gnss_signal_t a, const gnss_signal_t b) {
       return sid_to_constellation(a) - sid_to_constellation(b);
     }
   } else {
-    if (code_equiv(a.code, b.code)) {
+    if (a.code == b.code) {
       return a.sat - b.sat;
     }
     return a.code - b.code;
