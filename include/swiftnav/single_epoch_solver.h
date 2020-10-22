@@ -53,7 +53,7 @@ enum processing_strategy_t {
   L1_ONLY
 };
 
-typedef struct __attribute__((packed)) {
+typedef struct {
   /*
    * Be careful of stuct packing to avoid (very mild) slowness,
    * try to keep all the types aligned i.e. put the 64bit

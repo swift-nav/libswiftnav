@@ -40,13 +40,6 @@
 extern "C" {
 #endif
 
-#ifdef _MSC_VER
-#define PACKED(declaration) \
-  __pragma(pack(push, 1)) declaration __pragma(pack(pop))
-#else /* _MSC_VER */
-#define PACKED(declaration) __attribute__((__packed__)) declaration
-#endif /* _MSC_VER */
-
 #if defined(_MSC_VER)
 #if !defined(_WINDLL)
 /* Leave empty when doing non-dll build */
