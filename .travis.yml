@@ -39,34 +39,54 @@ matrix:
     # GCC 4.8 / Unit Test.
     # Support for older compilers is required due to need to build Python
     # extensions for Python 2.7
-    - env: TEST_SUITE=unit CXX=g++-4.8
+    - env: TEST_SUITE=unit CXX=g++-4.8 CMAKE=/usr/bin/cmake
       compiler: gcc-4.8
-      addons: {apt: {packages: ["cmake",
-                                "gcc-4.8",
-                                "g++-4.8"],
-                     sources: ["ubuntu-toolchain-r-test"]}}
+      addons:
+        apt:
+          sources:
+            - sourceline: 'deb https://apt.kitware.com/ubuntu/ bionic main'
+              key_url: https://apt.kitware.com/keys/kitware-archive-latest.asc
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - gcc-4.8
+            - g++-4.8
 
     # GCC 6 / Unit Test.
-    - env: TEST_SUITE=unit
+    - env: TEST_SUITE=unit CMAKE=/usr/bin/cmake
       compiler: gcc-6
       dist: bionic
-      addons: {apt: {packages: ["cmake", "gcc-6", "g++-6"]}}
+      addons:
+        apt: 
+          sources:
+            - sourceline: 'deb https://apt.kitware.com/ubuntu/ bionic main'
+              key_url: https://apt.kitware.com/keys/kitware-archive-latest.asc
+          packages:
+            - cmake
+            - gcc-6
+            - g++-6
 
     # ------------------------------------------------------------------
     # Lint and check compilation builds with Clang
     # ------------------------------------------------------------------
     # CLANG / Lint
-    - env: TEST_SUITE=lint
+    - env: TEST_SUITE=lint CMAKE=/usr/bin/cmake
       compiler: clang-6.0
-      addons: {apt: {packages: ["cmake",
-                                "clang-6.0",
-                                "clang-format-6.0",
-                                "clang-tidy-6.0",
-                                "libc++-dev",
-                                "libc++abi-dev"]}}
-
+      addons:
+        apt:
+          sources:
+            - sourceline: 'deb https://apt.kitware.com/ubuntu/ bionic main'
+              key_url: https://apt.kitware.com/keys/kitware-archive-latest.asc
+          packages:
+            - cmake
+            - clang-6.0
+            - clang-format-6.0
+            - clang-tidy-6.0
+            - libc++-dev
+            - libc++abi-dev
     - os: osx
       osx_image: xcode10.1
+      env: CMAKE=cmake
 
     - os: windows
       dist: 1803-containers
