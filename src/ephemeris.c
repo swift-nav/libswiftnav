@@ -338,6 +338,8 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
                                 double acc[3],
                                 double *clock_err,
                                 double *clock_rate_err) {
+  assert(e->toe.tow < WEEK_SECS);
+  assert(t->tow < WEEK_SECS);
   const ephemeris_kepler_t *k = &e->kepler;
 
   /* Calculate satellite clock terms */
