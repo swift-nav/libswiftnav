@@ -103,7 +103,7 @@ install(TARGETS swiftnav DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 set_property(TARGET swiftnav PROPERTY C_STANDARD 99)
 
 if (MSVC)
-    target_compile_options(swiftnav PRIVATE "/STACK:1048576")
+    target_link_options(swiftnav PRIVATE "/STACK:8388608")
 else ()
     target_link_libraries(swiftnav PRIVATE m)
     target_compile_options(swiftnav PRIVATE "-Werror")
