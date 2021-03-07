@@ -11,7 +11,9 @@
 /* Include singal.c here to have a chance to turn off asserts.
    Otherwise the code lines with asserts cannot be covered by
    tests and it will lower test coverage statistics. */
+#ifndef NDEBUG
 #define NDEBUG
+#endif
 #include <../src/signal.c>
 
 #define ARRAY_COUNT(arr) ((sizeof(arr) / sizeof(arr[0])))
@@ -505,6 +507,42 @@ START_TEST(test_sbas_prn_list) {
 }
 END_TEST
 
+START_TEST(test_signal_hashes) {
+  for (s32 test_round = 0; test_round < 1000000; ++test_round) {
+    gnss_signal_t sid1, sid2;
+    sid1.code = (code_t)(rand() % CODE_COUNT);
+    sid1.sat = (u16)(rand() % MAX_NUM_SATS);
+    sid2.code = (code_t)(rand() % CODE_COUNT);
+    sid2.sat = (u16)(rand() % MAX_NUM_SATS);
+
+    constellation_t sid1_constellation = sid_to_constellation(sid1);
+    constellation_t sid2_constellation = sid_to_constellation(sid2);
+
+    int comparison = sid_compare(sid1, sid2);
+
+    if (sid1_constellation < sid2_constellation) {
+      ck_assert_int_lt(comparison, 0);
+    } else if (sid1_constellation > sid2_constellation) {
+      ck_assert_int_gt(comparison, 0);
+    } else {
+      if (sid1.code < sid2.code) {
+        ck_assert_int_lt(comparison, 0);
+      } else if (sid1.code > sid2.code) {
+        ck_assert_int_gt(comparison, 0);
+      } else {
+        if (sid1.sat < sid2.sat) {
+          ck_assert_int_lt(comparison, 0);
+        } else if (sid1.sat > sid2.sat) {
+          ck_assert_int_gt(comparison, 0);
+        } else {
+          ck_assert_int_eq(comparison, 0);
+        }
+      }
+    }
+  }
+}
+END_TEST
+
 Suite *signal_test_suite(void) {
   Suite *s = suite_create("Signal");
   TCase *tc_core = tcase_create("Core");
@@ -521,6 +559,7 @@ Suite *signal_test_suite(void) {
   tcase_add_test(tc_core, test_signal_code_to_prn_period);
   tcase_add_test(tc_core, test_sid_system_check);
   tcase_add_test(tc_core, test_sbas_prn_list);
+  tcase_add_test(tc_core, test_signal_hashes);
   suite_add_tcase(s, tc_core);
   return s;
 }

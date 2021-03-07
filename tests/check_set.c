@@ -10,8 +10,8 @@
 #define LEN(x) (sizeof(x) / sizeof(x[0]))
 
 void test_map_f(void *context, u32 n, const void *a_, const void *b_) {
-  s32 *a = (s32 *)a_;
-  s32 *b = (s32 *)b_;
+  const s32 *a = (const s32 *)a_;
+  const s32 *b = (const s32 *)b_;
   s32 *c = (s32 *)context;
 
   fail_unless(context != NULL);

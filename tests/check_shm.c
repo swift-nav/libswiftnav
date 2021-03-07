@@ -39,8 +39,8 @@ START_TEST(test_check_nav_dhi) {
       bool expected = (NAV_DHI_OK == dhi) || (ignored & 1 << dhi);
       fail_unless(res == expected,
                   "check_nav_dhi(%" PRIu8 ", %" PRIu8 ") failed",
-                  (dhi << 5),
-                  ignored);
+                  (u8)(dhi << 5),
+                  (u8)ignored);
     }
   }
 }

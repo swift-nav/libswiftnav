@@ -115,9 +115,9 @@ START_TEST(test_ephemeris_almanac_divergence) {
                 "Eph success: %" PRIu8
                 " \n"
                 "Eph diverged success: %" PRIu8 " \n",
-                calc_alm_ok,
-                calc_eph_ok,
-                calc_eph_div_ok);
+                (uint8_t)calc_alm_ok,
+                (uint8_t)calc_eph_ok,
+                (uint8_t)calc_eph_div_ok);
 
     /* Almanac vs. diverged ephemeris comparison. */
 
@@ -751,7 +751,7 @@ START_TEST(test_ephemeris_bds) {
     }
   };
 
-  const static u32 words[3][10] = {
+  static const u32 words[3][10] = {
     {0x38901714, 0x5F81035, 0x5BEE184, 0x3FDF95, 0x3D0B09CA,
      0x3C47CDE6, 0x19AC7AD, 0x24005E73, 0x2ED79F72, 0x38D7A13C},
 
@@ -822,7 +822,7 @@ START_TEST(test_ephemeris_gal) {
     }
   };
 
-  const static u8 words[5][GAL_INAV_CONTENT_BYTE] = {
+  static const u8 words[5][GAL_INAV_CONTENT_BYTE] = {
     {  0x4, 0x61, 0x23, 0x28, 0xBF, 0x30, 0x9B, 0xA0,  0x0, 0x71, 0xC8, 0x6A, 0xA8, 0x14, 0x16, 0x7},
     {  0x8, 0x61, 0x1C, 0xEF, 0x2B, 0xC3, 0x27, 0x18, 0xAE, 0x65, 0x10, 0x4C, 0x1E, 0x1A, 0x13, 0x25},
     {  0xC, 0x61, 0xFF, 0xC5, 0x58, 0x20, 0x6D, 0xFB,  0x5, 0x1B,  0xF,  0x7, 0xCC, 0xF9, 0x3E, 0x6B},

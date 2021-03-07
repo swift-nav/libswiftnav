@@ -22,6 +22,7 @@
 #include <swiftnav/decode_glo.h>
 #include <swiftnav/edc.h>
 #include <swiftnav/ephemeris.h>
+#include <swiftnav/float_equality.h>
 #include <swiftnav/linear_algebra.h>
 #include <swiftnav/logging.h>
 #include <swiftnav/shm.h>
@@ -794,11 +795,11 @@ s8 calc_sat_doppler(const ephemeris_t *e,
    to be as close as possible. */
 static void fake_gps_wns(gps_time_t *t1, gps_time_t *t2) {
   assert(t1);
-  assert(t1->tow != TOW_UNKNOWN);
+  assert((int)t1->tow != TOW_UNKNOWN);
   assert((WN_UNKNOWN == t1->wn) || (t1->wn > 1));
 
   assert(t2);
-  assert(t2->tow != TOW_UNKNOWN);
+  assert((int)t2->tow != TOW_UNKNOWN);
   assert((WN_UNKNOWN == t2->wn) || (t2->wn > 1));
 
   if ((WN_UNKNOWN != t1->wn) && (WN_UNKNOWN != t2->wn)) {
@@ -1745,7 +1746,7 @@ bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b) {
      not always agree on the value of those fields. See SR-142 */
   if (!sid_is_equal(a->sid, b->sid) || (a->valid != b->valid) ||
       (a->health_bits != b->health_bits) || (a->toe.wn != b->toe.wn) ||
-      (a->toe.tow != b->toe.tow)) {
+      (!double_equal(a->toe.tow, b->toe.tow))) {
     return false;
   }
 

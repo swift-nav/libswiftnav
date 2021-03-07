@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include <swiftnav/common.h>
+#include <swiftnav/float_equality.h>
 #include <swiftnav/linear_algebra.h>
 
 /* Todo(MP) -- Implement fast linear solve (all-in-one) with Cholesky
@@ -124,7 +125,7 @@ s32 qrdecomp_square(const double *a, u32 rows, double *qt, double *r) {
     for (i = k; i < rows; i++) {
       scale = fmax(scale, fabs(r[i * rows + k]));
     }
-    if (scale == 0.0) {
+    if (double_equal(scale, 0.0)) {
       sing = -11;
       c[k] = d[k] = 0.0;
     } else {
@@ -150,7 +151,7 @@ s32 qrdecomp_square(const double *a, u32 rows, double *qt, double *r) {
     }
   }
   d[rows - 1] = r[(rows - 1) * rows + rows - 1];
-  if (d[rows - 1] == 0.0) {
+  if (double_equal(d[rows - 1], 0.0)) {
     sing = -11;
   }
   for (i = 0; i < rows; i++) {
@@ -160,7 +161,7 @@ s32 qrdecomp_square(const double *a, u32 rows, double *qt, double *r) {
     qt[i * rows + i] = 1.0;
   }
   for (k = 0; k < rows - 1; k++) {
-    if (c[k] != 0.0) {
+    if (!double_equal(c[k], 0.0)) {
       for (j = 0; j < rows; j++) {
         sum = 0.0;
         for (i = k; i < rows; i++) {

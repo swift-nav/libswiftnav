@@ -14,6 +14,7 @@
 
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
+#include <swiftnav/float_equality.h>
 #include <swiftnav/linear_algebra.h>
 #include <swiftnav/logging.h>
 
@@ -130,7 +131,7 @@ void wgsecef2llh(const double ecef[3], double llh[3]) {
   const double p = sqrt(ecef[0] * ecef[0] + ecef[1] * ecef[1]);
 
   /* Compute longitude first, this can be done exactly. */
-  if (p != 0) {
+  if (!double_equal(p, 0)) {
     llh[1] = atan2(ecef[1], ecef[0]);
   } else {
     llh[1] = 0;

@@ -29,7 +29,12 @@ static void test_detailed_log(int level,
                               const char *file_path,
                               const int line_number,
                               const char *msg,
-                              ...) {}
+                              ...) {
+  (void)level;
+  (void)file_path;
+  (void)line_number;
+  (void)msg;
+}
 
 START_TEST(test_logging) {
   /* check ptr arithmetic in print and null terminatino */
@@ -37,13 +42,13 @@ START_TEST(test_logging) {
   logging_set_implementation(test_log, test_detailed_log);
   log_info("log_info_1");
   fail_unless((ptr - out_str) == expected_len,
-              "log_info macro failed length check. got %i, should be %i. %s",
-              ptr - out_str,
+              "log_info macro failed length check. got %zu, should be %i. %s",
+              (size_t)(ptr - out_str),
               expected_len,
               out_str);
   fail_unless(
-      strnlen(out_str, MAX_STR) == expected_len,
-      "log_info macro failed length check. strlen was %i, should be %i. %s",
+      strnlen(out_str, MAX_STR) == (size_t)expected_len,
+      "log_info macro failed length check. strlen was %zu, should be %i. %s",
       strnlen(out_str, MAX_STR),
       expected_len,
       out_str);
@@ -57,8 +62,8 @@ START_TEST(test_logging) {
     LOG_RATE_LIMIT(i, log_info("log_rate_%04d", i));
   }
   fail_unless(
-      strnlen(out_str, MAX_STR) == expected_len,
-      "log_rate_limit macro failed length check. got %i, should be %i. %s",
+      strnlen(out_str, MAX_STR) == (size_t)expected_len,
+      "log_rate_limit macro failed length check. got %zu, should be %i. %s",
       strnlen(out_str, MAX_STR),
       expected_len,
       out_str);
@@ -68,24 +73,25 @@ START_TEST(test_logging) {
   for (int j = 2000; j > 0; j -= 1500) {
     LOG_RATE_LIMIT(j, log_info("log_rate_%04d", j));
   }
-  fail_unless(strnlen(out_str, MAX_STR) == expected_len,
-              "log_rate_limit macro  back in time failed length check. got %i, "
-              "should be %i. %s",
-              strnlen(out_str, MAX_STR),
-              expected_len,
-              out_str);
+  fail_unless(
+      strnlen(out_str, MAX_STR) == (size_t)expected_len,
+      "log_rate_limit macro  back in time failed length check. got %zu, "
+      "should be %i. %s",
+      strnlen(out_str, MAX_STR),
+      expected_len,
+      out_str);
   reset_log();
   /* if we wrap, arithmetic rules should just work */
   expected_len = (20 * 4); /* should print 4 times.*/
   for (int i = 0xffffffff - 1998; i < 1999; i++) {
     LOG_RATE_LIMIT(i, log_info("log_rate_%010u", i));
   }
-  fail_unless(
-      strnlen(out_str, MAX_STR) == expected_len,
-      "log_rate_limit macro wrap failed length check. got %i, should be %i. %s",
-      strnlen(out_str, MAX_STR),
-      expected_len,
-      out_str);
+  fail_unless(strnlen(out_str, MAX_STR) == (size_t)expected_len,
+              "log_rate_limit macro wrap failed length check. got %zu, should "
+              "be %i. %s",
+              strnlen(out_str, MAX_STR),
+              expected_len,
+              out_str);
 }
 END_TEST
 

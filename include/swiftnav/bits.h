@@ -36,7 +36,7 @@ extern "C" {
  * \return 32-bit signed integer with 2-complement of \a n_bits in \a arg
  */
 #define BITS_SIGN_EXTEND_32(n_bits, arg) \
-  ((struct { s32 bits : n_bits; }){.bits = (arg)}.bits)
+  ((struct { s32 bits : (n_bits); }){.bits = (arg)}.bits)
 /**
  * Sign extension macro for 64-bit integers.
  *
@@ -46,7 +46,7 @@ extern "C" {
  * \return 64-bit signed integer with 2-complement of \a n_bits in \a arg
  */
 #define BITS_SIGN_EXTEND_64(n_bits, arg) \
-  ((struct { s64 bits : n_bits; }){.bits = (arg)}.bits)
+  ((struct { s64 bits : (n_bits); }){.bits = (arg)}.bits)
 
 u8 parity(u32 x);
 u16 bytes_interleave(const u8 x, const u8 y);

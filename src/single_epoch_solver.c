@@ -21,6 +21,7 @@
 
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
+#include <swiftnav/float_equality.h>
 #include <swiftnav/linear_algebra.h>
 #include <swiftnav/logging.h>
 
@@ -376,7 +377,7 @@ static void compute_dops(const double H[4][4],
   ecef2ned_matrix(pos_ecef, M);
   double down_ecef[4] = {M[2][0], M[2][1], M[2][2], 0};
   double tmp[3];
-  matrix_multiply(3, 4, 1, (double *)H, down_ecef, tmp);
+  matrix_multiply(3, 4, 1, (const double *)H, down_ecef, tmp);
   double vdop_sq = vector_dot(3, down_ecef, tmp);
   dops->vdop = sqrt(vdop_sq);
   dops->hdop = sqrt(pdop_sq - vdop_sq);
@@ -474,7 +475,7 @@ static s8 pvt_solve(const u8 n_used,
     /* Construct the weight matrix. Ideally it would have the inverses of
      * individual measurement variances on the diagonal
      */
-    if (0 != pseudorange_var) {
+    if (!double_equal(0, pseudorange_var)) {
       w[j] = 1.0 / pseudorange_var;
     } else {
       w[j] = 1.0;
@@ -598,8 +599,9 @@ static bool residual_test(const u8 n_used,
                           const lsq_data_t *lsq_data,
                           const navigation_measurement_t **nav_meas,
                           double *p_metric) {
-  if (lsq_data->rx_state[0] == 0.0 && lsq_data->rx_state[1] == 0.0 &&
-      lsq_data->rx_state[2] == 0.0) {
+  if (double_equal(lsq_data->rx_state[0], 0.0) &&
+      double_equal(lsq_data->rx_state[1], 0.0) &&
+      double_equal(lsq_data->rx_state[2], 0.0)) {
     /* State un-initialized */
     return false;
   }
@@ -634,10 +636,10 @@ static bool residual_test(const u8 n_used,
       residual[n_used + i] = lsq_data->omp_doppler[i];
     }
     calc_measurement_noises(nav_meas[i], &pr_var, &dop_var);
-    if (pr_var != 0) {
+    if (!double_equal(pr_var, 0)) {
       residual[i] /= sqrt(pr_var);
     }
-    if (!disable_velocity && (dop_var != 0)) {
+    if (!disable_velocity && !double_equal(dop_var, 0)) {
       residual[n_used + i] /= sqrt(dop_var);
     }
   }
@@ -811,6 +813,11 @@ static s8 pvt_iter_masked(const u8 n_meas,
                           const gnss_sid_set_t *removed_sids,
                           lsq_data_t *lsq_data,
                           double *metric) {
+  if (n_meas == 0) {
+    log_info("RAIM failed, no measurements");
+    return -1;
+  }
+
   const navigation_measurement_t **nav_meas_subset =
       LSN_ALLOCATE(n_meas * sizeof(navigation_measurement_t *));
   assert(nav_meas_subset != NULL);

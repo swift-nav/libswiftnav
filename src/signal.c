@@ -41,7 +41,7 @@ typedef struct { /* NOLINT(clang-analyzer-optin.performance.Padding) */
  *  [1] RINEX3.03 Table A23
  *      "Reference code and phase alignment by constellation and frequency band"
  */
-static const code_table_element_t code_table[CODE_COUNT] = {
+static const code_table_element_t code_table[CODE_COUNT + 1] = {
     /** GPS */
     [CODE_GPS_L1CA] = {CONSTELLATION_GPS,
                        NUM_SATS_GPS,
@@ -885,6 +885,19 @@ static const code_table_element_t code_table[CODE_COUNT] = {
                       (float)QZS_L5_DOPPLER_MAX_HZ,
                       0.f, /* must be aligned to CODE_QZS_L5I (see L5X in [1])*/
                       false},
+    [CODE_COUNT] = {CONSTELLATION_INVALID,
+                    0,
+                    0,
+                    0,
+                    "Invalid code",
+                    0,
+                    0,
+                    0,
+                    false,
+                    0,
+                    0.0,
+                    0.0,
+                    false},
 };
 
 static const char *constellation_table[CONSTELLATION_COUNT] = {

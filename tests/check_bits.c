@@ -220,10 +220,13 @@ START_TEST(test_count_bits_x) {
 
   for (unsigned i = 0; i < sizeof(src64) / sizeof(src64[0]); i++) {
     u8 r = count_bits_u64(src64[i], 1);
-    fail_unless(res64[i] == r, "count_bits_u64(0x%lx, 1) = %d", src64[i], r);
-    r = count_bits_u64(src64[i], 0);
     fail_unless(
-        64 - res64[i] == r, "count_bits_u64(0x%lx, 0) = %d", src64[i], r);
+        res64[i] == r, "count_bits_u64(0x%" PRIx64 ", 1) = %d", src64[i], r);
+    r = count_bits_u64(src64[i], 0);
+    fail_unless(64 - res64[i] == r,
+                "count_bits_u64(0x%" PRIx64 ", 0) = %d",
+                src64[i],
+                r);
   }
 }
 END_TEST

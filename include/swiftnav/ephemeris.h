@@ -22,9 +22,9 @@
 extern "C" {
 #endif
 
-#define INVALID_GPS_URA_INDEX -1
+#define INVALID_GPS_URA_INDEX (-1)
 #define MAX_ALLOWED_GPS_URA_IDX 15
-#define INVALID_URA_VALUE -1.0f
+#define INVALID_URA_VALUE (-1.0f)
 #define INVALID_GAL_SISA_INDEX 0xFF
 #define URA_VALID(x) ((x) >= 0)
 

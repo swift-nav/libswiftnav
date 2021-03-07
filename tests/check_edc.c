@@ -3,7 +3,7 @@
 #include <swiftnav/edc.h>
 #include "check_suites.h"
 
-const u8 *test_data = (u8 *)"123456789";
+const u8 *test_data = (const u8 *)"123456789";
 
 START_TEST(test_crc24q) {
   u32 crc;

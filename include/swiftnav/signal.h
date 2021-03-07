@@ -392,6 +392,23 @@ static inline bool code_valid(code_t code) {
   return ((code >= 0) && (code < CODE_COUNT));
 }
 
+static inline uint32_t sid_hash(const gnss_signal_t sid) {
+  // check to make sure all constellations can be represent with uin8_t
+  assert(CONSTELLATION_COUNT <= 256);
+
+  // check to make sure code_t values can be represent with uin8_t
+  assert(CODE_COUNT <= 256);
+
+  // check to make sure satellite can be represent with uin16_t
+  assert(sizeof(sid.sat) <= 2);
+
+  const uint32_t constellation = (uint32_t)sid_to_constellation(sid) << 24;
+  const uint32_t code = (uint32_t)sid.code << 16;
+  const uint32_t satellite = (uint32_t)sid.sat;
+
+  return constellation | code | satellite;
+}
+
 /** Signal comparison function. */
 static inline int sid_compare(const gnss_signal_t a, const gnss_signal_t b) {
   /* Signal code are not sorted in order per constellation
@@ -399,23 +416,8 @@ static inline int sid_compare(const gnss_signal_t a, const gnss_signal_t b) {
    * As some of our functions relies on comparing ordered sets of signals,
    * this can cause issues.
    * Therefore, in this function, we enforce the ordering per
-   * constellation/frequency/satellite */
-  if ((code_valid(a.code)) && code_valid(b.code)) {
-    if (sid_to_constellation(a) == sid_to_constellation(b)) {
-      if (a.code == b.code) {
-        return a.sat - b.sat;
-      } else {
-        return a.code - b.code;
-      }
-    } else {
-      return sid_to_constellation(a) - sid_to_constellation(b);
-    }
-  } else {
-    if (a.code == b.code) {
-      return a.sat - b.sat;
-    }
-    return a.code - b.code;
-  }
+   * constellation/code/satellite */
+  return (int)(sid_hash(a) - sid_hash(b));
 }
 
 /** Is GLO frequency valid?
@@ -438,12 +440,13 @@ static inline bool glo_slot_id_is_valid(u16 slot) {
 
 /** Untyped signal comparison function. */
 static inline int cmp_sid_sid(const void *a, const void *b) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
   return sid_compare(*(const gnss_signal_t *)a, *(const gnss_signal_t *)b);
 }
 
 /** Signal equality function. */
 static inline bool sid_is_equal(const gnss_signal_t a, const gnss_signal_t b) {
-  return sid_compare(a, b) == 0;
+  return sid_hash(a) == sid_hash(b);
 }
 
 /* Logging macros */
@@ -540,27 +543,27 @@ u16 code_to_sig_count(const code_t code);
 } /* extern "C" */
 
 static inline bool operator==(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) == 0;
+  return sid_hash(a) == sid_hash(b);
 }
 
 static inline bool operator!=(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) != 0;
+  return sid_hash(a) != sid_hash(b);
 }
 
 static inline bool operator<(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) < 0;
+  return sid_hash(a) < sid_hash(b);
 }
 
 static inline bool operator>(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) > 0;
+  return sid_hash(a) > sid_hash(b);
 }
 
 static inline bool operator<=(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) <= 0;
+  return sid_hash(a) <= sid_hash(b);
 }
 
 static inline bool operator>=(const gnss_signal_t &a, const gnss_signal_t &b) {
-  return sid_compare(a, b) >= 0;
+  return sid_hash(a) >= sid_hash(b);
 }
 #endif /* __cplusplus */
 

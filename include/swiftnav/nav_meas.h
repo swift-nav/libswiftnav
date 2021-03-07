@@ -104,6 +104,14 @@ typedef struct {
 #define VALID_CORRECTIONS (1 << 0)
 #define PARTIAL_FIXING (1 << 1)
 #define FULL_FIXING (1 << 2)
+#define INVALID_CODE_CORRECTIONS (1 << 3)
+#define INVALID_PHASE_CORRECTIONS (1 << 4)
+
+typedef enum CorrectionsQualityEnum {
+  kCorrectionsValid = 0,
+  kPartialFix,
+  kFullFix,
+} CorrectionsQualityEnum;
 
 /**
  * Structure for processing navigation measurements estimated standard deviation

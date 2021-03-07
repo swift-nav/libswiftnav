@@ -51,7 +51,7 @@ memcpy_s_t memcpy_s(void *dest,
   }
 
   if (((src > dest) && (src < (void *)((u8 *)dest + destsize))) ||
-      ((dest > src) && (dest < (void *)((u8 *)src + count)))) {
+      ((dest > src) && (dest < (const void *)((const u8 *)src + count)))) {
     log_error("memcpy_s error: overlap");
     return MEMCPY_S_OVERLAP;
   }

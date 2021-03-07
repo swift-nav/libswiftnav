@@ -120,24 +120,28 @@ extern "C" {
 
 typedef struct pvt_engine_result_flags_t {
   u8 position_mode : 3;
-  u8 velocity_mode : 3;
   u8 raim_repair_flag : 1;
 } pvt_engine_result_flags_t;
 
 typedef struct {
   gps_time_t time;
   bool valid;
+  bool baseline_valid;
   double baseline[3];
   double baseline_covariance[9];
-  bool velocity_valid;
-  double velocity[3];
-  double velocity_covariance[9];
+  bool average_velocity_valid;
+  double average_velocity[3];
+  double average_velocity_covariance[9];
+  bool instantaneous_velocity_valid;
+  double instantaneous_velocity[3];
+  double instantaneous_velocity_covariance[9];
   u8 num_sats_used;
   u8 num_sigs_used;
   pvt_engine_result_flags_t flags;
   bool has_known_reference_pos;
   double known_reference_pos[3];
   double propagation_time;
+  bool is_fixed;
 } pvt_engine_result_t;
 
 #ifdef __cplusplus

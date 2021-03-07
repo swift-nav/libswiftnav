@@ -10,62 +10,72 @@ START_TEST(test_encode_lock_time) {
   u8 ret;
 
   ret = encode_lock_time(0.0);
-  fail_unless(ret == 0, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 0);
+  fail_unless(
+      ret == 0, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)0);
 
   ret = encode_lock_time(0.05);
-  fail_unless(ret == 1, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 1);
+  fail_unless(
+      ret == 1, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)1);
 
   ret = encode_lock_time(0.1);
-  fail_unless(ret == 2, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 2);
+  fail_unless(
+      ret == 2, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)2);
 
   ret = encode_lock_time(0.2);
-  fail_unless(ret == 3, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 3);
+  fail_unless(
+      ret == 3, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)3);
 
   ret = encode_lock_time(0.5);
-  fail_unless(ret == 4, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 4);
+  fail_unless(
+      ret == 4, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)4);
 
   ret = encode_lock_time(1.0);
-  fail_unless(ret == 5, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 5);
+  fail_unless(
+      ret == 5, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)5);
 
   ret = encode_lock_time(2.0);
-  fail_unless(ret == 6, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 6);
+  fail_unless(
+      ret == 6, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)6);
 
   ret = encode_lock_time(4.0);
-  fail_unless(ret == 7, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 7);
+  fail_unless(
+      ret == 7, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)7);
 
   ret = encode_lock_time(5.0);
-  fail_unless(ret == 8, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 8);
+  fail_unless(
+      ret == 8, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)8);
 
   ret = encode_lock_time(10.0);
-  fail_unless(ret == 9, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 9);
+  fail_unless(
+      ret == 9, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)9);
 
   ret = encode_lock_time(20.0);
   fail_unless(
-      ret == 10, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 10);
+      ret == 10, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)10);
 
   ret = encode_lock_time(50.0);
   fail_unless(
-      ret == 11, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 11);
+      ret == 11, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)11);
 
   ret = encode_lock_time(100.0);
   fail_unless(
-      ret == 12, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 12);
+      ret == 12, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)12);
 
   ret = encode_lock_time(200.0);
   fail_unless(
-      ret == 13, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 13);
+      ret == 13, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)13);
 
   ret = encode_lock_time(500.0);
   fail_unless(
-      ret == 14, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 14);
+      ret == 14, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)14);
 
   ret = encode_lock_time(1000.0);
   fail_unless(
-      ret == 15, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 15);
+      ret == 15, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)15);
 
   ret = encode_lock_time(DBL_MAX);
   fail_unless(
-      ret == 15, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, 15);
+      ret == 15, "Incorrect return (%" PRIu8 " vs %" PRIu8 ")", ret, (u8)15);
 }
 END_TEST
 
@@ -136,7 +146,7 @@ START_TEST(test_roundtrip_lock_time) {
   fail_unless(encoded_value == 13,
               "Incorrect return (%" PRIu8 " vs %" PRIu8 ")",
               encoded_value,
-              13);
+              (u8)13);
 
   fail_unless(decoded_value == 131.072,
               "Incorrect return (%f vs %f)",

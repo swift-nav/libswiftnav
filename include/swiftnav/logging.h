@@ -312,7 +312,7 @@ extern const char *level_string[];
   do {                                              \
     static u32 last_tow = 0xffffffff;               \
     if ((last_tow) == 0xffffffff ||                 \
-        (this_tow - last_tow) >= LOG_RATE_THRESH) { \
+        ((this_tow)-last_tow) >= LOG_RATE_THRESH) { \
       cmd;                                          \
       last_tow = this_tow;                          \
     }                                               \

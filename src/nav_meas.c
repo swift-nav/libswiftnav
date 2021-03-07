@@ -19,8 +19,8 @@
  * This function is designed to be used together with qsort() etc.
  */
 int nav_meas_cmp(const void *a, const void *b) {
-  return sid_compare(((navigation_measurement_t *)a)->sid,
-                     ((navigation_measurement_t *)b)->sid);
+  return sid_compare(((const navigation_measurement_t *)a)->sid,
+                     ((const navigation_measurement_t *)b)->sid);
 }
 
 bool nav_meas_flags_valid(nav_meas_flags_t flags) {

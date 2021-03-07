@@ -74,7 +74,7 @@ extern "C" {
 #define CLAMP_DIFF(a, b) (MAX((a), (b)) - (b))
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define ARRAY_SIZE2(a) (sizeof(a) / sizeof((a)[0][0]))
-#define SIGN(a) ((a >= 0) ? +1 : -1)
+#define SIGN(a) (((a) >= 0) ? +1 : -1)
 
 /* See http://c-faq.com/cpp/multistmt.html for
  * and explaination of the do {} while(0)

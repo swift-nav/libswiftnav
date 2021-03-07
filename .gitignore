@@ -1,6 +1,6 @@
-build
+build*
 include/swiftnav/config.h
-/fixes.yaml
+*.swp
 
 # IDE files
 .vscode/

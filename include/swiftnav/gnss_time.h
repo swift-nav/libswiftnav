@@ -110,10 +110,10 @@ extern "C" {
 #define MJD_JAN_6_1980 44244
 
 /** Modified Julian days of 1601-01-01 */
-#define MJD_JAN_1_1601 -94187
+#define MJD_JAN_1_1601 (-94187)
 
-#define WN_UNKNOWN -1
-#define TOW_UNKNOWN -1
+#define WN_UNKNOWN (-1)
+#define TOW_UNKNOWN (-1)
 
 /** GLONASS minimum day number */
 #define GLO_NT_0_FLOOR 1

@@ -12,7 +12,7 @@ if(libswiftnav_BUILD_TESTS)
       check_decode_glo.c
       check_edc.c
       check_ephemeris.c
-      check_geoid_model.c
+      check_geoid_model.cc
       check_glo_map.c
       check_gnss_time.c
       check_gnss_time_cpp.cc
@@ -33,4 +33,16 @@ if(libswiftnav_BUILD_TESTS)
     SRCS ${SRCS}
     LINK check-utils check Threads::Threads
     )
+
+  swift_set_language_standards(test-swiftnav-common)
+  swift_set_compile_options(
+    test-swiftnav-common 
+    REMOVE 
+      -Wconversion
+      -Wstack-protector
+      -Wfloat-equal
+      -Wsign-compare
+    ADD
+      -Wno-format-extra-args
+  )
 endif(libswiftnav_BUILD_TESTS)

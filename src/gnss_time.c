@@ -253,13 +253,13 @@ bool gpstime_in_range(const gps_time_t *bgn,
                       const gps_time_t *end,
                       const gps_time_t *t) {
   assert(bgn);
-  assert(bgn->tow != TOW_UNKNOWN);
+  assert((int)bgn->tow != TOW_UNKNOWN);
   assert(bgn->wn != WN_UNKNOWN);
   assert(end);
-  assert(end->tow != TOW_UNKNOWN);
+  assert((int)end->tow != TOW_UNKNOWN);
   assert(end->wn != WN_UNKNOWN);
   assert(t);
-  assert(t->tow != TOW_UNKNOWN);
+  assert((int)t->tow != TOW_UNKNOWN);
 
   double since_bgn_s = gpsdifftime(t, bgn);
   if (since_bgn_s < 0) {

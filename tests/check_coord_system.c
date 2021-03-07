@@ -364,6 +364,7 @@ START_TEST(test_random_wgsecef2ned_d_0) {
                   "NED vector to reference ECEF point "
                   "has nonzero element %d: %lf\n"
                   "(point was <%lf %lf %lf>)\n",
+                  j,
                   ned[j],
                   ecef[0],
                   ecef[1],

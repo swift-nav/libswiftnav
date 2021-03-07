@@ -26,7 +26,7 @@ START_TEST(test_gpsdifftime) {
        i++) {
     double dt = gpsdifftime(&testcases[i].a, &testcases[i].b);
     fail_unless(fabs(dt - testcases[i].dt) < tow_tol,
-                "gpsdifftime test case %d failed, dt = %.12f",
+                "gpsdifftime test case %zu failed, dt = %.12f",
                 i,
                 dt);
   }
@@ -47,12 +47,13 @@ START_TEST(test_normalize_gps_time) {
     normalize_gps_time(&testcases[i]);
     double t_normalized = testcases[i].wn * WEEK_SECS + testcases[i].tow;
     if (testcases[i].wn != WN_UNKNOWN) {
-      fail_unless(fabs(t_original - t_normalized) < tow_tol,
-                  "normalize_gps_time test case %d failed, t_original = %.12f, "
-                  "t_normalized = %.12f",
-                  i,
-                  t_original,
-                  t_normalized);
+      fail_unless(
+          fabs(t_original - t_normalized) < tow_tol,
+          "normalize_gps_time test case %zu failed, t_original = %.12f, "
+          "t_normalized = %.12f",
+          i,
+          t_original,
+          t_normalized);
     }
     /* normalization must not touch unknown week number */
     fail_unless(wn != WN_UNKNOWN || testcases[i].wn == WN_UNKNOWN);
@@ -188,12 +189,12 @@ START_TEST(test_gps_time_match_weeks) {
     gps_time_match_weeks(&testcases[i].t, &testcases[i].ref);
     fail_unless(
         testcases[i].t.wn == testcases[i].ret.wn,
-        "gps_time_match_weeks test case %d failed, t.wn = %d, ret.wn = %d",
+        "gps_time_match_weeks test case %zu failed, t.wn = %d, ret.wn = %d",
         i,
         testcases[i].t.wn,
         testcases[i].ret.wn);
     fail_unless(testcases[i].t.tow == testcases[i].ret.tow,
-                "gps_time_match_weeks test case %d failed, t.tow = %.12f, "
+                "gps_time_match_weeks test case %zu failed, t.tow = %.12f, "
                 "ret.tow = %.12f",
                 i,
                 testcases[i].t.tow,
@@ -221,7 +222,7 @@ START_TEST(test_gps_adjust_week_cycle) {
        i++) {
     u16 wn = gps_adjust_week_cycle(testcases[i].wn_raw, wn_ref);
     fail_unless(wn == testcases[i].ret,
-                "gps_adjust_week_cycle test case %d failed, wn = %d, ret = %d",
+                "gps_adjust_week_cycle test case %zu failed, wn = %d, ret = %d",
                 i,
                 wn,
                 testcases[i].ret);
@@ -262,7 +263,8 @@ START_TEST(test_is_leap_year) {
        i < sizeof(testcases) / sizeof(struct is_leap_year_testcase);
        i++) {
     fail_unless(is_leap_year(testcases[i].year) == testcases[i].ret,
-                "is_leap_year test case %d failed, year = %d",
+                "is_leap_year test case %zu failed, year = %d",
+                i,
                 testcases[i].year);
   }
 }
@@ -335,7 +337,7 @@ START_TEST(test_glo2gps) {
     gps_time_t ret = glo2gps(&testcases[i].glot, /* utc_params = */ NULL);
     fail_unless(
         ret.wn == testcases[i].ret.wn && ret.tow == testcases[i].ret.tow,
-        "glo2gps test case %d failed, got (%d, %f), expected (%d, %f)",
+        "glo2gps test case %zu failed, got (%d, %f), expected (%d, %f)",
         i,
         ret.wn,
         ret.tow,
@@ -348,7 +350,7 @@ START_TEST(test_glo2gps) {
           glo.n4 == testcases[i].glot.n4 && glo.nt == testcases[i].glot.nt &&
               glo.h == testcases[i].glot.h && glo.m == testcases[i].glot.m &&
               within_epsilon(glo.s, testcases[i].glot.s),
-          "gps2glo test case %d failed, got (%d,%d,%d,%d,%f), expected "
+          "gps2glo test case %zu failed, got (%d,%d,%d,%d,%f), expected "
           "(%d,%d,%d,%d,%f)",
           i,
           glo.n4,
@@ -394,7 +396,7 @@ START_TEST(test_utc_offset) {
     bool is_lse = is_leap_second_event(&testcases[i].t, NULL);
 
     fail_unless(dUTC == testcases[i].dUTC && is_lse == testcases[i].is_lse,
-                "utc_leap_testcase %d failed, expected (%f,%d) got (%f,%d)",
+                "utc_leap_testcase %zu failed, expected (%f,%d) got (%f,%d)",
                 i,
                 testcases[i].dUTC,
                 testcases[i].is_lse,
@@ -408,7 +410,7 @@ START_TEST(test_utc_offset) {
                              .tow = testcases[i].t.tow - dUTC};
       double dGPS = get_utc_gps_offset(&utc_time, NULL);
       fail_unless(dGPS == -testcases[i].dUTC,
-                  "utc_leap_testcase inverse %d failed, expected %f got %f",
+                  "utc_leap_testcase inverse %zu failed, expected %f got %f",
                   i,
                   -testcases[i].dUTC,
                   dGPS);
@@ -566,7 +568,7 @@ START_TEST(test_utc_params) {
        i++) {
     bool is_lse = is_leap_second_event(&testcases[i].t, testcases[i].p);
     fail_unless(is_lse == testcases[i].is_lse,
-                "utc_params_testcase %d failed, expected LSE=%d got %d",
+                "utc_params_testcase %zu failed, expected LSE=%d got %d",
                 i,
                 testcases[i].is_lse,
                 is_lse);
@@ -574,7 +576,7 @@ START_TEST(test_utc_params) {
     double dUTC = get_gps_utc_offset(&testcases[i].t, testcases[i].p);
 
     fail_unless(within_epsilon(dUTC, testcases[i].dUTC),
-                "utc_params_testcase %d failed, expected dUTC=%.16f got %.16f",
+                "utc_params_testcase %zu failed, expected dUTC=%.16f got %.16f",
                 i,
                 testcases[i].dUTC,
                 dUTC);
@@ -587,7 +589,7 @@ START_TEST(test_utc_params) {
       double dGPS = get_utc_gps_offset(&utc_time, testcases[i].p);
       fail_unless(
           within_epsilon(dGPS, -testcases[i].dUTC),
-          "utc_params_testcase inverse %d failed, expected %.16f got %.16f",
+          "utc_params_testcase inverse %zu failed, expected %.16f got %.16f",
           i,
           -testcases[i].dUTC,
           dGPS);
@@ -598,7 +600,7 @@ START_TEST(test_utc_params) {
     gps_time_t converted = glo2gps(&glo_time, testcases[i].p);
     fail_unless(
         fabs(gpsdifftime(&testcases[i].t, &converted)) < 0.2,
-        "utc_params_testcase %d gps2glo2gps failed for (%u/%u %u:%u:%.16f), "
+        "utc_params_testcase %zu gps2glo2gps failed for (%u/%u %u:%u:%.16f), "
         "expected (%d, %f), got (%d, %f)",
         i,
         glo_time.n4,
@@ -958,38 +960,38 @@ START_TEST(test_gps2utc) {
     gps2utc(&testcases[i].t, &u, testcases[i].p);
 
     fail_unless(u.year == expected.year,
-                "gps2utc_testcase %d failed, got year %d expected %d",
+                "gps2utc_testcase %zu failed, got year %d expected %d",
                 i,
                 u.year,
                 expected.year);
     fail_unless(u.month == expected.month,
-                "gps2utc_testcase %d failed, got month %d expected %d",
+                "gps2utc_testcase %zu failed, got month %d expected %d",
                 i,
                 u.month,
                 expected.month);
     fail_unless(u.month_day == expected.month_day,
-                "gps2utc_testcase %d failed, got day %d expected %d",
+                "gps2utc_testcase %zu failed, got day %d expected %d",
                 i,
                 u.month_day,
                 expected.month_day);
     fail_unless(u.hour == expected.hour,
-                "gps2utc_testcase %d failed, got hour %d expected %d",
+                "gps2utc_testcase %zu failed, got hour %d expected %d",
                 i,
                 u.hour,
                 expected.hour);
     fail_unless(u.minute == expected.minute,
-                "gps2utc_testcase %d failed, got minute %d expected %d",
+                "gps2utc_testcase %zu failed, got minute %d expected %d",
                 i,
                 u.minute,
                 expected.minute);
     fail_unless(within_epsilon(u.second_int + u.second_frac,
                                expected.second_int + expected.second_frac),
-                "gps2utc_testcase %d failed, got second %.16f expected %.16f",
+                "gps2utc_testcase %zu failed, got second %.16f expected %.16f",
                 i,
                 u.second_int + u.second_frac,
                 expected.second_int + expected.second_frac);
     fail_unless(u.second_frac < 1,
-                "gps2utc_testcase %d failed, got second_frac %g expected <1",
+                "gps2utc_testcase %zu failed, got second_frac %g expected <1",
                 i,
                 u.second_frac);
   }
@@ -1015,7 +1017,7 @@ START_TEST(test_time_conversions) {
     double mjd = gps2mjd(&testcases[i]);
     gps_time_t ret = mjd2gps(mjd);
     fail_unless(fabs(gpsdifftime(&testcases[i], &ret)) < tow_tol,
-                "gps2mjd2gps test case %d failed",
+                "gps2mjd2gps test case %zu failed",
                 i);
 
     /* test mjd -> date -> mjd */
@@ -1024,26 +1026,26 @@ START_TEST(test_time_conversions) {
     mjd2date(mjd, &year, &month, &day, &hour, &min, &sec);
     fail_unless(
         fabs(date2mjd(year, month, day, hour, min, sec) - mjd) < tow_tol,
-        "mjd2date2mjd test case %d failed",
+        "mjd2date2mjd test case %zu failed",
         i);
 
     /* test mjd -> utc -> mjd */
     utc_tm utc = mjd2utc(mjd);
     fail_unless(
-        fabs(utc2mjd(&utc) - mjd) < tow_tol, "utc2mjd test case %d failed", i);
+        fabs(utc2mjd(&utc) - mjd) < tow_tol, "utc2mjd test case %zu failed", i);
 
     /* test gps -> date -> gps */
     gps2date(&testcases[i], &year, &month, &day, &hour, &min, &sec);
     ret = date2gps(year, month, day, hour, min, sec);
     fail_unless(fabs(gpsdifftime(&testcases[i], &ret)) < tow_tol,
-                "gps2date2gps test case %d failed",
+                "gps2date2gps test case %zu failed",
                 i);
 
     /* test utc -> date -> utc */
     utc2date(&utc, &year, &month, &day, &hour, &min, &sec);
     utc = date2utc(year, month, day, hour, min, sec);
     fail_unless(fabs(utc2mjd(&utc) - mjd) < tow_tol,
-                "utc2date2utc test case %d failed",
+                "utc2date2utc test case %zu failed",
                 i);
   }
 }
@@ -1067,7 +1069,7 @@ START_TEST(test_round_to_epoch) {
   for (size_t i = 0; i < ARRAY_SIZE(testcases); ++i) {
     gps_time_t rounded = round_to_epoch(&testcases[i], soln_freq);
     fail_unless(within_epsilon(gpsdifftime(&rounded, &expectations[i]), 0.0),
-                "round_to_epoch failed",
+                "round_to_epoch failed %zu",
                 i);
   }
 }
@@ -1091,7 +1093,7 @@ START_TEST(test_floor_to_epoch) {
   for (size_t i = 0; i < ARRAY_SIZE(testcases); ++i) {
     gps_time_t rounded = floor_to_epoch(&testcases[i], soln_freq);
     fail_unless(within_epsilon(gpsdifftime(&rounded, &expectations[i]), 0.0),
-                "floor_to_epoch failed",
+                "floor_to_epoch failed %zu",
                 i);
   }
 }
