@@ -59,9 +59,12 @@ bool gps_current_time_valid(const gps_time_t *t) {
  * wrapping and adjusting the week number accordingly.
  *
  * \param t GPS time struct.
+ * \return true on success, false otherwise
  */
-void normalize_gps_time(gps_time_t *t) {
-  assert(t->wn >= WN_UNKNOWN);
+bool normalize_gps_time_safe(gps_time_t *t) {
+  if (t->wn < WN_UNKNOWN) {
+    return false;
+  }
 
   if (t->wn == WN_UNKNOWN) {
     /* don't touch week number if it is unknown */
@@ -71,11 +74,25 @@ void normalize_gps_time(gps_time_t *t) {
     while (t->tow >= WEEK_SECS) {
       t->tow -= WEEK_SECS;
     }
-    return;
+    return true;
   }
 
   unsafe_normalize_gps_time(t);
-  assert(gps_time_valid(t));
+  return gps_time_valid(t);
+}
+
+/** Normalize a `gps_time_t` GPS time struct in place.
+ * Ensures that the time of week is greater than zero and less than one week by
+ * wrapping and adjusting the week number accordingly.
+ *
+ * This version will assert is the operation was unsuccessful
+ *
+ * \param t GPS time struct.
+ */
+void normalize_gps_time(gps_time_t *t) {
+  bool result = normalize_gps_time_safe(t);
+  (void)result;
+  assert(result);
 }
 
 /** Normalize a `gps_time_t` GPS time struct in place.
@@ -292,7 +309,7 @@ double gpsdifftime(const gps_time_t *end, const gps_time_t *beginning) {
     }
   } else {
     /* Week numbers were provided - use them. */
-    dt += (end->wn - beginning->wn) * WEEK_SECS;
+    dt += ((double)end->wn - beginning->wn) * WEEK_SECS;
   }
   return dt;
 }
@@ -309,12 +326,18 @@ void add_secs(gps_time_t *time, double secs) {
 /** Given an unknown week number in t, fill in the week number from ref
  * under the assumption the two times are separated by less than a week.
  *
+ * No assert version of gps_time_match_weeks
+ *
  * \param t Pointer to GPS time whose week number will be set
  * \param ref Reference GPS time
+ * \return true: if the week number in t was successfully filled in, or if the
+ *         week number in ref was unknown.
+ *
+ *         false: if the resulting time was invalid
  */
-void gps_time_match_weeks(gps_time_t *t, const gps_time_t *ref) {
+bool gps_time_match_weeks_safe(gps_time_t *t, const gps_time_t *ref) {
   if (ref->wn == WN_UNKNOWN) {
-    return;
+    return true;
   }
   t->wn = ref->wn;
   double dt = t->tow - ref->tow;
@@ -327,8 +350,22 @@ void gps_time_match_weeks(gps_time_t *t, const gps_time_t *ref) {
   if (!gps_time_valid(t)) {
     log_info(
         "t=(%lf,%d) ref=(%lf,%d)", t->tow, (int)t->wn, ref->tow, (int)ref->wn);
-    assert(0);
+    return false;
   }
+
+  return true;
+}
+
+/** Given an unknown week number in t, fill in the week number from ref
+ * under the assumption the two times are separated by less than a week.
+ *
+ * \param t Pointer to GPS time whose week number will be set
+ * \param ref Reference GPS time
+ */
+void gps_time_match_weeks(gps_time_t *t, const gps_time_t *ref) {
+  bool result = gps_time_match_weeks_safe(t, ref);
+  (void)result;
+  assert(result);
 }
 
 /** Adjust the week number of wn_raw to correctly reflect the current week
@@ -778,7 +815,7 @@ void gps2date(const gps_time_t *gps_time,
               double *sec) {
   utc_tm utc_time;
   gps2utc(gps_time, &utc_time, NULL);
-  return utc2date(&utc_time, year, month, day, hour, min, sec);
+  utc2date(&utc_time, year, month, day, hour, min, sec);
 }
 
 /** Return the number of days in given month */

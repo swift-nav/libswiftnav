@@ -15,9 +15,9 @@
 #define LIBSWIFTNAV_SIGNAL_H
 
 #include <stdbool.h>
-
 #include <swiftnav/common.h>
 #include <swiftnav/logging.h>
+#include <swiftnav/macro_overload.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -160,7 +160,6 @@ extern "C" {
 #define IS_GAL(sid) is_gal((sid).code)
 
 #define SAT_INVALID (-1)
-#define SID_UNKNOWN ((gnss_signal_t){0, CODE_INVALID})
 
 /** Constellation identifier. */
 typedef enum constellation_e {
@@ -313,6 +312,12 @@ typedef struct {
   code_t code;
 } gnss_signal_t;
 
+#ifdef __cplusplus
+static constexpr gnss_signal_t SID_UNKNOWN = {0, CODE_INVALID};
+#else
+#define SID_UNKNOWN ((gnss_signal_t){0, CODE_INVALID})
+#endif
+
 #define MAX_SBAS_SATS_PER_SYSTEM 3
 
 typedef enum sbas_system_e {
@@ -449,68 +454,106 @@ static inline bool sid_is_equal(const gnss_signal_t a, const gnss_signal_t b) {
   return sid_hash(a) == sid_hash(b);
 }
 
-/* Logging macros */
-#define _LOG_SID(func, sid, format, ...)          \
+#define _LOG_SIDn(func, sid, format, ...)         \
   do {                                            \
     char sid_str[SID_STR_LEN_MAX];                \
     sid_to_string(sid_str, sizeof(sid_str), sid); \
-    func("%s " format, sid_str, ##__VA_ARGS__);   \
-  } while (false)
+    func("%s " format, sid_str, __VA_ARGS__);     \
+  } while (false);
 
-#define log_error_sid(sid, format, ...) \
-  _LOG_SID(log_error, sid, format, ##__VA_ARGS__)
+#define _LOG_SID3(func, sid, format) _LOG_SIDn(func, sid, format "%s", "")
 
-#define log_warn_sid(sid, format, ...) \
-  _LOG_SID(log_warn, sid, format, ##__VA_ARGS__)
+#define _LOG_SID(...)                                         \
+  LSN_EXPAND(LSN_GET_MACRO(                                   \
+      __VA_ARGS__,                                            \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SIDn,                                              \
+      _LOG_SID3,                                              \
+      log_xxx_sid_must_be_called_with_at_least_two_arguments, \
+      log_xxx_sid_must_be_called_with_at_least_two_arguments, \
+      log_xxx_sid_must_be_called_with_at_least_two_arguments)(__VA_ARGS__))
 
-#define log_info_sid(sid, format, ...) \
-  _LOG_SID(log_info, sid, format, ##__VA_ARGS__)
+#define log_error_sid(sid, ...) _LOG_SID(log_error, sid, __VA_ARGS__)
 
-#define log_debug_sid(sid, format, ...) \
-  _LOG_SID(log_debug, sid, format, ##__VA_ARGS__)
+#define log_warn_sid(sid, ...) _LOG_SID(log_warn, sid, __VA_ARGS__)
 
-#define detailed_log_error_sid(sid, format, ...) \
-  _LOG_SID(detailed_log_error, sid, format, ##__VA_ARGS__)
+#define log_info_sid(sid, ...) _LOG_SID(log_info, sid, __VA_ARGS__)
 
-#define detailed_log_warn_sid(sid, format, ...) \
-  _LOG_SID(detailed_log_warn, sid, format, ##__VA_ARGS__)
+#define log_debug_sid(sid, ...) _LOG_SID(log_debug, sid, __VA_ARGS__)
 
-#define detailed_log_info_sid(sid, format, ...) \
-  _LOG_SID(detailed_log_info, sid, format, ##__VA_ARGS__)
+#define detailed_log_error_sid(sid, ...) \
+  _LOG_SID(detailed_log_error, sid, __VA_ARGS__)
 
-#define detailed_log_debug_sid(sid, format, ...) \
-  _LOG_SID(detailed_log_debug, sid, format, ##__VA_ARGS__)
+#define detailed_log_warn_sid(sid, ...) \
+  _LOG_SID(detailed_log_warn, sid, __VA_ARGS__)
 
-#define _LOG_MESID(func, mesid, format, ...)              \
+#define detailed_log_info_sid(sid, ...) \
+  _LOG_SID(detailed_log_info, sid, __VA_ARGS__)
+
+#define detailed_log_debug_sid(sid, ...) \
+  _LOG_SID(detailed_log_debug, sid, __VA_ARGS__)
+
+#define _LOG_MESIDn(func, mesid, format, ...)             \
   do {                                                    \
     char mesid_str[MESID_STR_LEN_MAX];                    \
     mesid_to_string(mesid_str, sizeof(mesid_str), mesid); \
-    func("%s " format, mesid_str, ##__VA_ARGS__);         \
+    func("%s " format, mesid_str, __VA_ARGS__);           \
   } while (false)
 
-#define log_error_mesid(mesid, format, ...) \
-  _LOG_MESID(log_error, mesid, format, ##__VA_ARGS__)
+#define _LOG_MESID3(func, mesid, format) \
+  _LOG_MESIDn(func, mesid, format "%s", "")
 
-#define log_warn_mesid(mesid, format, ...) \
-  _LOG_MESID(log_warn, mesid, format, ##__VA_ARGS__)
+#define _LOG_MESID(...)                                          \
+  LSN_EXPAND(LSN_GET_MACRO(                                      \
+      __VA_ARGS__,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESIDn,                                               \
+      _LOG_MESID3,                                               \
+      _log_xxx_mesid_must_be_called_with_at_least_two_arguments, \
+      _log_xxx_mesid_must_be_called_with_at_least_two_arguments, \
+      _log_xxx_mesid_must_be_called_with_at_least_two_arguments)(__VA_ARGS__))
 
-#define log_info_mesid(mesid, format, ...) \
-  _LOG_MESID(log_info, mesid, format, ##__VA_ARGS__)
+#define log_error_mesid(mesid, ...) _LOG_MESID(log_error, mesid, __VA_ARGS__)
 
-#define log_debug_mesid(mesid, format, ...) \
-  _LOG_MESID(log_debug, mesid, format, ##__VA_ARGS__)
+#define log_warn_mesid(mesid, ...) _LOG_MESID(log_warn, mesid, __VA_ARGS__)
 
-#define detailed_log_error_mesid(mesid, format, ...) \
-  _LOG_MESID(detailed_log_error, mesid, format, ##__VA_ARGS__)
+#define log_info_mesid(mesid, ...) _LOG_MESID(log_info, mesid, __VA_ARGS__)
 
-#define detailed_log_warn_mesid(mesid, format, ...) \
-  _LOG_MESID(detailed_log_warn, mesid, format, ##__VA_ARGS__)
+#define log_debug_mesid(mesid, ...) _LOG_MESID(log_debug, mesid, __VA_ARGS__)
 
-#define detailed_log_info_mesid(mesid, format, ...) \
-  _LOG_MESID(detailed_log_info, mesid, format, ##__VA_ARGS__)
+#define detailed_log_error_mesid(mesid, ...) \
+  _LOG_MESID(detailed_log_error, mesid, __VA_ARGS__)
 
-#define detailed_log_debug_mesid(mesid, format, ...) \
-  _LOG_MESID(detailed_log_debug, mesid, format, ##__VA_ARGS__)
+#define detailed_log_warn_mesid(mesid, ...) \
+  _LOG_MESID(detailed_log_warn, mesid, __VA_ARGS__)
+
+#define detailed_log_info_mesid(mesid, ...) \
+  _LOG_MESID(detailed_log_info, mesid, __VA_ARGS__)
+
+#define detailed_log_debug_mesid(mesid, ...) \
+  _LOG_MESID(detailed_log_debug, mesid, __VA_ARGS__)
 
 /* \} */
 

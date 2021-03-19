@@ -263,7 +263,9 @@ bool decode_glo_string_1(const glo_string_t *string,
     return false;
   }
 
-  assert(extract_word_glo(string, 81, 4) == 1);
+  if (extract_word_glo(string, 81, 4) != 1) {
+    return false;
+  }
 
   double pos_m = decode_position_component(string); /* extract x */
   if ((pos_m < -GLO_POS_MAX_M) || (GLO_POS_MAX_M < pos_m)) {
@@ -317,7 +319,9 @@ bool decode_glo_string_2(const glo_string_t *string,
     return false;
   }
 
-  assert(extract_word_glo(string, 81, 4) == 2);
+  if (extract_word_glo(string, 81, 4) != 2) {
+    return false;
+  }
 
   double pos_m = decode_position_component(string); /* extract y */
   if ((pos_m < -GLO_POS_MAX_M) || (GLO_POS_MAX_M < pos_m)) {
@@ -367,7 +371,9 @@ bool decode_glo_string_3(const glo_string_t *string,
     return false;
   }
 
-  assert(extract_word_glo(string, 81, 4) == 3);
+  if (extract_word_glo(string, 81, 4) != 3) {
+    return false;
+  }
 
   double pos_m = decode_position_component(string); /* extract z */
   if ((pos_m < -GLO_POS_MAX_M) || (GLO_POS_MAX_M < pos_m)) {
@@ -423,7 +429,9 @@ bool decode_glo_string_4(const glo_string_t *string,
     return false;
   }
 
-  assert(extract_word_glo(string, 81, 4) == 4);
+  if (extract_word_glo(string, 81, 4) != 4) {
+    return false;
+  }
 
   /* extract tau */
   double tau_s = (s32)extract_word_glo(string, 59, 21) * C_1_2P30;
@@ -496,7 +504,9 @@ bool decode_glo_string_5(const glo_string_t *string,
     return false;
   }
 
-  assert(extract_word_glo(string, 81, 4) == 5);
+  if (extract_word_glo(string, 81, 4) != 5) {
+    return false;
+  }
 
   /* extract N4 */
   u8 n4 = (u8)extract_word_glo(string, 32, 5);

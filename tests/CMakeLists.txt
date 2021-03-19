@@ -29,6 +29,7 @@ if(libswiftnav_BUILD_TESTS)
       check_troposphere.c)
 
   swift_add_test(test-swiftnav-common
+    UNIT_TEST
     POST_BUILD
     SRCS ${SRCS}
     LINK check-utils check Threads::Threads

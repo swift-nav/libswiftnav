@@ -931,7 +931,7 @@ constellation_t constellation_string_to_enum(const char *constellation_string) {
 }
 
 const char *sub_constellation_to_string(const sub_constellation_t sub_cons) {
-  return constellation_table[sub_cons];
+  return sub_constellation_table[sub_cons];
 }
 
 sub_constellation_t sub_constellation_string_to_enum(

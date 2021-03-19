@@ -126,6 +126,9 @@ typedef struct pvt_engine_result_flags_t {
 typedef struct {
   gps_time_t time;
   bool valid;
+  bool position_ecef_valid;
+  double position_ecef[3];
+  double position_ecef_covariance[9];
   bool baseline_valid;
   double baseline[3];
   double baseline_covariance[9];

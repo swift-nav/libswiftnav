@@ -13,6 +13,8 @@
 #ifndef LIBSWIFTNAV_EPHEMERIS_H
 #define LIBSWIFTNAV_EPHEMERIS_H
 
+#include <stdbool.h>
+
 #include <swiftnav/common.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/gnss_time.h>
@@ -356,6 +358,8 @@ void decode_bds_d1_ephemeris(const u32 words[3][10],
 
 void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
                           ephemeris_t *eph);
+bool decode_gal_ephemeris_safe(const u8 page[5][GAL_INAV_CONTENT_BYTE],
+                               ephemeris_t *eph);
 
 void decode_glo_ephemeris(const glo_string_t strings[5],
                           const gnss_signal_t sid,

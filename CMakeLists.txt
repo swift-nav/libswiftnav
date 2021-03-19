@@ -94,7 +94,7 @@ set(SRCS
 
 add_library(swiftnav ${HDRS} ${SRCS})
 swift_set_language_standards(swiftnav)
-swift_set_compile_options(swiftnav REMOVE -Wconversion -Wstack-protector)
+swift_set_compile_options(swiftnav ADD -pedantic REMOVE -Wconversion -Wstack-protector)
 
 target_code_coverage(swiftnav AUTO ALL)
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)

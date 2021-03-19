@@ -174,7 +174,11 @@ typedef enum {
   TIME_FINEST       /**< Time known w.r.t. local clock, within 10 ns. */
 } time_quality_t;
 
+#ifdef __cplusplus
+static constexpr const gps_time_t GPS_TIME_UNKNOWN = {TOW_UNKNOWN, WN_UNKNOWN};
+#else
 #define GPS_TIME_UNKNOWN ((gps_time_t){TOW_UNKNOWN, WN_UNKNOWN})
+#endif
 
 /** IS-GPS-200H Table 20-IX: 602112 [s] */
 #define GPS_LNAV_UTC_MAX_TOT 602112
@@ -254,6 +258,7 @@ bool gps_current_time_valid(const gps_time_t *t);
 
 void normalize_gps_time(gps_time_t *t);
 void unsafe_normalize_gps_time(gps_time_t *t);
+bool normalize_gps_time_safe(gps_time_t *t);
 
 time_t gps2time(const gps_time_t *t_gps);
 gps_time_t time2gps_t(const time_t t_unix);
@@ -265,6 +270,7 @@ bool gpstime_in_range(const gps_time_t *bgn,
                       const gps_time_t *t);
 double gpsdifftime(const gps_time_t *end, const gps_time_t *beginning);
 void add_secs(gps_time_t *time, double secs);
+bool gps_time_match_weeks_safe(gps_time_t *t, const gps_time_t *ref);
 void gps_time_match_weeks(gps_time_t *t, const gps_time_t *ref);
 u16 gps_adjust_week_cycle(u16 wn_raw, u16 wn_ref);
 u16 gps_adjust_week_cycle256(u16 wn_raw, u16 wn_ref);

@@ -79,6 +79,25 @@ u32 getbitu(const u8 *buff, u32 pos, u8 len) {
   return bits;
 }
 
+/** Get bit field from buffer as an unsigned long integer.
+ * Unpacks `len` bits at bit position `pos` from the start of the buffer.
+ * Maximum bit field length is 64 bits, i.e. `len <= 64`.
+ *
+ * \param buff
+ * \param pos Position in buffer of start of bit field in bits.
+ * \param len Length of bit field in bits.
+ * \return Bit field as an unsigned value.
+ */
+u64 getbitul(const u8 *buff, u32 pos, u8 len) {
+  u64 bits = 0;
+
+  for (u32 i = pos; i < pos + len; i++) {
+    bits = (bits << 1) + ((buff[i / 8] >> (7 - i % 8)) & 1u);
+  }
+
+  return bits;
+}
+
 /** Get bit field from buffer as a signed integer.
  * Unpacks `len` bits at bit position `pos` from the start of the buffer.
  * Maximum bit field length is 32 bits, i.e. `len <= 32`.
@@ -97,6 +116,27 @@ s32 getbits(const u8 *buff, u32 pos, u8 len) {
    * http://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
    */
   u32 m = 1u << (len - 1);
+  return (bits ^ m) - m;
+}
+
+/** Get bit field from buffer as a signed long integer.
+ * Unpacks `len` bits at bit position `pos` from the start of the buffer.
+ * Maximum bit field length is 64 bits, i.e. `len <= 64`.
+ *
+ * This function sign extends the `len` bit field to a signed 32 bit integer.
+ *
+ * \param buff
+ * \param pos Position in buffer of start of bit field in bits.
+ * \param len Length of bit field in bits.
+ * \return Bit field as a signed value.
+ */
+s64 getbitsl(const u8 *buff, u32 pos, u8 len) {
+  s64 bits = (s64)getbitul(buff, pos, len);
+
+  /* Sign extend, taken from:
+   * http://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
+   */
+  u64 m = 1ul << (len - 1);
   return (bits ^ m) - m;
 }
 

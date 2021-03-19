@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - 'master'
+      - 'starling-v*-release'
+      - 'v*-release'
+    tags:
+      - 'v*'
+      - 'starling-v*'
+
+jobs:
+
+  windows:
+    strategy:
+      matrix:
+        include:
+          - {env: "MSVC", arch: "Win32"}
+          - {env: "MSVC", arch: "x64"}
+          - {env: "MinGW"}
+
+    runs-on: windows-2019
+
+    steps:
+
+      - name: Checkout source
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          ssh-key: ${{ secrets.SSH_KEY }}
+
+      - name: Install CMake
+        run: |
+          choco install -y --no-progress cmake
+
+      - name: Downgrade MinGW to 6.4.0 (MinGW)
+        if: matrix.env == 'MinGW'
+        run: |
+          choco install -y --no-progress --allow-downgrade --version=6.4.0 mingw
+
+      - name: Install msys2 packages (MinGW)
+        if: matrix.env == 'MinGW'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: git base-devel
+          update: true
+
+      - name: Run build (MSVC)
+        if: matrix.env == 'MSVC'
+        env:
+          CMAKE_GENERATOR: "Visual Studio 16 2019"
+        run: |
+          cmake -G "$env:CMAKE_GENERATOR" -A ${{ matrix.arch }} -S . -B build;
+          cmake --build build --config Release;
+          bash -c "ls -la ./build/Release/swiftnav.lib || exit 1"
+
+      - name: Run build (MinGW)
+        if: matrix.env == 'MinGW'
+        env:
+          CMAKE_GENERATOR: "MinGW Makefiles"
+          CC: gcc
+          CXX: g++
+        run: |
+          cmake -B build -S . -G "$env:CMAKE_GENERATOR";
+          cmake --build build
+
+  unix:
+    strategy:
+      matrix:
+        include:
+          - {os: ubuntu-18.04, cc: "gcc-6", cxx: "g++-6", test_suite: "unit"}
+          - {os: ubuntu-18.04, cc: "clang-6.0", cxx: "clang++-6.0", test_suite: "lint"}
+          - {os: macos-10.15, cc: "clang", cxx: "clang++", test_suite: "unit"}
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+      - name: Checkout source
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          ssh-key: ${{ secrets.SSH_KEY }}
+
+      - name: Add base packages and toolchain repository (Linux)
+        if: matrix.os == 'ubuntu-18.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install build-essential software-properties-common -y
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update
+
+      - name: Install gcc-6 (Linux)
+        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'gcc-6'
+        run: |
+          sudo apt-get install -y gcc-6 g++-6
+
+      - name: Install clang-6.0 (Linux)
+        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'clang-6.0'
+        run: |
+          sudo apt-get install -y clang-6.0 libc++-dev libc++abi-dev
+
+      - name: Install clang-{format,tidy} (Linux)
+        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'clang-6.0' && matrix.test_suite == 'lint'
+        run: |
+          sudo apt-get install -y clang-format-6.0 clang-tidy-6.0
+
+      - name: Run build
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+          TEST_SUITE: ${{ matrix.test_suite }}
+        run: |
+          bash ./ci-build.sh

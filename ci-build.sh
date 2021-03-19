@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# Copyright (C) 2018 Swift Navigation Inc.
+# Copyright (C) 2018-2021 Swift Navigation Inc.
 # Contact: Swift Navigation <dev@swiftnav.com>
-
-# Run Travis setup
 
 set -ex
 set -o errexit
@@ -20,7 +18,7 @@ check_format_errors() {
     echo ""
     echo "This should be formatted locally and pushed again..."
     git --no-pager diff
-    travis_terminate 1
+    exit 1
   fi
 }
 
@@ -31,19 +29,18 @@ check_tidy_errors() {
     echo "####################################################"
     echo ""
     echo " ^^ Please see and correct the clang-tidy warnings found above ^^"
-    travis_terminate 1
+    exit 1
   fi
 }
 
 function build() {
   # Create and enter build directory.
   mkdir -p build && cd build
-  $CMAKE ../
+  cmake ../
   make -j4 VERBOSE=1
   if [ "$TEST_SUITE" == "lint" ]; then
     make clang-format-all && check_format_errors
-    ## keep clang-tidy disabled until the findings are addressed
-    # make clang-tidy-all && check_tidy_errors
+    make clang-tidy-all && check_tidy_errors
   fi
   cd ../
 }

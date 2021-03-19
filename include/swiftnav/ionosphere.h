@@ -45,16 +45,17 @@ typedef struct {
   double b0, b1, b2, b3;
 } ionosphere_t;
 
-static const ionosphere_t DEFAULT_IONO_PARAMS = {
-    .toa = {.tow = TOW_UNKNOWN, .wn = WN_UNKNOWN},
-    .a0 = 0.0,
-    .a1 = 0.0,
-    .a2 = 0.0,
-    .a3 = 0.0,
-    .b0 = 0.0,
-    .b1 = 0.0,
-    .b2 = 0.0,
-    .b3 = 0.0};
+static const ionosphere_t DEFAULT_IONO_PARAMS = {{              // .toa
+                                                  TOW_UNKNOWN,  // .tow
+                                                  WN_UNKNOWN},  // .wn
+                                                 0.0,           // .a0
+                                                 0.0,           // .a1
+                                                 0.0,           // .a2
+                                                 0.0,           // .a3
+                                                 0.0,           // .b0
+                                                 0.0,           // .b1
+                                                 0.0,           // .b2
+                                                 0.0};          // .b3
 
 double calc_ionosphere(const gps_time_t *t_gps,
                        double lat_u,

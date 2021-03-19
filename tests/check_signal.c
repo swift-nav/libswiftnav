@@ -543,6 +543,28 @@ START_TEST(test_signal_hashes) {
 }
 END_TEST
 
+START_TEST(test_constellation_to_string) {
+  ck_assert_str_eq("GPS", constellation_to_string(CONSTELLATION_GPS));
+  ck_assert_str_eq("GPS", constellation_to_string(CONSTELLATION_GPS));
+  ck_assert_str_eq("SBAS", constellation_to_string(CONSTELLATION_SBAS));
+  ck_assert_str_eq("GLO", constellation_to_string(CONSTELLATION_GLO));
+  ck_assert_str_eq("BDS", constellation_to_string(CONSTELLATION_BDS));
+  ck_assert_str_eq("QZS", constellation_to_string(CONSTELLATION_QZS));
+  ck_assert_str_eq("GAL", constellation_to_string(CONSTELLATION_GAL));
+}
+END_TEST
+
+START_TEST(test_sub_constellation_to_string) {
+  ck_assert_str_eq("GPS", sub_constellation_to_string(SUB_CONSTELLATION_GPS));
+  ck_assert_str_eq("SBAS", sub_constellation_to_string(SUB_CONSTELLATION_SBAS));
+  ck_assert_str_eq("GLO", sub_constellation_to_string(SUB_CONSTELLATION_GLO));
+  ck_assert_str_eq("BDS2", sub_constellation_to_string(SUB_CONSTELLATION_BDS2));
+  ck_assert_str_eq("BDS3", sub_constellation_to_string(SUB_CONSTELLATION_BDS3));
+  ck_assert_str_eq("QZS", sub_constellation_to_string(SUB_CONSTELLATION_QZS));
+  ck_assert_str_eq("GAL", sub_constellation_to_string(SUB_CONSTELLATION_GAL));
+}
+END_TEST
+
 Suite *signal_test_suite(void) {
   Suite *s = suite_create("Signal");
   TCase *tc_core = tcase_create("Core");
@@ -560,6 +582,8 @@ Suite *signal_test_suite(void) {
   tcase_add_test(tc_core, test_sid_system_check);
   tcase_add_test(tc_core, test_sbas_prn_list);
   tcase_add_test(tc_core, test_signal_hashes);
+  tcase_add_test(tc_core, test_constellation_to_string);
+  tcase_add_test(tc_core, test_sub_constellation_to_string);
   suite_add_tcase(s, tc_core);
   return s;
 }

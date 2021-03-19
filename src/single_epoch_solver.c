@@ -54,8 +54,9 @@
 #define TRACK_TIME_THRESHOLD_S 4.0
 #define SHORT_TRACK_TIME_MULTIPLIER 4.0
 
-/* Dimension of state vector, currently 4 (position + clock bias)*/
-#define N_STATE 4
+/* Dimension of state vector, currently 3 + constel_count (position + number of
+ * clock biases)*/
+#define N_STATE (3 + CONSTELLATION_COUNT)
 
 /* Termination conditions for the PVT iteration: either maximum number of
  * iterations reached, or the norm of the correction goes below the convergence
@@ -80,13 +81,13 @@
 /* container for the LSQ iteration results and intermediate arrays */
 typedef struct {
   /* state estimate */
-  double rx_state[8];
+  double rx_state[2 * N_STATE];
   /* geometry matrix */
-  double H[N_STATE][N_STATE];
+  double H[N_STATE * N_STATE];
   /* solution covariance matrix [m^2] */
-  double V[N_STATE][N_STATE];
+  double V[N_STATE * N_STATE];
   /* velocity covariance matrix [(m/s)^2] */
-  double V_vel[N_STATE][N_STATE];
+  double V_vel[N_STATE * N_STATE];
   /* observed-minus-predicted measurements */
   double omp_range[MAX_CHANNELS];
   double omp_doppler[MAX_CHANNELS];
@@ -249,10 +250,12 @@ static void sagnac_rotation(const double sat_pos[3],
  * \return predicted Doppler in m/s
  */
 static double compute_predicted_doppler(
-    const double rx_state[8], const navigation_measurement_t *nav_meas) {
+    const u8 n_states,
+    const double *rx_state,
+    const navigation_measurement_t *nav_meas) {
   const double *user_pos = &rx_state[0];
-  const double *user_vel = &rx_state[4];
-  const double clock_drift_m_s = rx_state[7];
+  const double *user_vel = &rx_state[n_states];
+  const double clock_drift_m_s = rx_state[n_states + 3];
   double sat_vel_new[3] = {0.0};
   double line_of_sight[3] = {0.0};
   double relative_velocity[3] = {0.0};
@@ -278,6 +281,7 @@ static double compute_predicted_doppler(
  *        -1 for failure
  */
 static s8 vel_solve(const u8 n_used,
+                    const u8 n_states,
                     const navigation_measurement_t **nav_meas,
                     const double *G,
                     lsq_data_t *lsq_data) {
@@ -302,7 +306,7 @@ static s8 vel_solve(const u8 n_used,
       /* If any signal lacks valid Doppler, do not compute velocity.
        * (Currently either all signals have Doppler or none do, in case of
        * base station measurements) */
-      memset(&(lsq_data->rx_state[4]), 0, 4 * sizeof(double));
+      memset(&(lsq_data->rx_state[n_states]), 0, n_states * sizeof(double));
       res = -1;
       break;
     }
@@ -310,7 +314,8 @@ static s8 vel_solve(const u8 n_used,
     /* Calculate predicted pseudorange rates from the satellite velocity
      * and the assumed user position/velocity.
      */
-    pdot_pred = compute_predicted_doppler(lsq_data->rx_state, nav_meas[j]);
+    pdot_pred =
+        compute_predicted_doppler(n_states, lsq_data->rx_state, nav_meas[j]);
 
     double doppler_var = 0.0;
     calc_measurement_noises(nav_meas[j], NULL, &doppler_var);
@@ -335,18 +340,18 @@ static s8 vel_solve(const u8 n_used,
   if (0 == res) {
     /* Solve the velocity update and its covariance matrix */
     res = matrix_wlsq_solve(n_used,
-                            N_STATE,
+                            n_states,
                             G,
                             lsq_data->omp_doppler,
                             w,
-                            &lsq_data->rx_state[4],
+                            &lsq_data->rx_state[n_states],
                             (double *)lsq_data->V_vel);
 
     /* Update the residuals with the solved velocity and drift */
     for (u8 j = 0; j < n_used; j++) {
       lsq_data->omp_doppler[j] =
           -nav_meas[j]->measured_doppler * sid_to_lambda(nav_meas[j]->sid) -
-          compute_predicted_doppler(lsq_data->rx_state, nav_meas[j]);
+          compute_predicted_doppler(n_states, lsq_data->rx_state, nav_meas[j]);
     }
   }
 
@@ -354,18 +359,21 @@ static s8 vel_solve(const u8 n_used,
   return res;
 }
 
-static void compute_dops(const double H[4][4],
-                         const double pos_ecef[3],
+/* Just use GPS clock for the dop */
+static void compute_dops(const u8 n_states,
+                         const double H[N_STATE * N_STATE],
+                         const double pos_ecef[2 * N_STATE],
                          dops_t *dops) {
   /* PDOP is the norm of the position elements of tr(H) */
-  double pdop_sq = H[0][0] + H[1][1] + H[2][2];
+  double pdop_sq =
+      H[0 * n_states + 0] + H[1 * n_states + 1] + H[2 * n_states + 2];
   dops->pdop = sqrt(pdop_sq);
 
   /* TDOP is like PDOP but for the time state. */
-  dops->tdop = sqrt(H[3][3]);
+  dops->tdop = sqrt(H[3 * n_states + 3]);
 
   /* Calculate the GDOP -- ||tr(H)|| = sqrt(PDOP^2 + TDOP^2) */
-  dops->gdop = sqrt(pdop_sq + H[3][3]);
+  dops->gdop = sqrt(pdop_sq + H[3 * n_states + 3]);
 
   /* HDOP and VDOP are Horizontal and Vertical.  We could rotate H
    * into NED frame and then take the separate components, but a more
@@ -375,9 +383,9 @@ static void compute_dops(const double H[4][4],
    * relation PDOP^2 = HDOP^2 + VDOP^2. */
   double M[3][3];
   ecef2ned_matrix(pos_ecef, M);
-  double down_ecef[4] = {M[2][0], M[2][1], M[2][2], 0};
+  double down_ecef[N_STATE] = {M[2][0], M[2][1], M[2][2], 0, 0, 0, 0, 0, 0};
   double tmp[3];
-  matrix_multiply(3, 4, 1, (const double *)H, down_ecef, tmp);
+  matrix_multiply(3, n_states, 1, (const double *)H, down_ecef, tmp);
   double vdop_sq = vector_dot(3, down_ecef, tmp);
   dops->vdop = sqrt(vdop_sq);
   dops->hdop = sqrt(pdop_sq - vdop_sq);
@@ -394,11 +402,13 @@ static void compute_dops(const double H[4][4],
  * \return predicted pseudorange in meters
  */
 static double compute_predicted_pseudorange(
-    const double rx_state[8],
+    const s8 clock_map[CONSTELLATION_COUNT],
+    const double rx_state[2 * N_STATE],
     const navigation_measurement_t *nav_meas,
     double line_of_sight[3]) {
   const double *user_pos = &rx_state[0];
-  const double clock_bias_m = rx_state[3];
+  const double clock_bias_m =
+      rx_state[clock_map[sid_to_constellation(nav_meas->sid)]];
   double sat_pos_new[3];
 
   /* Magnitude of range vector converted into an approximate time in secs. */
@@ -451,6 +461,8 @@ static double compute_predicted_pseudorange(
  *     out.
  */
 static s8 pvt_solve(const u8 n_used,
+                    const u8 n_states,
+                    const s8 clock_map[CONSTELLATION_COUNT],
                     const bool disable_velocity,
                     const navigation_measurement_t **nav_meas,
                     lsq_data_t *lsq_data,
@@ -460,8 +472,8 @@ static s8 pvt_solve(const u8 n_used,
 
   for (u8 j = 0; j < n_used; j++) {
     /* Predicted range from satellite position and estimated Rx position. */
-    double p_pred =
-        compute_predicted_pseudorange(lsq_data->rx_state, nav_meas[j], los);
+    double p_pred = compute_predicted_pseudorange(
+        clock_map, lsq_data->rx_state, nav_meas[j], los);
 
     /* omp means "observed minus predicted" range -- this is E, the
      * prediction error vector (or innovation vector in Kalman/LS
@@ -481,7 +493,7 @@ static s8 pvt_solve(const u8 n_used,
       w[j] = 1.0;
     }
 
-    int row = j * N_STATE;
+    int row = j * n_states;
 
     /* Construct a geometry matrix.  Each row (satellite) is
      * independently normalized into a unit vector. */
@@ -489,8 +501,13 @@ static s8 pvt_solve(const u8 n_used,
       *(G + row + i) = -los[i];
     }
 
+    /* Clear all the clock coefficients */
+    for (u8 i = 3; i < n_states; i++) {
+      *(G + row + i) = 0.0;
+    }
+
     /* Projection of clock bias into each pseudorange is 1. */
-    *(G + row + 3) = 1;
+    *(G + row + clock_map[sid_to_constellation(nav_meas[j]->sid)]) = 1;
 
   } /* End of channel loop. */
 
@@ -505,7 +522,7 @@ static s8 pvt_solve(const u8 n_used,
 
   /* Solve the state update and its covariance matrix */
   int ret = matrix_wlsq_solve(n_used,
-                              N_STATE,
+                              n_states,
                               G,
                               (double *)lsq_data->omp_range,
                               w,
@@ -517,7 +534,7 @@ static s8 pvt_solve(const u8 n_used,
   }
 
   /* Increment the state estimate by the new corrections */
-  for (u8 i = 0; i < N_STATE; i++) {
+  for (u8 i = 0; i < n_states; i++) {
     lsq_data->rx_state[i] += correction[i];
   }
 
@@ -535,11 +552,11 @@ static s8 pvt_solve(const u8 n_used,
 
   if (disable_velocity) {
     /* No velocity solution */
-    memset(&(lsq_data->rx_state[4]), 0, 4 * sizeof(double));
+    memset(&(lsq_data->rx_state[n_states]), 0, n_states * sizeof(double));
     memset(lsq_data->omp_doppler, 0, sizeof(lsq_data->omp_doppler));
   } else {
     /* Perform the velocity solution. */
-    vel_solve(n_used, nav_meas, G, lsq_data);
+    vel_solve(n_used, n_states, nav_meas, G, lsq_data);
   }
 
   /* Prepare a separate un-weighted geometry matrix for DOP computations in H */
@@ -547,7 +564,7 @@ static s8 pvt_solve(const u8 n_used,
      our error (or, if you prefer, the direction in which we need to
      move to get a better solution) in terms of the receiver state. */
   if (matrix_wlsq_solve(n_used,
-                        N_STATE,
+                        n_states,
                         G,
                         (double *)lsq_data->omp_range,
                         NULL,
@@ -595,6 +612,7 @@ static s8 filter_solution(gnss_solution *soln, dops_t *dops) {
  * \return true if metric < scaled RAIM metric threshold
  */
 static bool residual_test(const u8 n_used,
+                          const u8 n_states,
                           const bool disable_velocity,
                           const lsq_data_t *lsq_data,
                           const navigation_measurement_t **nav_meas,
@@ -616,11 +634,11 @@ static bool residual_test(const u8 n_used,
   if (disable_velocity) {
     /* One measurement per signal */
     n_meas = n_used;
-    raim_n_state = N_STATE;
+    raim_n_state = n_states;
   } else {
     /* Compute residual from both pseudoranges and Dopplers */
     n_meas = 2 * n_used;
-    raim_n_state = 2 * N_STATE;
+    raim_n_state = 2 * n_states;
   }
 
   double *residual = LSN_ALLOCATE(n_meas * sizeof(double));
@@ -662,8 +680,10 @@ static bool residual_test(const u8 n_used,
  * Returns true if any signal was flagged
  * */
 static bool flag_outliers(const u8 n_used,
+                          const u8 n_states,
+                          const s8 clock_map[CONSTELLATION_COUNT],
                           const navigation_measurement_t *nav_meas,
-                          const double rx_state[8],
+                          const double rx_state[2 * N_STATE],
                           const bool disable_velocity,
                           const gnss_sid_set_t *exclude_sids,
                           gnss_sid_set_t *removed_sids) {
@@ -691,8 +711,8 @@ static bool flag_outliers(const u8 n_used,
       /* already gone through RAIM */
       continue;
     }
-    double p_pred =
-        compute_predicted_pseudorange(rx_state, &nav_meas[i], line_of_sight);
+    double p_pred = compute_predicted_pseudorange(
+        clock_map, rx_state, &nav_meas[i], line_of_sight);
     range_residual[i] = nav_meas[i].pseudorange - p_pred;
 
     /* compute running average of residuals for this code, excluding obvious
@@ -728,7 +748,8 @@ static bool flag_outliers(const u8 n_used,
     } else if (!disable_velocity) {
       /* check velocity residual only if velocity solution is enabled and
        * there already was no range residual */
-      double pdot_pred = compute_predicted_doppler(rx_state, &nav_meas[i]);
+      double pdot_pred =
+          compute_predicted_doppler(n_states, rx_state, &nav_meas[i]);
       double doppler_residual =
           -nav_meas[i].measured_doppler * sid_to_lambda(sid) - pdot_pred;
       if (fabs(doppler_residual) > DOPPLER_RESIDUAL_THRESHOLD_M_S) {
@@ -760,17 +781,19 @@ static bool flag_outliers(const u8 n_used,
  *  Results stored in lsq_data
  */
 static s8 pvt_iter(const u8 n_used,
+                   const u8 n_states,
+                   const s8 clock_map[CONSTELLATION_COUNT],
                    const bool disable_velocity,
                    const navigation_measurement_t **nav_meas,
                    lsq_data_t *lsq_data) {
   assert(n_used > 0);
   /* Reset state to zero */
-  memset(lsq_data->rx_state, 0, 8 * sizeof(double));
+  memset(lsq_data->rx_state, 0, 2 * n_states * sizeof(double));
 
   /* G is a geometry matrix tells us how our pseudoranges relate to
    * our state estimates -- it's the Jacobian of d(p_i)/d(x_j) where
    * x_j are x, y, z, Δt. */
-  double *G = LSN_ALLOCATE(n_used * N_STATE * sizeof(double));
+  double *G = LSN_ALLOCATE(n_used * n_states * sizeof(double));
   assert(G != NULL);
 
   /* diagonal elements of the weighting matrix */
@@ -781,7 +804,14 @@ static s8 pvt_iter(const u8 n_used,
   s8 ret;
   /* Newton-Raphson iteration. */
   for (iters = 0; iters < PVT_MAX_ITERATIONS; iters++) {
-    ret = pvt_solve(n_used, disable_velocity, nav_meas, lsq_data, G, w);
+    ret = pvt_solve(n_used,
+                    n_states,
+                    clock_map,
+                    disable_velocity,
+                    nav_meas,
+                    lsq_data,
+                    G,
+                    w);
     /* break loop if solution converged or failed */
     if (ret != 0) {
       break;
@@ -808,6 +838,8 @@ static s8 pvt_iter(const u8 n_used,
  *  Results stored in lsq_data, metric
  */
 static s8 pvt_iter_masked(const u8 n_meas,
+                          const u8 n_states,
+                          const s8 clock_map[CONSTELLATION_COUNT],
                           const bool disable_velocity,
                           const navigation_measurement_t **nav_meas,
                           const gnss_sid_set_t *removed_sids,
@@ -836,20 +868,27 @@ static s8 pvt_iter_masked(const u8 n_meas,
   }
 
   /* check that there are still enough satellites RAIM */
-  if (sid_set_get_sat_count(&used_sids) < N_STATE) {
+  if (sid_set_get_sat_count(&used_sids) < n_states) {
     log_info("RAIM failed, not enough satellites remaining");
     res = -1;
   }
 
-  if ((0 == res) &&
-      (0 != pvt_iter(n_used, disable_velocity, nav_meas_subset, lsq_data))) {
+  if ((0 == res) && (0 != pvt_iter(n_used,
+                                   n_states,
+                                   clock_map,
+                                   disable_velocity,
+                                   nav_meas_subset,
+                                   lsq_data))) {
     /* solution failed */
     res = -1;
   }
 
-  if ((0 == res) &&
-      !residual_test(
-          n_used, disable_velocity, lsq_data, nav_meas_subset, metric)) {
+  if ((0 == res) && !residual_test(n_used,
+                                   n_states,
+                                   disable_velocity,
+                                   lsq_data,
+                                   nav_meas_subset,
+                                   metric)) {
     /* residuals too large */
     res = -1;
   }
@@ -871,6 +910,8 @@ static s8 pvt_iter_masked(const u8 n_meas,
  *  Results stored in the lsq_data, removed_sid
  */
 static s8 pvt_solve_gps_only(const u8 n_meas,
+                             const u8 n_states,
+                             const s8 clock_map[CONSTELLATION_COUNT],
                              const navigation_measurement_t **nav_meas,
                              const bool disable_velocity,
                              lsq_data_t *lsq_data,
@@ -886,7 +927,7 @@ static s8 pvt_solve_gps_only(const u8 n_meas,
   }
   u8 n_used = n_meas - sid_set_get_sig_count(removed_sids);
 
-  if (n_used <= N_STATE) {
+  if (n_used <= n_states) {
     /* not enough measurements for constellation RAIM */
     log_info(
         "RAIM failed: %d measurements not enough for constellation RAIM, "
@@ -897,6 +938,8 @@ static s8 pvt_solve_gps_only(const u8 n_meas,
   }
 
   if (0 == pvt_iter_masked(n_meas,
+                           n_states,
+                           clock_map,
                            disable_velocity,
                            nav_meas,
                            removed_sids,
@@ -943,6 +986,8 @@ static s8 pvt_solve_gps_only(const u8 n_meas,
  *   - `-1`: no reasonable solution possible
  */
 static s8 pvt_repair(const u8 n_used,
+                     const u8 n_states,
+                     const s8 clock_map[CONSTELLATION_COUNT],
                      const bool disable_velocity,
                      const navigation_measurement_t **nav_meas,
                      lsq_data_t *lsq_data,
@@ -963,7 +1008,8 @@ static s8 pvt_repair(const u8 n_used,
   s8 bad_sat = -1;
 
   double original_metric = INFINITY;
-  residual_test(n_used, disable_velocity, lsq_data, nav_meas, &original_metric);
+  residual_test(
+      n_used, n_states, disable_velocity, lsq_data, nav_meas, &original_metric);
 
   bool successful_exclusion_found = false;
 
@@ -971,7 +1017,7 @@ static s8 pvt_repair(const u8 n_used,
    * a successful solution, or eventually returns a failure when no more
    * signals can be removed. */
   while (n_removed < RAIM_MAX_EXCLUSIONS &&
-         (n_used - n_removed - 1) > N_STATE) {
+         (n_used - n_removed - 1) > n_states) {
     successful_exclusion_found = false;
     double best_metric = INFINITY;
     double residual = 0.0;
@@ -988,6 +1034,8 @@ static s8 pvt_repair(const u8 n_used,
       sid_set_add(removed_sids, nav_meas[i]->sid);
       /* compute solution and perform residual test with a subset of signals */
       s8 solution_flag = pvt_iter_masked(n_used,
+                                         n_states,
+                                         clock_map,
                                          disable_velocity,
                                          nav_meas,
                                          removed_sids,
@@ -1021,13 +1069,13 @@ static s8 pvt_repair(const u8 n_used,
          * position for logging */
         double los[3];
         double p_pred = compute_predicted_pseudorange(
-            lsq_data->rx_state, nav_meas[bad_sat], los);
+            clock_map, lsq_data->rx_state, nav_meas[bad_sat], los);
 
         residual = nav_meas[bad_sat]->pseudorange - p_pred;
 
         if (!disable_velocity) {
-          double pdot_pred =
-              compute_predicted_doppler(lsq_data->rx_state, nav_meas[bad_sat]);
+          double pdot_pred = compute_predicted_doppler(
+              n_states, lsq_data->rx_state, nav_meas[bad_sat]);
 
           vel_residual = -nav_meas[bad_sat]->measured_doppler *
                              sid_to_lambda(nav_meas[bad_sat]->sid) -
@@ -1058,6 +1106,8 @@ static s8 pvt_repair(const u8 n_used,
     if (successful_exclusion_found) {
       /* Successful exclusion found. Recalculate that solution. */
       s8 flag = pvt_iter_masked(n_used,
+                                n_states,
+                                clock_map,
                                 disable_velocity,
                                 nav_meas,
                                 removed_sids,
@@ -1090,6 +1140,8 @@ static s8 pvt_repair(const u8 n_used,
   /* Loop exhausted, cannot remove any more measurements. As a last-ditch
    * effort, try removing all but GPS signals */
   return pvt_solve_gps_only(n_used,
+                            n_states,
+                            clock_map,
                             nav_meas,
                             disable_velocity,
                             lsq_data,
@@ -1126,6 +1178,8 @@ static s8 pvt_repair(const u8 n_used,
  *  Results stored in lsq_data, removed_sid, metric
  */
 static s8 pvt_solve_raim(const u8 n_used,
+                         const u8 n_states,
+                         const s8 clock_map[CONSTELLATION_COUNT],
                          const navigation_measurement_t **nav_meas_ptrs,
                          const bool disable_raim,
                          const bool disable_velocity,
@@ -1134,7 +1188,8 @@ static s8 pvt_solve_raim(const u8 n_used,
                          double *metric) {
   assert(n_used <= MAX_CHANNELS);
 
-  s8 flag = pvt_iter(n_used, disable_velocity, nav_meas_ptrs, lsq_data);
+  s8 flag = pvt_iter(
+      n_used, n_states, clock_map, disable_velocity, nav_meas_ptrs, lsq_data);
   bool solution_ok = (0 == flag);
 
   if (disable_raim) {
@@ -1142,12 +1197,12 @@ static s8 pvt_solve_raim(const u8 n_used,
     return solution_ok ? PVT_CONVERGED_NO_RAIM : PVT_UNCONVERGED;
   }
 
-  if (solution_ok && N_STATE >= n_used) {
+  if (solution_ok && n_states >= n_used) {
     /* Got solution, but there are not enough measurements to test residuals */
     return PVT_CONVERGED_NO_RAIM;
   }
 
-  if (!solution_ok && N_STATE + 1 >= n_used) {
+  if (!solution_ok && n_states + 1 >= n_used) {
     /* Solution failed, but there are not enough measurements to repair it.
      * At least 2 more measurements than states are needed, so that one
      * measurement can be removed and there still remains an over-determined
@@ -1156,8 +1211,8 @@ static s8 pvt_solve_raim(const u8 n_used,
     return PVT_RAIM_REPAIR_IMPOSSIBLE;
   }
 
-  bool residual_ok =
-      residual_test(n_used, disable_velocity, lsq_data, nav_meas_ptrs, metric);
+  bool residual_ok = residual_test(
+      n_used, n_states, disable_velocity, lsq_data, nav_meas_ptrs, metric);
 
   /* Everything ok */
   if (solution_ok && residual_ok) {
@@ -1165,8 +1220,13 @@ static s8 pvt_solve_raim(const u8 n_used,
   }
 
   /* Otherwise, try RAIM repair */
-  return pvt_repair(
-      n_used, disable_velocity, nav_meas_ptrs, lsq_data, removed_sids);
+  return pvt_repair(n_used,
+                    n_states,
+                    clock_map,
+                    disable_velocity,
+                    nav_meas_ptrs,
+                    lsq_data,
+                    removed_sids);
 }
 
 /** Error strings for calc_PVT() negative (failure) return codes.
@@ -1185,18 +1245,20 @@ const char *pvt_err_msg[] = {
 /***********************************************************************
  * Satellite selection predicates that preserve calc_PVT() functionality
  ***********************************************************************/
-static bool gps_only(gnss_signal_t sid, gnss_sid_set_t sids_used) {
+static bool gps_only(gnss_signal_t sid, gnss_sid_set_t sids_used, u8 n_states) {
   (void)sids_used;
+  (void)n_states;
   return IS_GPS(sid);
 }
 static bool gps_l1ca_when_possible(gnss_signal_t sid,
-                                   gnss_sid_set_t sids_used) {
+                                   gnss_sid_set_t sids_used,
+                                   u8 n_states) {
   if (CODE_GPS_L1CA == sid.code) {
     return true;
   }
   bool use_this = false;
   u8 sats_used = sid_set_get_sat_count(&sids_used);
-  if (sats_used <= N_STATE + RAIM_MAX_EXCLUSIONS) {
+  if (sats_used <= n_states + RAIM_MAX_EXCLUSIONS) {
     gnss_sid_set_t new_sids_used = sids_used;
     sid_set_add(&new_sids_used, sid);
     use_this = (sid_set_get_sat_count(&new_sids_used) >
@@ -1204,13 +1266,17 @@ static bool gps_l1ca_when_possible(gnss_signal_t sid,
   }
   return use_this;
 }
-static bool all_constellations(gnss_signal_t sid, gnss_sid_set_t sids_used) {
+static bool all_constellations(gnss_signal_t sid,
+                               gnss_sid_set_t sids_used,
+                               u8 n_states) {
   (void)sid;
   (void)sids_used;
+  (void)n_states;
   return true;
 }
-static bool l1_only(gnss_signal_t sid, gnss_sid_set_t sids_used) {
+static bool l1_only(gnss_signal_t sid, gnss_sid_set_t sids_used, u8 n_states) {
   (void)sids_used;
+  (void)n_states;
   if ((CODE_GPS_L1CA == sid.code) || (CODE_GAL_E1B == sid.code)) {
     return true;
   }
@@ -1256,6 +1322,9 @@ s8 calc_PVT_pred(const u8 n_used,
                  gnss_solution *soln,
                  dops_t *dops,
                  gnss_sid_set_t *raim_removed_sids) {
+  u8 n_states = 3;
+  s8 clock_map[CONSTELLATION_COUNT] = {-1, -1, -1, -1, -1, -1};
+
   assert(tor != NULL);
   assert(soln != NULL);
   assert(dops != NULL);
@@ -1267,9 +1336,12 @@ s8 calc_PVT_pred(const u8 n_used,
   assert(nav_meas_ptrs != NULL);
 
   for (u8 i = 0; i < n_used; i++) {
-    if (pred(nav_meas[i].sid, sids_used)) {
+    if (pred(nav_meas[i].sid, sids_used, n_states)) {
       nav_meas_ptrs[processed_signals++] = &nav_meas[i];
       sid_set_add(&sids_used, nav_meas[i].sid);
+      if (clock_map[sid_to_constellation(nav_meas[i].sid)] == -1) {
+        clock_map[sid_to_constellation(nav_meas[i].sid)] = n_states++;
+      }
     }
   }
 
@@ -1295,7 +1367,7 @@ s8 calc_PVT_pred(const u8 n_used,
 
   s8 raim_flag = PVT_CONVERGED_RAIM_OK;
 
-  if (N_STATE > sid_set_get_sat_count(&sids_used)) {
+  if (n_states > sid_set_get_sat_count(&sids_used)) {
     raim_flag = PVT_INSUFFICENT_MEAS;
   }
 
@@ -1312,6 +1384,8 @@ s8 calc_PVT_pred(const u8 n_used,
     assert(MAX_CHANNELS >= processed_signals);
 
     raim_flag = pvt_solve_raim(processed_signals,
+                               n_states,
+                               clock_map,
                                nav_meas_ptrs,
                                disable_raim,
                                disable_velocity,
@@ -1346,27 +1420,27 @@ s8 calc_PVT_pred(const u8 n_used,
   soln->n_sats_used = sid_set_get_sat_count(&sid_set);
 
   /* Compute various dilution of precision metrics. */
-  compute_dops((const double(*)[4])lsq_data.H, lsq_data.rx_state, dops);
+  compute_dops(n_states, lsq_data.H, lsq_data.rx_state, dops);
 
   /* Populate error covariances according to layout in definition
    * of gnss_solution struct.
    */
-  soln->err_cov[0] = lsq_data.V[0][0];
-  soln->err_cov[1] = lsq_data.V[0][1];
-  soln->err_cov[2] = lsq_data.V[0][2];
-  soln->err_cov[3] = lsq_data.V[1][1];
-  soln->err_cov[4] = lsq_data.V[1][2];
-  soln->err_cov[5] = lsq_data.V[2][2];
+  soln->err_cov[0] = lsq_data.V[0 * n_states + 0];
+  soln->err_cov[1] = lsq_data.V[0 * n_states + 1];
+  soln->err_cov[2] = lsq_data.V[0 * n_states + 2];
+  soln->err_cov[3] = lsq_data.V[1 * n_states + 1];
+  soln->err_cov[4] = lsq_data.V[1 * n_states + 2];
+  soln->err_cov[5] = lsq_data.V[2 * n_states + 2];
   soln->err_cov[6] = dops->gdop;
 
   if (!disable_velocity) {
     /* Populate the velocity covariances similarly to err_cov  */
-    soln->vel_cov[0] = lsq_data.V_vel[0][0];
-    soln->vel_cov[1] = lsq_data.V_vel[0][1];
-    soln->vel_cov[2] = lsq_data.V_vel[0][2];
-    soln->vel_cov[3] = lsq_data.V_vel[1][1];
-    soln->vel_cov[4] = lsq_data.V_vel[1][2];
-    soln->vel_cov[5] = lsq_data.V_vel[2][2];
+    soln->vel_cov[0] = lsq_data.V_vel[0 * n_states + 0];
+    soln->vel_cov[1] = lsq_data.V_vel[0 * n_states + 1];
+    soln->vel_cov[2] = lsq_data.V_vel[0 * n_states + 2];
+    soln->vel_cov[3] = lsq_data.V_vel[1 * n_states + 1];
+    soln->vel_cov[4] = lsq_data.V_vel[1 * n_states + 2];
+    soln->vel_cov[5] = lsq_data.V_vel[2 * n_states + 2];
     /* Velocity is computed from same geometry as position, so
      * GDOP is also same. */
     soln->vel_cov[6] = dops->gdop;
@@ -1375,7 +1449,7 @@ s8 calc_PVT_pred(const u8 n_used,
   /* Save as x, y, z. */
   for (u8 i = 0; i < 3; i++) {
     soln->pos_ecef[i] = lsq_data.rx_state[i];
-    soln->vel_ecef[i] = lsq_data.rx_state[4 + i];
+    soln->vel_ecef[i] = lsq_data.rx_state[n_states + i];
   }
 
   wgsecef2ned(soln->vel_ecef, soln->pos_ecef, soln->vel_ned);
@@ -1384,9 +1458,9 @@ s8 calc_PVT_pred(const u8 n_used,
   wgsecef2llh(lsq_data.rx_state, soln->pos_llh);
 
   soln->clock_offset = lsq_data.rx_state[3] / GPS_C;
-  soln->clock_drift = lsq_data.rx_state[7] / GPS_C;
-  soln->clock_offset_var = lsq_data.V[3][3] / GPS_C / GPS_C;
-  soln->clock_drift_var = lsq_data.V_vel[3][3] / GPS_C / GPS_C;
+  soln->clock_drift = lsq_data.rx_state[3 + n_states] / GPS_C;
+  soln->clock_offset_var = lsq_data.V[3 * n_states + 3] / GPS_C / GPS_C;
+  soln->clock_drift_var = lsq_data.V_vel[3 * n_states + 3] / GPS_C / GPS_C;
 
   /* Correct the time of reception with the solved bias to get solution time */
   soln->time = *tor;
@@ -1417,7 +1491,7 @@ s8 calc_PVT_pred(const u8 n_used,
     soln->velocity_valid = 1;
   } else {
     soln->velocity_valid = 0;
-    memset(&(lsq_data.rx_state[4]), 0, 4 * sizeof(double));
+    memset(&(lsq_data.rx_state[n_states]), 0, n_states * sizeof(double));
   }
 
   if (!disable_raim) {
@@ -1426,6 +1500,8 @@ s8 calc_PVT_pred(const u8 n_used,
      * solution and mark outliers */
 
     if (flag_outliers(n_used,
+                      n_states,
+                      clock_map,
                       nav_meas,
                       lsq_data.rx_state,
                       disable_velocity,

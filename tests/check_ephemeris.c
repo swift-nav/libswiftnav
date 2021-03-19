@@ -930,7 +930,6 @@ START_TEST(test_ephemeris_valid) {
   eph = gps_eph;
   eph.kepler.iodc = GPS_IODC_MAX + 1;
   eph.kepler.iode = GPS_IODE_MAX + 1;
-  ;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
@@ -974,7 +973,6 @@ START_TEST(test_ephemeris_valid) {
   eph.source = EPH_SOURCE_QZS_LNAV;
   eph.kepler.iodc = GPS_IODC_MAX + 1;
   eph.kepler.iode = GPS_IODE_MAX + 1;
-  ;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
@@ -1012,7 +1010,6 @@ START_TEST(test_ephemeris_valid) {
   eph.source = EPH_SOURCE_GAL_INAV;
   eph.kepler.iodc = GAL_IOD_NAV_MAX + 1;
   eph.kepler.iode = GAL_IOD_NAV_MAX + 1;
-  ;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 

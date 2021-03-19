@@ -796,11 +796,11 @@ s8 calc_sat_doppler(const ephemeris_t *e,
 static void fake_gps_wns(gps_time_t *t1, gps_time_t *t2) {
   assert(t1);
   assert((int)t1->tow != TOW_UNKNOWN);
-  assert((WN_UNKNOWN == t1->wn) || (t1->wn > 1));
+  assert((WN_UNKNOWN == t1->wn) || (t1->wn >= 0));
 
   assert(t2);
   assert((int)t2->tow != TOW_UNKNOWN);
-  assert((WN_UNKNOWN == t2->wn) || (t2->wn > 1));
+  assert((WN_UNKNOWN == t2->wn) || (t2->wn >= 0));
 
   if ((WN_UNKNOWN != t1->wn) && (WN_UNKNOWN != t2->wn)) {
     return; /* nothing to fix */
@@ -813,7 +813,7 @@ static void fake_gps_wns(gps_time_t *t1, gps_time_t *t2) {
   double dt_s = t1->tow - t2->tow;
   if (dt_s > (WEEK_SECS / 2)) {
     if (WN_UNKNOWN == t1->wn) {
-      t1->wn = t2->wn - 1;
+      t1->wn = MAX(t2->wn - 1, 0);
     } else {
       t2->wn = t1->wn + 1;
     }
@@ -821,7 +821,7 @@ static void fake_gps_wns(gps_time_t *t1, gps_time_t *t2) {
     if (WN_UNKNOWN == t1->wn) {
       t1->wn = t2->wn + 1;
     } else {
-      t2->wn = t1->wn - 1;
+      t2->wn = MAX(t1->wn - 1, 0);
     }
   } else if (WN_UNKNOWN == t1->wn) {
     t1->wn = t2->wn;
@@ -829,7 +829,9 @@ static void fake_gps_wns(gps_time_t *t1, gps_time_t *t2) {
     assert(WN_UNKNOWN == t2->wn);
     t2->wn = t1->wn;
   }
-  assert(gpsdifftime(t1, t2) <= (WEEK_SECS / 2));
+  assert(
+      fabs(gpsdifftime(t1, t2)) <= (WEEK_SECS / 2) ||
+      ((t1->wn == 0 || t2->wn == 0) && fabs(gpsdifftime(t1, t2)) <= WEEK_SECS));
 }
 
 /** Gets the status of an ephemeris - is the ephemeris invalid, unhealthy, or
@@ -1527,9 +1529,10 @@ static float sisa_map(u8 sisa) {
  *             Galileo system time (GST) and make corrections
  *             to TOE and TOC if needed.
  * \param eph the decoded ephemeris is placed here.
+ * \return true if decoded successfully, false otherwise
  */
-void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
-                          ephemeris_t *eph) {
+bool decode_gal_ephemeris_safe(const u8 page[5][GAL_INAV_CONTENT_BYTE],
+                               ephemeris_t *eph) {
   ephemeris_kepler_t *kep = &eph->kepler;
   kep->iode = getbitu(page[0], 6, 10);
   kep->iodc = kep->iode;
@@ -1605,10 +1608,31 @@ void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
 
   /* Match TOE week number with the time of transmission, fixes the case
    * near week roll-over where time of ephemeris is across the week boundary */
-  gps_time_match_weeks(&eph->toe, &t);
-  gps_time_match_weeks(&kep->toc, &t);
+  if (!gps_time_match_weeks_safe(&eph->toe, &t)) {
+    return false;
+  }
+  if (!gps_time_match_weeks_safe(&kep->toc, &t)) {
+    return false;
+  }
 
   eph->source = EPH_SOURCE_GAL_INAV;
+
+  return true;
+}
+
+/**
+ * Decodes GAL I/NAV ephemeris.
+ * This function will assert if the ephemeris could not be decoded successfully
+ * \param page GAL pages 1-5. Page 5 is needed to extract
+ *             Galileo system time (GST) and make corrections
+ *             to TOE and TOC if needed.
+ * \param eph the decoded ephemeris is placed here.
+ */
+void decode_gal_ephemeris(const u8 page[5][GAL_INAV_CONTENT_BYTE],
+                          ephemeris_t *eph) {
+  bool result = decode_gal_ephemeris_safe(page, eph);
+  (void)result;
+  assert(result);
 }
 
 /**

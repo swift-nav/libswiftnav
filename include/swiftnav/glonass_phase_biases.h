@@ -47,11 +47,11 @@ bool glonass_biases_are_equal(const glo_biases_t biases1,
 bool is_bias_mask_flag_set(const u8 msg_flags, const u8 flag);
 
 // This constant structure contains the Piksi GLONASS phase bias
-static const glo_biases_t piksi_glonass_biases = {.mask = 255,
-                                                  .l1of_bias_m = 0.,
-                                                  .l1p_bias_m = 0.,
-                                                  .l2of_bias_m = 0.,
-                                                  .l2p_bias_m = 0.};
+static const glo_biases_t piksi_glonass_biases = {255,  // .mask
+                                                  0.,   // .l1of_bias_m
+                                                  0.,   // .l1p_bias_m
+                                                  0.,   // .l2of_bias_m
+                                                  0.};  // .l2p_bias_m
 
 double get_glonass_bias(const code_t code, const glo_biases_t biases);
 
