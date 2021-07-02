@@ -1,5 +1,5 @@
-[![Build Status](https://jenkins.ci.swift-nav.com/buildStatus/icon?job=swift-nav/libswiftnav/master&subject=Jenkins&style=flat)](https://jenkins.ci.swift-nav.com/job/swift-nav/job/libswiftnav/job/master/)
-[![](https://img.shields.io/codecov/c/github/swift-nav/libswiftnav/master.svg?label=codecov.io&logo=codecov&style=flat)](https://codecov.io/gh/swift-nav/libswiftnav)
+[![CI](https://github.com/swift-nav/libswiftnav/actions/workflows/ci.yaml/badge.svg)](https://github.com/swift-nav/libswiftnav/actions/workflows/ci.yaml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=swift-nav_libswiftnav&metric=alert_status)](https://sonarcloud.io/dashboard?id=swift-nav_libswiftnav)
 
 libswiftnav
 ===========
