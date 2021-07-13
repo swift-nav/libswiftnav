@@ -565,6 +565,34 @@ START_TEST(test_sub_constellation_to_string) {
 }
 END_TEST
 
+START_TEST(test_sub_constellation_to_constellation) {
+  fail_unless(CONSTELLATION_GPS ==
+                  sub_constellation_to_constellation(SUB_CONSTELLATION_GPS),
+              "bad sub_constellation conversion");
+  fail_unless(CONSTELLATION_GPS ==
+                  sub_constellation_to_constellation(SUB_CONSTELLATION_GPS),
+              "bad sub_constellation conversion");
+  fail_unless(CONSTELLATION_SBAS ==
+                  sub_constellation_to_constellation(SUB_CONSTELLATION_SBAS),
+              "bad sub_constellation conversion");
+  fail_unless(CONSTELLATION_GLO ==
+                  sub_constellation_to_constellation(SUB_CONSTELLATION_GLO),
+              "bad sub_constellation conversion");
+  fail_unless(CONSTELLATION_BDS ==
+                  sub_constellation_to_constellation(SUB_CONSTELLATION_BDS2),
+              "bad sub_constellation conversion");
+  fail_unless(CONSTELLATION_BDS ==
+                  sub_constellation_to_constellation(SUB_CONSTELLATION_BDS3),
+              "bad sub_constellation conversion");
+  fail_unless(CONSTELLATION_QZS ==
+                  sub_constellation_to_constellation(SUB_CONSTELLATION_QZS),
+              "bad sub_constellation conversion");
+  fail_unless(CONSTELLATION_GAL ==
+                  sub_constellation_to_constellation(SUB_CONSTELLATION_GAL),
+              "bad sub_constellation conversion");
+}
+END_TEST
+
 Suite *signal_test_suite(void) {
   Suite *s = suite_create("Signal");
   TCase *tc_core = tcase_create("Core");
@@ -584,6 +612,7 @@ Suite *signal_test_suite(void) {
   tcase_add_test(tc_core, test_signal_hashes);
   tcase_add_test(tc_core, test_constellation_to_string);
   tcase_add_test(tc_core, test_sub_constellation_to_string);
+  tcase_add_test(tc_core, test_sub_constellation_to_constellation);
   suite_add_tcase(s, tc_core);
   return s;
 }

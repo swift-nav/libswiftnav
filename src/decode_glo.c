@@ -272,21 +272,21 @@ bool decode_glo_string_1(const glo_string_t *string,
     log_debug_sid(eph->sid, "GLO-NAV-ERR: pos_x =%lf m", pos_m);
     return false;
   }
-  eph->glo.pos[0] = pos_m;
+  eph->data.glo.pos[0] = pos_m;
 
   double vel_m_s = decode_velocity_component(string); /* extract Vx */
   if ((vel_m_s < -GLO_VEL_MAX_M_S) || (GLO_VEL_MAX_M_S < vel_m_s)) {
     log_debug_sid(eph->sid, "GLO-NAV-ERR: vel_x=%lf m/s", vel_m_s);
     return false;
   }
-  eph->glo.vel[0] = vel_m_s;
+  eph->data.glo.vel[0] = vel_m_s;
 
   double acc_m_s2 = decode_acceleration_component(string); /* extract Ax */
   if ((acc_m_s2 < -GLO_ACC_MAX_M_S2) || (GLO_ACC_MAX_M_S2 < acc_m_s2)) {
     log_debug_sid(eph->sid, "GLO-NAV-ERR: acc_x=%lf m/s^2", acc_m_s2);
     return false;
   }
-  eph->glo.acc[0] = acc_m_s2;
+  eph->data.glo.acc[0] = acc_m_s2;
 
   /* extract tk */
   tk->h = (u8)extract_word_glo(string, 72, 5);
@@ -328,21 +328,21 @@ bool decode_glo_string_2(const glo_string_t *string,
     log_debug_sid(eph->sid, "GLO-NAV-ERR: pos_y =%lf m", pos_m);
     return false;
   }
-  eph->glo.pos[1] = pos_m;
+  eph->data.glo.pos[1] = pos_m;
 
   double vel_m_s = decode_velocity_component(string); /* extract Vy */
   if ((vel_m_s < -GLO_VEL_MAX_M_S) || (GLO_VEL_MAX_M_S < vel_m_s)) {
     log_debug_sid(eph->sid, "GLO-NAV-ERR: vel_y=%lf m/s", vel_m_s);
     return false;
   }
-  eph->glo.vel[1] = vel_m_s;
+  eph->data.glo.vel[1] = vel_m_s;
 
   double acc_m_s2 = decode_acceleration_component(string); /* extract Ay */
   if ((acc_m_s2 < -GLO_ACC_MAX_M_S2) || (GLO_ACC_MAX_M_S2 < acc_m_s2)) {
     log_debug_sid(eph->sid, "GLO-NAV-ERR: acc_y=%lf m/s^2", acc_m_s2);
     return false;
   }
-  eph->glo.acc[1] = acc_m_s2;
+  eph->data.glo.acc[1] = acc_m_s2;
 
   /* extract MSB of B (if the bit is 0 the SV is OK ) */
   eph->health_bits |= extract_word_glo(string, 80, 1);
@@ -355,7 +355,7 @@ bool decode_glo_string_2(const glo_string_t *string,
   toe->h = tb_s / HOUR_SECS;
   toe->m = (tb_s - toe->h * HOUR_SECS) / MINUTE_SECS;
   toe->s = tb_s - (toe->h * HOUR_SECS) - (toe->m * MINUTE_SECS);
-  eph->glo.iod = tb_s & 0x7f; /* 7 LSB of Tb as IOD */
+  eph->data.glo.iod = tb_s & 0x7f; /* 7 LSB of Tb as IOD */
 
   return true;
 }
@@ -380,21 +380,21 @@ bool decode_glo_string_3(const glo_string_t *string,
     log_debug_sid(eph->sid, "GLO-NAV-ERR: pos_z =%lf m", pos_m);
     return false;
   }
-  eph->glo.pos[2] = pos_m;
+  eph->data.glo.pos[2] = pos_m;
 
   double vel_m_s = decode_velocity_component(string); /* extract Vz */
   if ((vel_m_s < -GLO_VEL_MAX_M_S) || (GLO_VEL_MAX_M_S < vel_m_s)) {
     log_debug_sid(eph->sid, "GLO-NAV-ERR: vel_z=%lf m/s", vel_m_s);
     return false;
   }
-  eph->glo.vel[2] = vel_m_s;
+  eph->data.glo.vel[2] = vel_m_s;
 
   double acc_m_s2 = decode_acceleration_component(string); /* extract Az */
   if ((acc_m_s2 < -GLO_ACC_MAX_M_S2) || (GLO_ACC_MAX_M_S2 < acc_m_s2)) {
     log_debug_sid(eph->sid, "GLO-NAV-ERR: acc_z=%lf m/s^2", acc_m_s2);
     return false;
   }
-  eph->glo.acc[2] = acc_m_s2;
+  eph->data.glo.acc[2] = acc_m_s2;
 
   /* extract gamma */
   double gamma = extract_word_glo(string, 69, 10) * C_1_2P40;
@@ -407,7 +407,7 @@ bool decode_glo_string_3(const glo_string_t *string,
     log_debug_sid(eph->sid, "GLO-NAV-ERR: gamma=%lf", gamma);
     return false;
   }
-  eph->glo.gamma = gamma;
+  eph->data.glo.gamma = gamma;
   /* extract l, if it is 0 the SV is OK, so OR it with B */
   eph->health_bits |= extract_word_glo(string, 65, 1);
 
@@ -443,7 +443,7 @@ bool decode_glo_string_4(const glo_string_t *string,
     log_debug_sid(eph->sid, "GLO-NAV-ERR: tau=%lf s", tau_s);
     return false;
   }
-  eph->glo.tau = tau_s;
+  eph->data.glo.tau = tau_s;
 
   /* extract d_tau */
   double d_tau_s = extract_word_glo(string, 54, 4) * C_1_2P30;
@@ -455,7 +455,7 @@ bool decode_glo_string_4(const glo_string_t *string,
     log_debug_sid(eph->sid, "GLO-NAV-ERR: d_tau=%lf s", d_tau_s);
     return false;
   }
-  eph->glo.d_tau = d_tau_s;
+  eph->data.glo.d_tau = d_tau_s;
 
   /* extract E_n age of data */
   *age_of_data_days = extract_word_glo(string, 49, 5);

@@ -80,9 +80,9 @@ static s8 calc_sat_state_xyz_almanac(const almanac_t *a,
   e.fit_interval = a->fit_interval;
   e.valid = a->valid;
   e.health_bits = a->health_bits;
-  memcpy(e.xyz.pos, a->xyz.pos, sizeof(e.xyz.pos));
-  memcpy(e.xyz.vel, a->xyz.vel, sizeof(e.xyz.vel));
-  memcpy(e.xyz.acc, a->xyz.acc, sizeof(e.xyz.acc));
+  memcpy(e.data.xyz.pos, a->data.xyz.pos, sizeof(e.data.xyz.pos));
+  memcpy(e.data.xyz.vel, a->data.xyz.vel, sizeof(e.data.xyz.vel));
+  memcpy(e.data.xyz.acc, a->data.xyz.acc, sizeof(e.data.xyz.acc));
 
   return calc_sat_state(&e, t, pos, vel, acc, clock_err, clock_rate_err);
 }
@@ -119,16 +119,16 @@ static s8 calc_sat_state_kepler_almanac(const almanac_t *a,
   e.fit_interval = a->fit_interval;
   e.valid = a->valid;
   e.health_bits = a->health_bits;
-  e.kepler.m0 = a->kepler.m0;
-  e.kepler.ecc = a->kepler.ecc;
-  e.kepler.sqrta = a->kepler.sqrta;
-  e.kepler.omega0 = a->kepler.omega0;
-  e.kepler.omegadot = a->kepler.omegadot;
-  e.kepler.w = a->kepler.w;
-  e.kepler.inc = a->kepler.inc;
-  e.kepler.af0 = a->kepler.af0;
-  e.kepler.af1 = a->kepler.af1;
-  e.kepler.toc = a->toa;
+  e.data.kepler.m0 = a->data.kepler.m0;
+  e.data.kepler.ecc = a->data.kepler.ecc;
+  e.data.kepler.sqrta = a->data.kepler.sqrta;
+  e.data.kepler.omega0 = a->data.kepler.omega0;
+  e.data.kepler.omegadot = a->data.kepler.omegadot;
+  e.data.kepler.w = a->data.kepler.w;
+  e.data.kepler.inc = a->data.kepler.inc;
+  e.data.kepler.af0 = a->data.kepler.af0;
+  e.data.kepler.af1 = a->data.kepler.af1;
+  e.data.kepler.toc = a->toa;
 
   return calc_sat_state(&e, t, pos, vel, acc, clock_err, clock_rate_err);
 }
@@ -356,11 +356,11 @@ bool almanac_equal(const almanac_t *a, const almanac_t *b) {
 
   switch (sid_to_constellation(a->sid)) {
     case CONSTELLATION_GPS:
-      return almanac_kepler_equal(&a->kepler, &b->kepler);
+      return almanac_kepler_equal(&a->data.kepler, &b->data.kepler);
     case CONSTELLATION_SBAS:
-      return almanac_xyz_equal(&a->xyz, &b->xyz);
+      return almanac_xyz_equal(&a->data.xyz, &b->data.xyz);
     case CONSTELLATION_GLO:
-      return almanac_glo_equal(&a->glo, &b->glo);
+      return almanac_glo_equal(&a->data.glo, &b->data.glo);
     case CONSTELLATION_INVALID:
     case CONSTELLATION_COUNT:
     case CONSTELLATION_BDS:
@@ -550,7 +550,7 @@ bool almanac_decode(const u32 words[8], almanac_t *a) {
     /* Word 5 bits 17-24: SV health */
     a->health_bits = words[5 - 3] >> (30 - 24) & 0xFF;
 
-    almanac_kepler_t *k = &a->kepler;
+    almanac_kepler_t *k = &a->data.kepler;
 
     /* Word 3 bits 9-24 */
     k->ecc = (words[3 - 3] >> (30 - 24) & 0xFFFF) * GPS_LNAV_ALM_SF_ECC;

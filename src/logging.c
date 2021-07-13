@@ -13,7 +13,6 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <string.h>
-
 #include <swiftnav/logging.h>
 
 #ifdef LIBSWIFTNAV_ENABLE_STDERR_LOGGING
@@ -27,9 +26,10 @@
  * \param level Log level
  * \param msg Log contents
  */
-__attribute__((format(printf, 2, 3))) static void log_stderr(int level,
-                                                             const char *msg,
-                                                             ...) {
+SWIFT_ATTR_FORMAT(2, 3)
+static void log_stderr(int level,
+                       SWIFT_ATTR_FORMAT_STRING const char *msg,
+                       ...) {
   va_list ap;
   fprintf(stderr, "%s: ", level_string[level]);
   va_start(ap, msg);
@@ -46,12 +46,12 @@ __attribute__((format(printf, 2, 3))) static void log_stderr(int level,
  * \param line_number line number where this function was called
  * \param msg Log contents
  */
-__attribute__((format(printf, 4, 5))) static void detailed_log_stderr(
-    int level,
-    const char *file_path,
-    const int line_number,
-    const char *msg,
-    ...) {
+SWIFT_ATTR_FORMAT(4, 5)
+static void detailed_log_stderr(int level,
+                                const char *file_path,
+                                const int line_number,
+                                SWIFT_ATTR_FORMAT_STRING const char *msg,
+                                ...) {
   va_list ap;
   fprintf(stderr, "(lsn::%s:%d) ", file_path, line_number);
   fprintf(stderr, "%s: ", level_string[level]);

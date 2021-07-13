@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
 #include <swiftnav/float_equality.h>
@@ -295,9 +294,16 @@ static s8 vel_solve(const u8 n_used,
    * Output the covariance matrix V of the velocity-drift solution
    */
 
+  if (n_used < 1) {
+    // To make clang-tidy happy. We should never get here though because
+    // earlier in the call stack we check that n_used >= n_states and
+    // n_states is at least 3. But clang-tidy still complains about the
+    // possibility of a zero sized array, so we exit early.
+    return -1;
+  }
+
   double pdot_pred;
-  double *w = LSN_ALLOCATE(n_used * sizeof(double));
-  assert(w != NULL);
+  LSN_NEW_ARRAY(w, n_used, double);
 
   int res = 0;
 
@@ -355,7 +361,7 @@ static s8 vel_solve(const u8 n_used,
     }
   }
 
-  LSN_FREE(w);
+  LSN_FREE_ARRAY(w);
   return res;
 }
 
@@ -407,6 +413,7 @@ static double compute_predicted_pseudorange(
     const navigation_measurement_t *nav_meas,
     double line_of_sight[3]) {
   const double *user_pos = &rx_state[0];
+  assert(clock_map[sid_to_constellation(nav_meas->sid)] != -1);
   const double clock_bias_m =
       rx_state[clock_map[sid_to_constellation(nav_meas->sid)]];
   double sat_pos_new[3];
@@ -641,8 +648,7 @@ static bool residual_test(const u8 n_used,
     raim_n_state = 2 * n_states;
   }
 
-  double *residual = LSN_ALLOCATE(n_meas * sizeof(double));
-  assert(residual != NULL);
+  LSN_NEW_ARRAY(residual, n_meas, double);
   double pr_var;
   double dop_var;
 
@@ -668,7 +674,7 @@ static bool residual_test(const u8 n_used,
   double scaled_threshold =
       RAIM_METRIC_THRESHOLD * sqrt((double)n_meas / (n_meas - raim_n_state));
 
-  LSN_FREE(residual);
+  LSN_FREE_ARRAY(residual);
   return metric < scaled_threshold;
 }
 
@@ -682,7 +688,7 @@ static bool residual_test(const u8 n_used,
 static bool flag_outliers(const u8 n_used,
                           const u8 n_states,
                           const s8 clock_map[CONSTELLATION_COUNT],
-                          const navigation_measurement_t *nav_meas,
+                          const navigation_measurement_t **nav_meas,
                           const double rx_state[2 * N_STATE],
                           const bool disable_velocity,
                           const gnss_sid_set_t *exclude_sids,
@@ -692,8 +698,7 @@ static bool flag_outliers(const u8 n_used,
   uint16_t signals_flagged = 0;
   double line_of_sight[3];
 
-  double *range_residual = LSN_ALLOCATE(n_used * sizeof(double));
-  assert(range_residual != NULL);
+  LSN_NEW_ARRAY(range_residual, n_used, double);
 
   /* bias per code */
   double code_bias[CODE_COUNT];
@@ -704,16 +709,17 @@ static bool flag_outliers(const u8 n_used,
 
   /* first pass through measurements computes the biases per code */
   for (u8 i = 0; i < n_used; i++) {
-    gnss_signal_t sid = nav_meas[i].sid;
+    gnss_signal_t sid = nav_meas[i]->sid;
     if (sid_set_contains(exclude_sids, sid) ||
         sid_set_contains(removed_sids, sid)) {
       range_residual[i] = 0;
       /* already gone through RAIM */
       continue;
     }
+
     double p_pred = compute_predicted_pseudorange(
-        clock_map, rx_state, &nav_meas[i], line_of_sight);
-    range_residual[i] = nav_meas[i].pseudorange - p_pred;
+        clock_map, rx_state, nav_meas[i], line_of_sight);
+    range_residual[i] = nav_meas[i]->pseudorange - p_pred;
 
     /* compute running average of residuals for this code, excluding obvious
      * outliers */
@@ -726,7 +732,7 @@ static bool flag_outliers(const u8 n_used,
 
   /* second pass does the outlier detection */
   for (u8 i = 0; i < n_used; i++) {
-    gnss_signal_t sid = nav_meas[i].sid;
+    gnss_signal_t sid = nav_meas[i]->sid;
     if (sid_set_contains(exclude_sids, sid) ||
         sid_set_contains(removed_sids, sid)) {
       /* already gone through RAIM */
@@ -749,9 +755,9 @@ static bool flag_outliers(const u8 n_used,
       /* check velocity residual only if velocity solution is enabled and
        * there already was no range residual */
       double pdot_pred =
-          compute_predicted_doppler(n_states, rx_state, &nav_meas[i]);
+          compute_predicted_doppler(n_states, rx_state, nav_meas[i]);
       double doppler_residual =
-          -nav_meas[i].measured_doppler * sid_to_lambda(sid) - pdot_pred;
+          -nav_meas[i]->measured_doppler * sid_to_lambda(sid) - pdot_pred;
       if (fabs(doppler_residual) > DOPPLER_RESIDUAL_THRESHOLD_M_S) {
         if (0 == signals_flagged) {
           /* log only the first flagged signal */
@@ -768,7 +774,7 @@ static bool flag_outliers(const u8 n_used,
     log_info("Flagged total of %d signals as outliers", signals_flagged);
   }
 
-  LSN_FREE(range_residual);
+  LSN_FREE_ARRAY(range_residual);
   return (signals_flagged > 0);
 }
 
@@ -793,12 +799,10 @@ static s8 pvt_iter(const u8 n_used,
   /* G is a geometry matrix tells us how our pseudoranges relate to
    * our state estimates -- it's the Jacobian of d(p_i)/d(x_j) where
    * x_j are x, y, z, Δt. */
-  double *G = LSN_ALLOCATE(n_used * n_states * sizeof(double));
-  assert(G != NULL);
+  LSN_NEW_ARRAY(G, n_used * n_states, double);
 
   /* diagonal elements of the weighting matrix */
-  double *w = LSN_ALLOCATE(n_used * sizeof(double));
-  assert(w != NULL);
+  LSN_NEW_ARRAY(w, n_used, double);
 
   u8 iters;
   s8 ret;
@@ -818,9 +822,8 @@ static s8 pvt_iter(const u8 n_used,
     }
   }
 
-  LSN_FREE(G);
-  LSN_FREE(w);
-
+  LSN_FREE_ARRAY(G);
+  LSN_FREE_ARRAY(w);
   if (iters >= PVT_MAX_ITERATIONS || ret < 0) {
     return -1;
   }
@@ -850,8 +853,7 @@ static s8 pvt_iter_masked(const u8 n_meas,
     return -1;
   }
 
-  const navigation_measurement_t **nav_meas_subset =
-      LSN_ALLOCATE(n_meas * sizeof(navigation_measurement_t *));
+  LSN_NEW_ARRAY(nav_meas_subset, n_meas, const navigation_measurement_t *);
   assert(nav_meas_subset != NULL);
   gnss_sid_set_t used_sids;
   sid_set_init(&used_sids);
@@ -893,7 +895,7 @@ static s8 pvt_iter_masked(const u8 n_meas,
     res = -1;
   }
 
-  LSN_FREE(nav_meas_subset);
+  LSN_FREE_ARRAY(nav_meas_subset);
   return res;
 }
 
@@ -1003,8 +1005,7 @@ static s8 pvt_repair(const u8 n_used,
 
   /* Compute the residuals and metric for the original set of measurements */
 
-  double *metric = LSN_ALLOCATE(n_used * sizeof(double));
-  assert(metric != NULL);
+  LSN_NEW_ARRAY(metric, n_used, double);
   s8 bad_sat = -1;
 
   double original_metric = INFINITY;
@@ -1131,7 +1132,7 @@ static s8 pvt_repair(const u8 n_used,
         best_metric);
   }
 
-  LSN_FREE(metric);
+  LSN_FREE_ARRAY(metric);
 
   if (successful_exclusion_found) {
     return PVT_CONVERGED_RAIM_REPAIR;
@@ -1283,21 +1284,22 @@ static bool l1_only(gnss_signal_t sid, gnss_sid_set_t sids_used, u8 n_states) {
   return false;
 }
 
-/** Try to calculate a single point gps solution
+/**
+ * Try to calculate a single point GNSS solution
  *
  * Note: Observations must have SPP OK flag set, and a valid pseudorange.
- * A valid Doppler value is required if disable_velocity is false.
+ * A valid Doppler value is required if `disable_velocity` is `false`.
  *
- * \param n_used number of measurements
- * \param nav_meas array of measurements of length `n_used`
- * \param tor the time of reception
- * \param disable_raim passing True will omit RAIM check/repair functionality
- * \param disable_velocity passing True will disable velocity output
- * \param measurement selection predicate
- *   - returns true if a signal type should be used
- * \param soln output solution struct
- * \param dops output dilution of precision information
- * \param raim_removed_sids optional arg that returns the sids of excluded
+ * \param n_meas - number of measurements
+ * \param nav_meas - array of measurements of length `n_meas`
+ * \param tor - the time of reception
+ * \param disable_raim - passing True will omit RAIM check/repair functionality
+ * \param disable_velocity - passing True will disable velocity output
+ * \param measurement selection predicate -
+ *        returns true if a signal type should be used
+ * \param soln - output solution struct
+ * \param dops - output dilution of precision information
+ * \param raim_removed_sids - optional arg that returns the sids of excluded
  *        observations if RAIM successfully excluded a signal / signals
  *
  * \return Non-negative values indicate a valid solution.
@@ -1313,35 +1315,40 @@ static bool l1_only(gnss_signal_t sid, gnss_sid_set_t sids_used, u8 n_states) {
  *   - `-6`: pvt_iter didn't converge
  *   - `-7`: Not enough measurements for solution
  */
-s8 calc_PVT_pred(const u8 n_used,
-                 const navigation_measurement_t *nav_meas,
-                 const gps_time_t *tor,
-                 const bool disable_raim,
-                 const bool disable_velocity,
-                 sat_sel_predicate pred,
-                 gnss_solution *soln,
-                 dops_t *dops,
-                 gnss_sid_set_t *raim_removed_sids) {
+static s8 calc_PVT_pred_internal(const u8 n_meas,
+                                 const navigation_measurement_t **nav_meas,
+                                 const gps_time_t *tor,
+                                 const bool disable_raim,
+                                 const bool disable_velocity,
+                                 sat_sel_predicate pred,
+                                 gnss_solution *soln,
+                                 dops_t *dops,
+                                 gnss_sid_set_t *raim_removed_sids) {
   u8 n_states = 3;
-  s8 clock_map[CONSTELLATION_COUNT] = {-1, -1, -1, -1, -1, -1};
+
+  s8 clock_map[CONSTELLATION_COUNT];
+  memset(clock_map, -1, sizeof(clock_map));
 
   assert(tor != NULL);
   assert(soln != NULL);
   assert(dops != NULL);
-  u8 processed_signals = 0;
+  u8 n_processed_meas_used = 0;
   gnss_sid_set_t sids_used;
   sid_set_init(&sids_used);
-  const navigation_measurement_t **nav_meas_ptrs =
-      LSN_ALLOCATE(n_used * sizeof(navigation_measurement_t *));
-  assert(nav_meas_ptrs != NULL);
+  LSN_NEW_ARRAY(
+      processed_nav_meas_ptrs, n_meas, const navigation_measurement_t *);
 
-  for (u8 i = 0; i < n_used; i++) {
-    if (pred(nav_meas[i].sid, sids_used, n_states)) {
-      nav_meas_ptrs[processed_signals++] = &nav_meas[i];
-      sid_set_add(&sids_used, nav_meas[i].sid);
-      if (clock_map[sid_to_constellation(nav_meas[i].sid)] == -1) {
-        clock_map[sid_to_constellation(nav_meas[i].sid)] = n_states++;
+  for (u8 i = 0; i < n_meas; ++i) {
+    if (pred(nav_meas[i]->sid, sids_used, n_states)) {
+      const gnss_signal_t sid = nav_meas[i]->sid;
+      const constellation_t constellation = sid_to_constellation(sid);
+      processed_nav_meas_ptrs[n_processed_meas_used] = nav_meas[i];
+      sid_set_add(&sids_used, sid);
+      if (clock_map[constellation] == -1) {
+        clock_map[constellation] = n_states;
+        ++n_states;
       }
+      ++n_processed_meas_used;
     }
   }
 
@@ -1350,16 +1357,19 @@ s8 calc_PVT_pred(const u8 n_used,
    *  rx_state format:
    *    pos[3], clock error, vel[3], intermediate freq error
    */
-  for (u8 i = 0; i < processed_signals; i++) {
-    if (!(nav_meas_ptrs[i]->flags & NAV_MEAS_FLAG_CODE_VALID)) {
+  for (u8 i = 0; i < n_processed_meas_used; i++) {
+    if (!(processed_nav_meas_ptrs[i]->flags & NAV_MEAS_FLAG_CODE_VALID)) {
       assert(
-          !"SPP attempted on measurements that did not have valid pseudorange");
+          false &&
+          "SPP attempted on measurements that did not have valid pseudorange");
     }
 
     /* if velocity output is requested, every signal must have valid Doppler */
     if (!disable_velocity &&
-        !(nav_meas_ptrs[i]->flags & NAV_MEAS_FLAG_MEAS_DOPPLER_VALID) &&
-        !(nav_meas_ptrs[i]->flags & NAV_MEAS_FLAG_COMP_DOPPLER_VALID)) {
+        !(processed_nav_meas_ptrs[i]->flags &
+          NAV_MEAS_FLAG_MEAS_DOPPLER_VALID) &&
+        !(processed_nav_meas_ptrs[i]->flags &
+          NAV_MEAS_FLAG_COMP_DOPPLER_VALID)) {
       assert(
           "SPP velocity requested but not all measurements have valid Doppler");
     }
@@ -1381,12 +1391,12 @@ s8 calc_PVT_pred(const u8 n_used,
     soln->n_sigs_used = 0;
 
     /* Set up the working data for LSQ iterations */
-    assert(MAX_CHANNELS >= processed_signals);
+    assert(MAX_CHANNELS >= n_processed_meas_used);
 
-    raim_flag = pvt_solve_raim(processed_signals,
+    raim_flag = pvt_solve_raim(n_processed_meas_used,
                                n_states,
                                clock_map,
-                               nav_meas_ptrs,
+                               processed_nav_meas_ptrs,
                                disable_raim,
                                disable_velocity,
                                &lsq_data,
@@ -1399,18 +1409,16 @@ s8 calc_PVT_pred(const u8 n_used,
 
   if (raim_flag >= PVT_CONVERGED_RAIM_OK) {
     /* Count number of unique satellites in the solution */
-    for (u8 j = 0; j < processed_signals; j++) {
+    for (u8 j = 0; j < n_processed_meas_used; j++) {
       /* Skip the removed SIDs */
       if ((raim_flag == PVT_CONVERGED_RAIM_REPAIR) &&
-          sid_set_contains(&removed_sids, nav_meas_ptrs[j]->sid)) {
+          sid_set_contains(&removed_sids, processed_nav_meas_ptrs[j]->sid)) {
         continue;
       }
       soln->n_sigs_used++;
-      sid_set_add(&sid_set, nav_meas_ptrs[j]->sid);
+      sid_set_add(&sid_set, processed_nav_meas_ptrs[j]->sid);
     }
   }
-
-  LSN_FREE(nav_meas_ptrs);
 
   if (raim_flag < PVT_CONVERGED_RAIM_OK) {
     /* Didn't converge or least squares integrity check failed. */
@@ -1471,17 +1479,20 @@ s8 calc_PVT_pred(const u8 n_used,
   s8 ret = filter_solution(soln, dops);
   if (0 != ret) {
     if ((ret == PVT_PDOP_TOO_HIGH) && (pred != all_constellations)) {
-      return calc_PVT_pred(n_used,
-                           nav_meas,
-                           tor,
-                           disable_raim,
-                           disable_velocity,
-                           &all_constellations,
-                           soln,
-                           dops,
-                           raim_removed_sids);
+      ret = calc_PVT_pred_internal(n_processed_meas_used,
+                                   processed_nav_meas_ptrs,
+                                   tor,
+                                   disable_raim,
+                                   disable_velocity,
+                                   &all_constellations,
+                                   soln,
+                                   dops,
+                                   raim_removed_sids);
+      LSN_FREE_ARRAY(processed_nav_meas_ptrs);
+      return ret;
     }
     memset(soln, 0, sizeof(*soln));
+    LSN_FREE_ARRAY(processed_nav_meas_ptrs);
     return ret;
   }
 
@@ -1499,10 +1510,10 @@ s8 calc_PVT_pred(const u8 n_used,
      * Compute the residual of the rest of the measurements against the
      * solution and mark outliers */
 
-    if (flag_outliers(n_used,
+    if (flag_outliers(n_processed_meas_used,
                       n_states,
                       clock_map,
-                      nav_meas,
+                      processed_nav_meas_ptrs,
                       lsq_data.rx_state,
                       disable_velocity,
                       &sid_set,
@@ -1520,7 +1531,35 @@ s8 calc_PVT_pred(const u8 n_used,
     }
   }
 
+  LSN_FREE_ARRAY(processed_nav_meas_ptrs);
+
   return raim_flag;
+}
+
+s8 calc_PVT_pred(const u8 n_meas,
+                 const navigation_measurement_t *nav_meas,
+                 const gps_time_t *tor,
+                 const bool disable_raim,
+                 const bool disable_velocity,
+                 sat_sel_predicate pred,
+                 gnss_solution *soln,
+                 dops_t *dops,
+                 gnss_sid_set_t *raim_removed_sids) {
+  LSN_NEW_ARRAY(nav_meas_ptrs, n_meas, const navigation_measurement_t *);
+  for (u8 i = 0; i < n_meas; i++) {
+    nav_meas_ptrs[i] = nav_meas + i;
+  }
+  s8 ret = calc_PVT_pred_internal(n_meas,
+                                  nav_meas_ptrs,
+                                  tor,
+                                  disable_raim,
+                                  disable_velocity,
+                                  pred,
+                                  soln,
+                                  dops,
+                                  raim_removed_sids);
+  LSN_FREE_ARRAY(nav_meas_ptrs);
+  return ret;
 }
 
 /*******************

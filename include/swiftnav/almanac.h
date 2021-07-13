@@ -126,7 +126,7 @@ typedef struct {
     almanac_kepler_t kepler; /**< Parameters specific to GPS. */
     almanac_xyz_t xyz;       /**< Parameters specific to SBAS. */
     almanac_glo_t glo;       /**< Parameters specific to GLONASS. */
-  };
+  } data;
 } almanac_t;
 
 /**

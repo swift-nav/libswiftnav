@@ -35,7 +35,6 @@ if(libswiftnav_BUILD_TESTS)
     LINK check-utils check Threads::Threads
     )
 
-  swift_set_language_standards(test-swiftnav-common)
   swift_set_compile_options(
     test-swiftnav-common 
     REMOVE 
@@ -46,4 +45,12 @@ if(libswiftnav_BUILD_TESTS)
     ADD
       -Wno-format-extra-args
   )
+
+  swift_add_test(test-swiftnav-pedantic
+    UNIT_TEST
+    SRCS check_pedantic.cc
+    LINK swiftnav
+  )
+  swift_set_compile_options(test-swiftnav-pedantic ADD -pedantic)
+
 endif(libswiftnav_BUILD_TESTS)

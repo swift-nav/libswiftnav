@@ -282,7 +282,7 @@ typedef struct {
     ephemeris_kepler_t kepler; /**< Parameters specific to GPS. */
     ephemeris_xyz_t xyz;       /**< Parameters specific to SBAS. */
     ephemeris_glo_t glo;       /**< Parameters specific to GLONASS. */
-  };
+  } data;
 } ephemeris_t;
 
 #define GLO_NAV_STR_BITS 85 /**< Length of GLO navigation string */

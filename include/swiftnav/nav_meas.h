@@ -118,6 +118,10 @@ typedef struct {
   u8 flags;          /**< Observations fixing flags [m], see above */
 } measurement_std_t;
 
+bool measurement_std_equal(const measurement_std_t *a,
+                           const measurement_std_t *b);
+bool nav_meas_equal(const navigation_measurement_t *a,
+                    const navigation_measurement_t *b);
 int nav_meas_cmp(const void *a, const void *b);
 bool nav_meas_flags_valid(nav_meas_flags_t flags);
 bool pseudorange_valid(const navigation_measurement_t *meas);

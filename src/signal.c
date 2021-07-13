@@ -944,6 +944,30 @@ sub_constellation_t sub_constellation_string_to_enum(
   return SUB_CONSTELLATION_INVALID;
 }
 
+constellation_t sub_constellation_to_constellation(
+    const sub_constellation_t sub_constellation) {
+  switch (sub_constellation) {
+    case SUB_CONSTELLATION_GPS:
+      return CONSTELLATION_GPS;
+    case SUB_CONSTELLATION_GAL:
+      return CONSTELLATION_GAL;
+    case SUB_CONSTELLATION_BDS2:
+    case SUB_CONSTELLATION_BDS3:
+      return CONSTELLATION_BDS;
+    case SUB_CONSTELLATION_SBAS:
+      return CONSTELLATION_SBAS;
+    case SUB_CONSTELLATION_GLO:
+      return CONSTELLATION_GLO;
+    case SUB_CONSTELLATION_QZS:
+      return CONSTELLATION_QZS;
+    case SUB_CONSTELLATION_INVALID:
+    case SUB_CONSTELLATION_COUNT:
+    default:
+      assert(false && "unhandled sub constellation");
+      return CONSTELLATION_INVALID;
+  }
+}
+
 code_t code_string_to_enum(const char *code_label) {
   for (s32 i = 0; i < (s32)CODE_COUNT; ++i) {
     if (strcmp(code_label, code_table[i].str) == 0) {

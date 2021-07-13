@@ -20,23 +20,9 @@
 #include <sal.h>
 #endif
 
-#ifndef __GNUC__
-/* This is GCC specific so make it void for others */
-#define __attribute__(x)
-#endif
-
-#ifdef _MSC_VER
-#if _MSC_VER >= 1400
-#define LIBSWIFTNAV_FORMAT_STRING _Printf_format_string_
-#else
-#define LIBSWIFTNAV_FORMAT_STRING __format_string
-#endif
-#else
-#define LIBSWIFTNAV_FORMAT_STRING
-#endif
-
 #include <swiftnav/common.h>
 #include <swiftnav/macro_overload.h>
+#include <swiftnav/macros.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,23 +55,22 @@ extern "C" {
  * \{ */
 
 typedef void (*pfn_log)(int level,
-                        LIBSWIFTNAV_FORMAT_STRING const char *msg,
-                        ...) __attribute__((format(printf, 2, 3)));
+                        SWIFT_ATTR_FORMAT_STRING const char *msg,
+                        ...) SWIFT_ATTR_FORMAT(2, 3);
 
 typedef void (*pfn_detailed_log)(int level,
                                  const char *file_path,
                                  const int line_number,
-                                 LIBSWIFTNAV_FORMAT_STRING const char *msg,
-                                 ...) __attribute__((format(printf, 4, 5)));
+                                 SWIFT_ATTR_FORMAT_STRING const char *msg,
+                                 ...) SWIFT_ATTR_FORMAT(4, 5);
 
-extern LIBSWIFTNAV_DECLSPEC pfn_log __attribute__((format(printf, 2, 3))) log_;
-extern LIBSWIFTNAV_DECLSPEC pfn_detailed_log
-    __attribute__((format(printf, 4, 5))) detailed_log_;
+extern SWIFT_DECLSPEC pfn_log SWIFT_ATTR_FORMAT(2, 3) log_;
+extern SWIFT_DECLSPEC pfn_detailed_log SWIFT_ATTR_FORMAT(4, 5) detailed_log_;
 
 /**
  * Provide custom implementation for the underlying log functions.
  */
-LIBSWIFTNAV_DECLSPEC void logging_set_implementation(
+SWIFT_DECLSPEC void logging_set_implementation(
     pfn_log impl_log, pfn_detailed_log impl_detailed_log);
 
 const char *truncate_path_(char *path);

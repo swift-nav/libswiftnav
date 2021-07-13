@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.3)
 project(libswiftnav)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/" "${CMAKE_CURRENT_LIST_DIR}/cmake/common")
@@ -29,9 +29,11 @@ swift_create_project_options(
 include(ClangFormat)
 swift_setup_clang_format()
 include(ClangTidy)
-swift_setup_clang_tidy(PATTERNS "src/*.c")
 include(CodeCoverage)
 add_code_coverage_all_targets()
+include(CheckAttributes)
+create_check_attributes_target(EXCLUDE "include/swiftnav/macros.h")
+include(SwiftTargets)
 
 option(LIBSWIFTNAV_ENABLE_STDERR_LOGGING "Enable logging to stderr by default" ON)
 
@@ -39,6 +41,8 @@ set(HDRS
     include/swiftnav/almanac.h
     include/swiftnav/array_tools.h
     include/swiftnav/bits.h
+    include/swiftnav/bitstream.h
+    include/swiftnav/bytestream.h
     include/swiftnav/ch_meas.h
     include/swiftnav/common.h
     include/swiftnav/constants.h
@@ -48,14 +52,17 @@ set(HDRS
     include/swiftnav/edc.h
     include/swiftnav/ephemeris.h
     include/swiftnav/fifo_byte.h
+    include/swiftnav/float_equality.h
     include/swiftnav/geoid_model.h
     include/swiftnav/glo_map.h
     include/swiftnav/glonass_phase_biases.h
+    include/swiftnav/gnss_capabilities.h
     include/swiftnav/gnss_time.h
     include/swiftnav/ionosphere.h
     include/swiftnav/linear_algebra.h
     include/swiftnav/logging.h
     include/swiftnav/macro_overload.h
+    include/swiftnav/macros.h
     include/swiftnav/memcpy_s.h
     include/swiftnav/nav_meas.h
     include/swiftnav/pvt_result.h
@@ -65,6 +72,7 @@ set(HDRS
     include/swiftnav/sid_set.h
     include/swiftnav/signal.h
     include/swiftnav/single_epoch_solver.h
+    include/swiftnav/swift_strnlen.h
     include/swiftnav/troposphere.h)
 
 set(SRCS
@@ -93,11 +101,11 @@ set(SRCS
     src/single_epoch_solver.c
     src/troposphere.c)
 
-add_library(swiftnav ${HDRS} ${SRCS})
-swift_set_language_standards(swiftnav)
-swift_set_compile_options(swiftnav ADD -pedantic REMOVE -Wconversion -Wstack-protector)
-
-target_code_coverage(swiftnav AUTO ALL)
+swift_add_library(swiftnav
+  SOURCES ${HDRS} ${SRCS}
+  REMOVE_COMPILE_OPTIONS -Wconversion -Wstack-protector
+)
+add_library(swiftnav::swiftnav ALIAS swiftnav)
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 if(LIBSWIFTNAV_ENABLE_STDERR_LOGGING)
@@ -105,10 +113,6 @@ if(LIBSWIFTNAV_ENABLE_STDERR_LOGGING)
 endif()
 
 target_compile_options(swiftnav PRIVATE "-UNDEBUG")
-
-target_code_coverage(swiftnav AUTO ALL)
-target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (MSVC)
 else ()
@@ -122,3 +126,6 @@ install(TARGETS swiftnav DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 if(libswiftnav_BUILD_TESTS OR libswiftnav_BUILD_TEST_LIBS)
   add_subdirectory(tests)
 endif()
+
+swift_validate_targets()
+swift_create_clang_tidy_targets()

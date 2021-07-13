@@ -73,6 +73,7 @@ jobs:
         include:
           - {os: ubuntu-18.04, cc: "gcc-6", cxx: "g++-6", test_suite: "unit"}
           - {os: ubuntu-18.04, cc: "clang-6.0", cxx: "clang++-6.0", test_suite: "lint"}
+          - {os: ubuntu-18.04, cc: "gcc-11", cxx: "g++-11", test_suite: "unit"}
           - {os: macos-10.15, cc: "clang", cxx: "clang++", test_suite: "unit"}
 
     runs-on: ${{ matrix.os }}
@@ -97,6 +98,11 @@ jobs:
         if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'gcc-6'
         run: |
           sudo apt-get install -y gcc-6 g++-6
+
+      - name: Install gcc-11 (Linux)
+        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'gcc-11'
+        run: |
+          sudo apt-get install -y gcc-11 g++-11
 
       - name: Install clang-6.0 (Linux)
         if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'clang-6.0'

@@ -38,7 +38,7 @@ static inline bool swiftnav_bitstream_getbitu(const swiftnav_bitstream_t *buf,
   if (swiftnav_bitstream_would_overflow(buf, pos, len)) {
     return false;
   }
-  *out = getbitu(buf->data, buf->offset + pos, len);
+  *out = getbitu(buf->data, buf->offset + pos, (u8)len);
   return true;
 }
 
@@ -49,7 +49,7 @@ static inline bool swiftnav_bitstream_getbits(const swiftnav_bitstream_t *buf,
   if (swiftnav_bitstream_would_overflow(buf, pos, len)) {
     return false;
   }
-  *out = getbits(buf->data, buf->offset + pos, len);
+  *out = getbits(buf->data, buf->offset + pos, (u8)len);
   return true;
 }
 
@@ -60,7 +60,7 @@ static inline bool swiftnav_bitstream_getbitul(const swiftnav_bitstream_t *buf,
   if (swiftnav_bitstream_would_overflow(buf, pos, len)) {
     return false;
   }
-  *out = getbitul(buf->data, buf->offset + pos, len);
+  *out = getbitul(buf->data, buf->offset + pos, (u8)len);
   return true;
 }
 
@@ -71,7 +71,7 @@ static inline bool swiftnav_bitstream_getbitsl(const swiftnav_bitstream_t *buf,
   if (swiftnav_bitstream_would_overflow(buf, pos, len)) {
     return false;
   }
-  *out = getbitsl(buf->data, buf->offset + pos, len);
+  *out = getbitsl(buf->data, buf->offset + pos, (u8)len);
   return true;
 }
 

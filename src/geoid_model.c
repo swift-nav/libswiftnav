@@ -81,6 +81,7 @@ static double cubic_interpolation(double p[4], double x) {
                      x * (2. * p[0] - 5. * p[1] + 4. * p[2] - p[3] +
                           x * (3. * (p[1] - p[2]) + p[3] - p[0])));
 }
+geoid_model_t get_geoid_model(void) { return GEOID_MODEL_EGM2008; }
 
 /* Return the geoid offset */
 float get_geoid_offset(double lat_rad, double lon_rad) {
