@@ -55,6 +55,7 @@ set(HDRS
     include/swiftnav/ionosphere.h
     include/swiftnav/linear_algebra.h
     include/swiftnav/logging.h
+    include/swiftnav/macro_overload.h
     include/swiftnav/memcpy_s.h
     include/swiftnav/nav_meas.h
     include/swiftnav/pvt_result.h
