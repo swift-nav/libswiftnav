@@ -385,6 +385,26 @@ bool almanac_equal(const almanac_t *a, const almanac_t *b) {
  * \retval false No data has been decoded
  */
 bool almanac_decode_week(const u32 words[8], almanac_ref_week_t *ref_week) {
+  return almanac_decode_week_with_wn_ref(words, ref_week, GPS_WEEK_REFERENCE);
+}
+
+/**
+ * Decode almanac's week number and SV health flags
+ *
+ * References:
+ * -# IS-GPS-200D, Section 20.3.3.5
+ *
+ * \param[in]  words    Words 3-10 of subframe 4 or 5.
+ * \param[out] ref_week Reference time to update on success.
+ * \param[in]  wn_ref   Reference week number that is from some point in the
+ * past
+ *
+ * \retval true  Some data has been decoded
+ * \retval false No data has been decoded
+ */
+bool almanac_decode_week_with_wn_ref(const u32 words[8],
+                                     almanac_ref_week_t *ref_week,
+                                     u16 wn_ref) {
   bool retval = false;
 
   assert(NULL != words);
@@ -408,7 +428,7 @@ bool almanac_decode_week(const u32 words[8], almanac_ref_week_t *ref_week) {
     u8 toa = words[3 - 3] >> (30 - 16) & 0xFF;
 
     ref_week->toa = toa * GPS_LNAV_ALM_SF_TOA;
-    ref_week->wna = gps_adjust_week_cycle256(wn, GPS_WEEK_REFERENCE);
+    ref_week->wna = gps_adjust_week_cycle256(wn, wn_ref);
 
     retval = true;
   }

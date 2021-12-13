@@ -1073,6 +1073,27 @@ u32 decode_fit_interval(u8 fit_interval_flag, u16 iodc) {
 void decode_ephemeris(const u32 frame_words[3][8],
                       ephemeris_t *e,
                       double tot_tow) {
+  decode_ephemeris_with_wn_ref(frame_words, e, tot_tow, GPS_WEEK_REFERENCE);
+}
+
+/** Decode ephemeris from L1 C/A GPS navigation message frames.
+ *
+ * \note This function does not check for parity errors. You should check the
+ *       subframes for parity errors before calling this function.
+ *
+ * References:
+ *   -# IS-GPS-200D, Section 20.3.2 and Figure 20-1
+ *
+ * \param frame_words Array containing words 3 through 10 of subframes
+ *                    1, 2 and 3. Word is in the 30 LSBs of the u32.
+ * \param e Pointer to an ephemeris struct to fill in.
+ * \param tot_tow TOW for time of transmission
+ * \param wn_ref Reference week number that is from some point in the past
+ */
+void decode_ephemeris_with_wn_ref(const u32 frame_words[3][8],
+                                  ephemeris_t *e,
+                                  double tot_tow,
+                                  u16 wn_ref) {
   assert(frame_words != NULL);
   assert(e != NULL);
   assert(IS_GPS(e->sid));
@@ -1089,7 +1110,7 @@ void decode_ephemeris(const u32 frame_words[3][8],
    * 1024 binary representation of the current GPS week number
    * at the start of the data set transmission interval. <<<<< IMPORTANT !!!
    */
-  e->toe.wn = gps_adjust_week_cycle(wn_raw, GPS_WEEK_REFERENCE);
+  e->toe.wn = gps_adjust_week_cycle(wn_raw, wn_ref);
 
   /* t_oe: Word 10, bits 1-16 */
   e->toe.tow =

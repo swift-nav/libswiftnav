@@ -18,6 +18,7 @@
 
 #include <swiftnav/common.h>
 #include <swiftnav/constants.h>
+#include <swiftnav/leap_seconds.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -224,34 +225,12 @@ typedef struct {
   double second_frac; /**< Fractional part of seconds (0 - .99...). */
 } utc_tm;
 
-/* Start times of UTC leap second events given in GPS time {wn, tow, gpst-utc}
- * The leap second event lasts for one second from the start time, and after
- * that the new offset is in effect. */
-static const s32 utc_leaps[][3] = {
-    {77, 259200, 1},    /* 01-07-1981 */
-    {129, 345601, 2},   /* 01-07-1982 */
-    {181, 432002, 3},   /* 01-07-1983 */
-    {286, 86403, 4},    /* 01-07-1985 */
-    {416, 432004, 5},   /* 01-01-1988 */
-    {521, 86405, 6},    /* 01-01-1990 */
-    {573, 172806, 7},   /* 01-01-1991 */
-    {651, 259207, 8},   /* 01-07-1992 */
-    {703, 345608, 9},   /* 01-07-1993 */
-    {755, 432009, 10},  /* 01-07-1994 */
-    {834, 86410, 11},   /* 01-01-1996 */
-    {912, 172811, 12},  /* 01-07-1997 */
-    {990, 432012, 13},  /* 01-01-1999 */
-    {1356, 13, 14},     /* 01-01-2006 */
-    {1512, 345614, 15}, /* 01-01-2009 */
-    {1695, 15, 16},     /* 01-07-2012 */
-    {1851, 259216, 17}, /* 01-07-2015 */
-    {1930, 17, 18}      /* 01-01-2017 */
-};
-
 bool unix_time_valid(const time_t *t);
+bool unix_time_valid_with_wn_ref(const time_t *t, u16 wn_ref);
 bool gps_time_valid(const gps_time_t *t);
 
 bool gps_current_time_valid(const gps_time_t *t);
+bool gps_current_time_valid_with_wn_ref(const gps_time_t *t, u16 wn_ref);
 
 void normalize_gps_time(gps_time_t *t);
 void unsafe_normalize_gps_time(gps_time_t *t);
@@ -283,6 +262,9 @@ double utc2gmst(utc_tm u, double ut1_utc);
 u16 gps2doy(const gps_time_t *t);
 
 bool decode_utc_parameters(const u32 words[8], utc_params_t *u);
+bool decode_utc_parameters_with_wn_ref(const u32 words[8],
+                                       utc_params_t *u,
+                                       u16 wn_ref);
 
 double date2mjd(s32 year, s32 month, s32 day, s32 hour, s32 min, double sec);
 void mjd2date(double mjd,

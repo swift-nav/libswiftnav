@@ -39,8 +39,18 @@ bool gps_time_valid(const gps_time_t *t) {
  * \return true if the time is valid
  */
 bool unix_time_valid(const time_t *t) {
-  return (isfinite((double)*t) && ((*t) >= 0) &&
-          ((*t) > (GPS_WEEK_REFERENCE * WEEK_SECS) + GPS_EPOCH));
+  return unix_time_valid_with_wn_ref(t, GPS_WEEK_REFERENCE);
+}
+
+/** Tell whether a `time_t` struct is a valid Unix time.
+ *
+ * \param t Unix time struct.
+ * \param wn_ref Reference week number that is from some point in the past
+ * \return true if the time is valid
+ */
+bool unix_time_valid_with_wn_ref(const time_t *t, u16 wn_ref) {
+  return (isfinite((float)*t) && ((*t) >= 0) &&
+          ((*t) > (wn_ref * WEEK_SECS) + GPS_EPOCH));
 }
 
 /** Tell whether a `gps_time_t` struct is valid and within current GPS week
@@ -50,8 +60,18 @@ bool unix_time_valid(const time_t *t) {
  * \return true if the time is valid
  */
 bool gps_current_time_valid(const gps_time_t *t) {
-  return gps_time_valid(t) && t->wn >= GPS_WEEK_REFERENCE &&
-         t->wn < GPS_MAX_WEEK;
+  return gps_current_time_valid_with_wn_ref(t, GPS_WEEK_REFERENCE);
+}
+
+/** Tell whether a `gps_time_t` struct is valid and within current GPS week
+ * cycle.
+ *
+ * \param t GPS time struct.
+ * \param wn_ref Reference week number that is from some point in the past
+ * \return true if the time is valid
+ */
+bool gps_current_time_valid_with_wn_ref(const gps_time_t *t, u16 wn_ref) {
+  return gps_time_valid(t) && t->wn >= wn_ref && t->wn < (wn_ref + 1023);
 }
 
 /** Normalize a `gps_time_t` GPS time struct in place.
@@ -585,6 +605,31 @@ static inline s32 sign_extend24(u32 arg) {
  * \retval false Decoding error.
  */
 bool decode_utc_parameters(const u32 words[8], utc_params_t *u) {
+  return decode_utc_parameters_with_wn_ref(words, u, GPS_WEEK_REFERENCE);
+}
+
+/**
+ * Decodes UTC parameters from GLS LNAV message subframe 4.
+ *
+ * The method decodes UTC data from GPS LNAV subframe 4 words 6-10.
+ *
+ * \note Fills out the full time of week from current gps week cycle. Also
+ * sets t_lse to the exact GPS time at the start of the leap second event.
+ *
+ * References:
+ * -# IS-GPS-200H, Section 20.3.3.5.1.6
+ *
+ * \param[in]  words    Subframe 4 page 18.
+ * \param[out] u        Destination object.
+ * \param[int] wn_ref   Reference week number that is from some point in the
+ * past
+ *
+ * \retval true  UTC parameters have been decoded.
+ * \retval false Decoding error.
+ */
+bool decode_utc_parameters_with_wn_ref(const u32 words[8],
+                                       utc_params_t *u,
+                                       u16 wn_ref) {
   bool retval = false;
 
   assert(NULL != words);
@@ -611,12 +656,12 @@ bool decode_utc_parameters(const u32 words[8], utc_params_t *u) {
     u->tot.tow = tot * GPS_LNAV_UTC_SF_TOT;
     /* Word 8 bits 17-24 */
     u8 wn_t = words[8 - 3] >> (30 - 24) & 0xFF;
-    u->tot.wn = gps_adjust_week_cycle256(wn_t, GPS_WEEK_REFERENCE);
+    u->tot.wn = gps_adjust_week_cycle256(wn_t, wn_ref);
     /* Word 9 bits 1-8 */
     u->dt_ls = (s8)(words[9 - 3] >> (30 - 8) & 0xFF);
     /* Word 9 bits 9-16 */
     u8 wn_lsf = words[9 - 3] >> (30 - 16) & 0xFF;
-    u->t_lse.wn = gps_adjust_week_cycle256(wn_lsf, GPS_WEEK_REFERENCE);
+    u->t_lse.wn = gps_adjust_week_cycle256(wn_lsf, wn_ref);
     /* Word 9 bits 17-24 */
     u8 dn = words[9 - 3] >> (30 - 24) & 0xFF;
     if ((dn < GPS_LNAV_UTC_MIN_DN) || (dn > GPS_LNAV_UTC_MAX_DN)) {

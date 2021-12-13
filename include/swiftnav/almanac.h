@@ -182,6 +182,9 @@ u8 almanac_healthy(const almanac_t *alm);
 
 bool almanac_equal(const almanac_t *a, const almanac_t *b);
 bool almanac_decode_week(const u32 words[8], almanac_ref_week_t *ref_week);
+bool almanac_decode_week_with_wn_ref(const u32 words[8],
+                                     almanac_ref_week_t *ref_week,
+                                     u16 wn_ref);
 bool almanac_decode_health(const u32 words[8], almanac_health_t *alm_health);
 bool almanac_decode(const u32 words[8], almanac_t *a);
 
