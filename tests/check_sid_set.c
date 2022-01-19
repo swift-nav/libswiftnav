@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <swiftnav/sid_set.h>
+
 #include "check_suites.h"
 #include "common/check_utils.h"
-
-#include <swiftnav/sid_set.h>
 
 START_TEST(test_sid_set_empty) {
   gnss_sid_set_t sid_set;

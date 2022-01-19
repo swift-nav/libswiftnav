@@ -12,7 +12,6 @@
 
 #include <assert.h>
 #include <string.h>
-
 #include <swiftnav/set.h>
 
 /* This whole file uses void * pointers to do pointer math.

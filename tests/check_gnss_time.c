@@ -34,6 +34,83 @@ START_TEST(test_gpsdifftime) {
 }
 END_TEST
 
+START_TEST(test_gpsdifftime_week_second) {
+  struct gpsdifftime_week_second_testcase {
+    gps_time_t beginning;
+    gps_time_t end;
+    gps_time_duration_t dt;
+    bool success;
+  } testcases[] = {
+      {.end = {567890.0, 1234},
+       .beginning = {567890.0, 1234},
+       .dt = {.seconds = 0, .weeks = 0},
+       .success = true},
+      {.end = {567890.0, 1234},
+       .beginning = {0.0, 1234},
+       .dt = {.seconds = 567890, .weeks = 0},
+       .success = true},
+      {.end = {567890.0, WN_UNKNOWN},
+       .beginning = {0.0, 1234},
+       .dt = {0, 0},
+       .success = false},
+      {.end = {222222.0, 2222},
+       .beginning = {2222.0, WN_UNKNOWN},
+       .dt = {0, 0},
+       .success = false},
+      {.end = {444444.0, WN_UNKNOWN},
+       .beginning = {2222.0, WN_UNKNOWN},
+       .dt = {0, 0},
+       .success = false},
+      {.end = {604578.0, 1000},
+       .beginning = {222.222, 1001},
+       .dt = {.seconds = -444.222, .weeks = 0},
+       .success = true},
+      {.end = {222.222, 1001},
+       .beginning = {604578.0, 1000},
+       .dt = {.seconds = 444.222, .weeks = 0},
+       .success = true},
+      {.end = {604578.0, 1001},
+       .beginning = {222.222, 1000},
+       .dt = {.seconds = 604355.778, .weeks = 1},
+       .success = true},
+      {.end = {0, 5120},
+       .beginning = {0, 1024},
+       .dt = {.seconds = 0, .weeks = 4096},
+       .success = true},
+  };
+  const double tow_tol = 1e-10;
+  for (size_t i = 0;
+       i < sizeof(testcases) / sizeof(struct gpsdifftime_week_second_testcase);
+       i++) {
+    gps_time_duration_t dt = {0, 0};
+    bool success = gpsdifftime_week_second(
+        &testcases[i].end, &testcases[i].beginning, &dt);
+    double absdiff_s =
+        fabs(dt.seconds - testcases[i].dt.seconds) +
+        fabs((double)dt.weeks - (double)testcases[i].dt.weeks) * WEEK_SECS;
+    bool test_passed = absdiff_s < tow_tol && success == testcases[i].success;
+    fail_unless(test_passed, "gpsdifftime_week_second test case %zu failed", i);
+  }
+}
+
+START_TEST(test_long_gps_time_diff) {
+  gps_time_t t2 = {.tow = 0, .wn = 2345};
+  gps_time_t t1 = {.tow = 1.2345678, .wn = 0};
+  gps_time_duration_t dt = {0, 0};
+  gps_time_duration_t correct_dt = {.seconds = 604798.7654322, .weeks = 2344};
+  // Test that less floating-point error with gpsdifftime_week_second than with
+  // gpsdifftime(...):
+  dt.seconds = gpsdifftime(&t2, &t1);
+  dt.weeks = 0;
+  normalize_gps_time_duration(&dt);
+  fail_unless(fabs(dt.seconds - correct_dt.seconds) < 1e-2);
+  fail_unless(fabs(dt.seconds - correct_dt.seconds) > 1e-9);
+
+  gpsdifftime_week_second(&t2, &t1, &dt);
+  fail_unless(fabs(dt.seconds - correct_dt.seconds) < 1e-12,
+              "Long GPST difference test failed.");
+}
+
 START_TEST(test_normalize_gps_time) {
   gps_time_t testcases[] = {{0, 1234},
                             {3 * DAY_SECS, 1234},
@@ -58,6 +135,38 @@ START_TEST(test_normalize_gps_time) {
     }
     /* normalization must not touch unknown week number */
     fail_unless(wn != WN_UNKNOWN || testcases[i].wn == WN_UNKNOWN);
+  }
+}
+END_TEST
+
+START_TEST(test_normalize_gps_time_duration) {
+  gps_time_duration_t testcases[] = {{0, 1234},
+                                     {3 * DAY_SECS, 1234},
+                                     {WEEK_SECS + DAY_SECS, 1234},
+                                     {-DAY_SECS, 1234},
+                                     {0, -1234},
+                                     {-3 * DAY_SECS, -1234},
+                                     {-(WEEK_SECS + DAY_SECS), -1234},
+                                     {DAY_SECS, -1234},
+                                     {1e-9, 1234}};
+  gps_time_duration_t expected_results[] = {
+      {0, 1234},
+      {3 * DAY_SECS, 1234},
+      {DAY_SECS, 1234 + 1},
+      {WEEK_SECS - DAY_SECS, 1234 - 1},
+      {0, -1234},
+      {-3 * DAY_SECS, -1234},
+      {-DAY_SECS, -(1234 + 1)},
+      {-(WEEK_SECS - DAY_SECS), -1234 + 1},
+      {1e-9, 1234}};
+  const double tow_tol = 1e-10;
+  for (size_t i = 0; i < sizeof(testcases) / sizeof(gps_time_duration_t); i++) {
+    normalize_gps_time_duration(&testcases[i]);
+    bool test_passed =
+        testcases[i].weeks == expected_results[i].weeks &&
+        fabs(testcases[i].seconds - expected_results[i].seconds) < tow_tol;
+    fail_unless(
+        test_passed, "normalize_gps_time_duration test case %zu failed", i);
   }
 }
 END_TEST
@@ -1119,7 +1228,10 @@ Suite *gnss_time_test_suite(void) {
 
   TCase *tc_core = tcase_create("Core");
   tcase_add_test(tc_core, test_gpsdifftime);
+  tcase_add_test(tc_core, test_gpsdifftime_week_second);
+  tcase_add_test(tc_core, test_long_gps_time_diff);
   tcase_add_test(tc_core, test_normalize_gps_time);
+  tcase_add_test(tc_core, test_normalize_gps_time_duration);
   tcase_add_test(tc_core, test_gps_time_match_weeks);
   tcase_add_test(tc_core, test_gps_adjust_week_cycle);
   tcase_add_test(tc_core, test_is_leap_year);

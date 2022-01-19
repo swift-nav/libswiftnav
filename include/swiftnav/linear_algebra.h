@@ -14,7 +14,6 @@
 #define LIBSWIFTNAV_LINEAR_ALGEBRA_H
 
 #include <stdbool.h>
-
 #include <swiftnav/common.h>
 #include <swiftnav/constants.h>
 

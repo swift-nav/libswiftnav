@@ -39,8 +39,18 @@ bool gps_time_valid(const gps_time_t *t) {
  * \return true if the time is valid
  */
 bool unix_time_valid(const time_t *t) {
+  return unix_time_valid_with_wn_ref(t, GPS_WEEK_REFERENCE);
+}
+
+/** Tell whether a `time_t` struct is a valid Unix time.
+ *
+ * \param t Unix time struct.
+ * \param wn_ref Reference week number that is from some point in the past
+ * \return true if the time is valid
+ */
+bool unix_time_valid_with_wn_ref(const time_t *t, u16 wn_ref) {
   return (isfinite((float)*t) && ((*t) >= 0) &&
-          ((*t) > (GPS_WEEK_REFERENCE * WEEK_SECS) + GPS_EPOCH));
+          ((*t) > (wn_ref * WEEK_SECS) + GPS_EPOCH));
 }
 
 /** Tell whether a `gps_time_t` struct is valid and within current GPS week
@@ -50,8 +60,18 @@ bool unix_time_valid(const time_t *t) {
  * \return true if the time is valid
  */
 bool gps_current_time_valid(const gps_time_t *t) {
-  return gps_time_valid(t) && t->wn >= GPS_WEEK_REFERENCE &&
-         t->wn < GPS_MAX_WEEK;
+  return gps_current_time_valid_with_wn_ref(t, GPS_WEEK_REFERENCE);
+}
+
+/** Tell whether a `gps_time_t` struct is valid and within current GPS week
+ * cycle.
+ *
+ * \param t GPS time struct.
+ * \param wn_ref Reference week number that is from some point in the past
+ * \return true if the time is valid
+ */
+bool gps_current_time_valid_with_wn_ref(const gps_time_t *t, u16 wn_ref) {
+  return gps_time_valid(t) && t->wn >= wn_ref && t->wn < (wn_ref + 1023);
 }
 
 /** Normalize a `gps_time_t` GPS time struct in place.
@@ -112,6 +132,52 @@ void unsafe_normalize_gps_time(gps_time_t *t) {
   while (t->tow >= WEEK_SECS) {
     t->tow -= WEEK_SECS;
     t->wn += 1;
+  }
+}
+
+/** Returns sign of a given value.
+ * \param value
+ * \return signum function
+ *  1 if value is positive
+ *  -1 if value is negative
+ *  0 if value is zero
+ */
+static double sign(double value) {
+  if (value < 0) {
+    return -1;
+  }
+  if (value > 0) {
+    return 1;
+  }
+  return 0;
+}
+
+/** Normalize a `gps_time_duration_t` time duration struct in place.
+ * Ensures that the week seconds are less than one week in magnitude by
+ * wrapping and adjusting the week number accordingly.
+ *
+ * \param dt Time duration struct.
+ */
+void normalize_gps_time_duration(gps_time_duration_t *dt) {
+  /* For negative durations */
+  while (dt->seconds <= -WEEK_SECS) {
+    dt->seconds += WEEK_SECS;
+    dt->weeks -= 1;
+  }
+  while (dt->seconds >= WEEK_SECS) {
+    dt->seconds -= WEEK_SECS;
+    dt->weeks += 1;
+  }
+  /* Make sure that weeks and seconds have the same sign */
+  if (dt->weeks == 0) {
+    return;
+  }
+  double sign_weeks = sign(dt->weeks);
+  double sign_seconds = sign(dt->seconds);
+  /* Detecting unequal signs by multiplication avoids float comparison: */
+  if (sign_weeks * sign_seconds < -FLOAT_EQUALITY_EPS) {
+    dt->weeks -= (s16)sign_weeks;
+    dt->seconds += sign_weeks * WEEK_SECS;
   }
 }
 
@@ -312,6 +378,35 @@ double gpsdifftime(const gps_time_t *end, const gps_time_t *beginning) {
     dt += ((double)end->wn - beginning->wn) * WEEK_SECS;
   }
   return dt;
+}
+
+/** Time difference in [weeks, week seconds] format between two GPS times. For
+ * time intervals spanning many weeks this can have better floating-point
+ * precision than computing the time difference in seconds.
+ *
+ * \param end Higher bound of the time interval whose length is calculated.
+ * \param beginning Lower bound of the time interval whose length is
+ *                  calculated. This can be a point in time later than end,
+ * leading to a negative time difference.
+ * \param dt The time difference between 'beginning' and 'end'.
+ * \return True, if the time difference could be computed, false otherwise, e.g.
+ * for end or start times with unknown week numbers.
+ */
+bool gpsdifftime_week_second(const gps_time_t *end,
+                             const gps_time_t *beginning,
+                             gps_time_duration_t *dt) {
+  dt->seconds = 0;
+  dt->weeks = 0;
+  if (!gps_time_valid(end) || !gps_time_valid(beginning)) {
+    return false;
+  }
+  s16 dt_weeks = end->wn - beginning->wn;
+  gps_time_t shifted_beginning = *beginning;
+  shifted_beginning.wn += dt_weeks;
+  dt->seconds = end->tow - shifted_beginning.tow;
+  dt->weeks = dt_weeks;
+  normalize_gps_time_duration(dt);
+  return true;
 }
 
 /** Add secs seconds to the GPS time.
@@ -622,6 +717,31 @@ static inline s32 sign_extend24(u32 arg) {
  * \retval false Decoding error.
  */
 bool decode_utc_parameters(const u32 words[8], utc_params_t *u) {
+  return decode_utc_parameters_with_wn_ref(words, u, GPS_WEEK_REFERENCE);
+}
+
+/**
+ * Decodes UTC parameters from GLS LNAV message subframe 4.
+ *
+ * The method decodes UTC data from GPS LNAV subframe 4 words 6-10.
+ *
+ * \note Fills out the full time of week from current gps week cycle. Also
+ * sets t_lse to the exact GPS time at the start of the leap second event.
+ *
+ * References:
+ * -# IS-GPS-200H, Section 20.3.3.5.1.6
+ *
+ * \param[in]  words    Subframe 4 page 18.
+ * \param[out] u        Destination object.
+ * \param[int] wn_ref   Reference week number that is from some point in the
+ * past
+ *
+ * \retval true  UTC parameters have been decoded.
+ * \retval false Decoding error.
+ */
+bool decode_utc_parameters_with_wn_ref(const u32 words[8],
+                                       utc_params_t *u,
+                                       u16 wn_ref) {
   bool retval = false;
 
   assert(NULL != words);
@@ -648,12 +768,12 @@ bool decode_utc_parameters(const u32 words[8], utc_params_t *u) {
     u->tot.tow = tot * GPS_LNAV_UTC_SF_TOT;
     /* Word 8 bits 17-24 */
     u8 wn_t = words[8 - 3] >> (30 - 24) & 0xFF;
-    u->tot.wn = gps_adjust_week_cycle256(wn_t, GPS_WEEK_REFERENCE);
+    u->tot.wn = gps_adjust_week_cycle256(wn_t, wn_ref);
     /* Word 9 bits 1-8 */
     u->dt_ls = (s8)(words[9 - 3] >> (30 - 8) & 0xFF);
     /* Word 9 bits 9-16 */
     u8 wn_lsf = words[9 - 3] >> (30 - 16) & 0xFF;
-    u->t_lse.wn = gps_adjust_week_cycle256(wn_lsf, GPS_WEEK_REFERENCE);
+    u->t_lse.wn = gps_adjust_week_cycle256(wn_lsf, wn_ref);
     /* Word 9 bits 17-24 */
     u8 dn = words[9 - 3] >> (30 - 24) & 0xFF;
     if ((dn < GPS_LNAV_UTC_MIN_DN) || (dn > GPS_LNAV_UTC_MAX_DN)) {

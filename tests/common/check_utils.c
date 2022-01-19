@@ -1,10 +1,10 @@
+#include "check_utils.h"
+
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
-#include "check_utils.h"
 
 /*#define epsilon 0.0001*/
 #define EPSILON 1e-5

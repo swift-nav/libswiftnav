@@ -13,6 +13,8 @@ include(TestTargets)
 include(LanguageStandards)
 include(CompileOptions)
 
+find_package(Python3 COMPONENTS Interpreter)
+
 set(disable_tests FALSE)
 if(WIN32)
   message(STATUS "MSVC detected, skipping unit tests")
@@ -99,13 +101,14 @@ set(SRCS
     src/sid_set.c
     src/signal.c
     src/single_epoch_solver.c
+    src/subsystem_status_report.c
     src/troposphere.c)
 
 swift_add_library(swiftnav
   SOURCES ${HDRS} ${SRCS}
   REMOVE_COMPILE_OPTIONS -Wconversion -Wstack-protector
 )
-add_library(swiftnav::swiftnav ALIAS swiftnav)
+
 target_include_directories(swiftnav PUBLIC ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(swiftnav PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 if(LIBSWIFTNAV_ENABLE_STDERR_LOGGING)
@@ -126,6 +129,10 @@ install(TARGETS swiftnav DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 if(libswiftnav_BUILD_TESTS OR libswiftnav_BUILD_TEST_LIBS)
   add_subdirectory(tests)
 endif()
+
+add_custom_target(do-update-leap_seconds
+  COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/scripts/leap_seconds_generator.py ${PROJECT_SOURCE_DIR}/include/swiftnav/leap_seconds.h
+)
 
 swift_validate_targets()
 swift_create_clang_tidy_targets(DONT_GENERATE_CLANG_TIDY_CONFIG)

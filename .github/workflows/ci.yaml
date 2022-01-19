@@ -13,6 +13,37 @@ on:
 
 jobs:
 
+  ubuntu-codecov:
+    runs-on: ubuntu-18.04
+    steps:
+
+      - name: Checkout source
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          ssh-key: ${{ secrets.SSH_KEY }}
+
+      - name: Install llvm-cov
+        run: |
+          sudo apt-get update && sudo apt-get install llvm -y
+
+      - name: Run build
+        env:
+          CC: clang
+          CXX: clang++
+          TESTENV: codecov
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: swift-nav
+          SONAR_PROJECT_KEY: swift-nav_libswiftnav
+          SONAR_PROJECT_NAME: libswiftnav
+          SONAR_HOST_URL: https://sonarcloud.io
+          SONAR_SCANNER_VERSION: 4.2.0.1873
+
+        run: |
+          bash ./ci-build.sh
+
   windows:
     strategy:
       matrix:
@@ -119,5 +150,6 @@ jobs:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
           TEST_SUITE: ${{ matrix.test_suite }}
+          TESTENV: c
         run: |
           bash ./ci-build.sh

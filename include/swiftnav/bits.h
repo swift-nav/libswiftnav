@@ -56,6 +56,8 @@ s32 getbits(const u8 *buff, u32 pos, u8 len);
 s64 getbitsl(const u8 *buff, u32 pos, u8 len);
 void setbitu(u8 *buff, u32 pos, u32 len, u32 data);
 void setbits(u8 *buff, u32 pos, u32 len, s32 data);
+void setbitul(u8 *buff, u32 pos, u32 len, u64 data);
+void setbitsl(u8 *buff, u32 pos, u32 len, s64 data);
 void bitcopy(
     void *dst, u32 dst_index, const void *src, u32 src_index, u32 count);
 void bitshl(void *buf, u32 size, u32 shift);

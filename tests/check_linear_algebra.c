@@ -2,8 +2,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <swiftnav/linear_algebra.h>
+
 #include "check_suites.h"
 #include "common/check_utils.h"
 

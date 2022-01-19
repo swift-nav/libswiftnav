@@ -2,8 +2,8 @@
 #include <float.h>
 #include <inttypes.h>
 #include <stdio.h>
-
 #include <swiftnav/nav_meas.h>
+
 #include "check_suites.h"
 
 START_TEST(test_encode_lock_time) {

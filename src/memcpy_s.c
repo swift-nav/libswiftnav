@@ -12,7 +12,6 @@
 
 #include <inttypes.h>
 #include <string.h>
-
 #include <swiftnav/logging.h>
 #include <swiftnav/memcpy_s.h>
 

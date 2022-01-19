@@ -17,7 +17,6 @@
 #include <memory.h>
 #elif !defined(_CRT_MEMORY_DEFINED)
 #include <assert.h>
-
 #include <swiftnav/logging.h>
 
 #ifdef __cplusplus

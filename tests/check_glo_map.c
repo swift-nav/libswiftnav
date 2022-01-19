@@ -11,9 +11,9 @@
  */
 
 #include <check.h>
-
 #include <swiftnav/glo_map.h>
 #include <swiftnav/logging.h>
+
 #include "check_suites.h"
 
 #define FCN_TEST_VAL 14

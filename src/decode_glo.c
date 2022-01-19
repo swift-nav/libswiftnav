@@ -13,7 +13,6 @@
 #include "swiftnav/decode_glo.h"
 
 #include <assert.h>
-
 #include <swiftnav/bits.h>
 #include <swiftnav/ephemeris.h>
 #include <swiftnav/logging.h>

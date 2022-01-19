@@ -14,7 +14,6 @@
 #define LIBSWIFTNAV_EPHEMERIS_H
 
 #include <stdbool.h>
-
 #include <swiftnav/common.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/gnss_time.h>
@@ -351,6 +350,10 @@ u8 ephemeris_params_valid(const gps_time_t *bgn,
 void decode_ephemeris(const u32 frame_words[3][8],
                       ephemeris_t *e,
                       double tot_tow);
+void decode_ephemeris_with_wn_ref(const u32 frame_words[3][8],
+                                  ephemeris_t *e,
+                                  double tot_tow,
+                                  u16 wn_ref);
 
 void decode_bds_d1_ephemeris(const u32 words[3][10],
                              gnss_signal_t sid,

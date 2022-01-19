@@ -13,7 +13,6 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <string.h>
-
 #include <swiftnav/logging.h>
 
 const char *level_string[] = {

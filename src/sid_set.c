@@ -12,7 +12,6 @@
 
 #include <assert.h>
 #include <string.h>
-
 #include <swiftnav/bits.h>
 #include <swiftnav/sid_set.h>
 

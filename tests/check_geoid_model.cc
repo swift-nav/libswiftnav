@@ -7,7 +7,6 @@
  */
 
 #include <check.h>
-
 #include <swiftnav/constants.h>
 #include <swiftnav/geoid_model.h>
 

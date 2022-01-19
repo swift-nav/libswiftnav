@@ -1,9 +1,9 @@
 #include <check.h>
 #include <math.h>
-#include <time.h>
-
 #include <swiftnav/constants.h>
 #include <swiftnav/gnss_time.h>
+#include <time.h>
+
 #include "check_suites.h"
 #include "common/check_utils.h"
 
@@ -14,14 +14,41 @@ extern "C" {
 #define GPS_TIME_TOL (1.0e-9)
 
 START_TEST(test_gpstime_comparison_ops) {
-  gps_time_t a = {567890.0, 1234}, b = {567890.5, 1234}, c = {567890.0, 1234};
+  gps_time_t a = {567890.0, 1234};
+  gps_time_t b = {567890.5, 1234};
+  gps_time_t c = {567890.0, 1234};
+  gps_time_t time_before_rollover = {WEEK_SECS - 1.0, 1234};
+  gps_time_t time_after_rollover{1.0, 1234};
+  gps_time_t time_unknown_wn_only{1.0, WN_UNKNOWN};
+  gps_time_t time_unknown_tow_only{TOW_UNKNOWN, 1234};
+  gps_time_t time_unknown_wn_a{0.0, WN_UNKNOWN};
+  gps_time_t time_unknown_wn_b{WEEK_SECS - 1.0, WN_UNKNOWN};
+  gps_time_t time_unknown_tow_a{TOW_UNKNOWN, 1234};
+  gps_time_t time_unknown_tow_b{TOW_UNKNOWN, 1235};
   fail_unless(a < b, "operator< failed");
   fail_unless(b > a, "operator> failed");
+  fail_unless(!(a == b), "operator== failed");
+  fail_unless(!(b == a), "operator== failed");
   fail_unless(a == c, "operator== failed");
   fail_unless(a <= b, "operator<= failed");
   fail_unless(b >= a, "operator>= failed");
   fail_unless(a >= c, "operator>= failed");
   fail_unless(a <= c, "operator<= failed");
+  fail_unless(GPS_TIME_UNKNOWN == GPS_TIME_UNKNOWN, "operator== failed");
+  fail_unless(!(time_before_rollover == GPS_TIME_UNKNOWN), "operator== failed");
+  fail_unless(!(GPS_TIME_UNKNOWN == time_before_rollover), "operator== failed");
+  fail_unless(!(time_after_rollover == GPS_TIME_UNKNOWN), "operator== failed");
+  fail_unless(!(GPS_TIME_UNKNOWN == time_after_rollover), "operator== failed");
+  fail_unless(!(time_unknown_wn_only == GPS_TIME_UNKNOWN), "operator== failed");
+  fail_unless(!(GPS_TIME_UNKNOWN == time_unknown_wn_only), "operator== failed");
+  fail_unless(!(time_unknown_tow_only == GPS_TIME_UNKNOWN),
+              "operator== failed");
+  fail_unless(!(GPS_TIME_UNKNOWN == time_unknown_tow_only),
+              "operator== failed");
+  fail_unless(!(time_unknown_wn_a == time_unknown_wn_b), "operator== failed");
+  fail_unless(!(time_unknown_wn_b == time_unknown_wn_a), "operator== failed");
+  fail_unless(!(time_unknown_tow_a == time_unknown_tow_b), "operator== failed");
+  fail_unless(!(time_unknown_tow_b == time_unknown_tow_a), "operator== failed");
 }
 END_TEST
 

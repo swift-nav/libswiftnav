@@ -315,6 +315,12 @@ typedef struct {
   code_t code;
 } gnss_signal_t;
 
+/** Helper type to hold a GNSS metric along with associated signal type. */
+typedef struct {
+  double metric_m;
+  gnss_signal_t sid;
+} gnss_metric_and_signal_t;
+
 #ifdef __cplusplus
 static constexpr gnss_signal_t SID_UNKNOWN = {0, CODE_INVALID};
 #else

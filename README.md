@@ -1,14 +1,13 @@
 [![CI](https://github.com/swift-nav/libswiftnav/actions/workflows/ci.yaml/badge.svg)](https://github.com/swift-nav/libswiftnav/actions/workflows/ci.yaml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=swift-nav_libswiftnav&metric=alert_status)](https://sonarcloud.io/dashboard?id=swift-nav_libswiftnav)
 
+
 libswiftnav
 ===========
 
 Libswiftnav (LSN) is a platform independent library that implements GNSS utility functions for use by software-defined GNSS receivers or software requiring GNSS functionality. It is intended to be as portable as possible and is written in standards compliant C with no dependancies
 
-LSN does not provide any functionality for communicating with Swift
-Navigation receivers.  See [libsbp](https://github.com/swift-nav/libsbp) to
-communicate with receivers using Swift Binary Protocol (SBP).
+LSN does not provide any functionality for communicating with Swift Navigation receivers.  See [libsbp](https://github.com/swift-nav/libsbp) to communicate with receivers using Swift Binary Protocol (SBP).
 
 To checkout the library run the following commands in an appropriate directory
 ```
@@ -64,4 +63,3 @@ Now you can build and run the libswiftnav image with
 #### Run clang-format
 
     make docker-lint
-

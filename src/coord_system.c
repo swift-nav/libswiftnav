@@ -11,7 +11,6 @@
  */
 
 #include <math.h>
-
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
 #include <swiftnav/float_equality.h>

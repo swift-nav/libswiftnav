@@ -2,9 +2,9 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <swiftnav/bits.h>
 #include <time.h>
 
-#include <swiftnav/bits.h>
 #include "check_suites.h"
 #include "common/check_utils.h"
 
@@ -128,6 +128,79 @@ START_TEST(test_setbits) {
   setbits(test_data, 24, 32, -1);
   ret = getbits(test_data, 24, 32);
   fail_unless(ret == -1, "Test case 3 expected -1, got %d", ret);
+}
+END_TEST
+
+START_TEST(test_setbitul) {
+  u8 test_data[64] = {0};
+  u8 zeroes[64] = {0};
+
+  u64 ret = 0;
+  unsigned seed = time(NULL);
+
+  srand(seed);
+
+  for (unsigned len = 0; len <= sizeof(u64); len++) {
+    for (unsigned pos = 0; pos <= sizeof(u64); pos++) {
+      u64 data = (((u64)rand() << 32) | ((u64)rand()));
+
+      /* Set 'data' and check that we get the same value when we read it
+       * back */
+      setbitul(test_data, pos, len, data);
+      /* Mask off bits higher than 'len' since they shouldn't be set when we
+       * read back */
+      data &= (len == 64 ? ~(u64)0 : (((u64)1 << len) - 1));
+      ret = getbitul(test_data, pos, len);
+      fail_unless(
+          ret == data,
+          "test case 1 expected 0x%04X, got 0x%04X (len %u, pos %u, seed %u)",
+          (u32)data,
+          (u32)ret,
+          len,
+          pos,
+          seed);
+
+      /* Clear data and make sure that no additional bits have changed */
+      setbitul(test_data, pos, len, 0);
+      fail_unless(!memcmp(test_data, zeroes, sizeof(test_data)),
+                  "test case 2 not completely zeroed");
+    }
+  }
+}
+END_TEST
+
+START_TEST(test_setbitsl) {
+  u8 test_data[64] = {0};
+  s64 ret = 0;
+
+  s64 input = INT64_MIN;
+  setbitsl(test_data, 0, 64, input);
+  ret = getbitsl(test_data, 0, 64);
+  fail_unless(ret == input,
+              "Test case 1 expected %04X, got %04X",
+              (s32)input,
+              (s32)ret);
+
+  ret = 0;
+  memset(test_data, 0, sizeof(test_data));
+  input = 0xABCD;
+  setbitsl(test_data, 32, 8, input);
+  ret = getbitsl(test_data, 32, 8);
+  fail_unless(ret == (s8)input,
+              "Test case 2 expected 0x%04X, got 0x%04X",
+              (s32)input,
+              (s32)ret);
+
+  // This test case should fail due to buffer overflow. setbitsl need fixing.
+  ret = 0;
+  memset(test_data, 0, sizeof(test_data));
+  input = 0xABCD;
+  setbitsl(test_data, 56, 32, input);
+  ret = getbitsl(test_data, 56, 32);
+  fail_unless(ret == input,
+              "Test case 3 expected 0x%04X, got 0x%04X",
+              (s32)input,
+              (s32)ret);
 }
 END_TEST
 
@@ -269,7 +342,9 @@ Suite *bits_suite(void) {
   tcase_add_test(tc_core, test_getbitu);
   tcase_add_test(tc_core, test_getbits);
   tcase_add_test(tc_core, test_setbitu);
+  tcase_add_test(tc_core, test_setbitul);
   tcase_add_test(tc_core, test_setbits);
+  tcase_add_test(tc_core, test_setbitsl);
   tcase_add_test(tc_core, test_bitshl);
   tcase_add_test(tc_core, test_bitcopy);
   tcase_add_test(tc_core, test_count_bits_x);

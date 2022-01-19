@@ -14,10 +14,9 @@ context.setRepo("libswiftnav")
 def builder = context.getBuilder()
 
 /**
- * - Mount the ccache to speed up builds
  * - Mount the refrepo to keep git operations functional on a repo that uses ref-repo during clone
  **/
-String dockerMountArgs = "-v /mnt/efs/ccache:/home/jenkins/.ccache -v /mnt/efs/refrepo:/mnt/efs/refrepo"
+String dockerMountArgs = "-v /mnt/efs/refrepo:/mnt/efs/refrepo"
 
 pipeline {
     // Override agent in each stage to make sure we don't share containers among stages.
@@ -28,21 +27,6 @@ pipeline {
         timestamps()
         // Keep builds for 7 days.
         buildDiscarder(logRotator(daysToKeepStr: '7'))
-    }
-
-    // Overwrite in stages that need clang
-    environment {
-        // Default compiler. Override in each stage as needed.
-        CC='gcc-6'
-        CXX='g++-6'
-        COMPILER='gcc-6'
-
-        // Default parallelism for make
-        MAKEJ='4'
-
-        // Since ~/.ccache is mounted from a shared NFS disk, make sure the temp
-        // dir is local to the container.
-        CCACHE_TEMPDIR='/tmp/ccache_tmp'
     }
 
     stages {
@@ -67,9 +51,41 @@ pipeline {
                                 includes: 'build/tests/test_results_junit.xml')
                     }
                 }
-                stage('Lint') {
+                stage('Bazel Build') {
+                    agent {
+                        docker {
+                            image '571934480752.dkr.ecr.us-west-2.amazonaws.com/swift-build-bazel:2022-09-09'
+                        }
+                    }
+                    steps {
+                        gitPrep()
+                        script {
+                            try {
+                                sh('''#!/bin/bash -ex
+                                    | CC=gcc-8 CXX=g++-8 bazel build --subcommands //...
+                                    | bazel run //:refresh_compile_commands
+                                    | bazel run //:swiftnav-test
+                                    |'''.stripMargin())
+                            } catch(e) {
+                                // Notify bazel-alerts when master fails
+                                if (context.isBranchPush(branches: ["master"])) {
+                                    slackSend(
+                                        channel: "#bazel-alerts",
+                                        color: 'danger',
+                                        message: 'FAILURE'
+                                            + " on master "
+                                            + ": <${env.RUN_DISPLAY_URL}|${env.JOB_NAME} #${env.BUILD_NUMBER}>"
+                                            + " - "
+                                            + currentBuild.durationString.replace(' and counting', ''))
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('Format & Lint') {
                     agent {
                         dockerfile {
+                            filename "Dockerfile.modern"
                             args dockerMountArgs
                         }
                     }
@@ -77,29 +93,9 @@ pipeline {
                         gitPrep()
                         script {
                             builder.cmake()
-                            builder.make(workDir: "build")
-                            builder.make(workDir: "build", target: "clang-format-all")
+                            builder.make(workDir: "build", target: "clang-format-all-check")
+                            builder.make(workDir: "build", target: "clang-tidy-all-check")
                         }
-                        /** Run clang-format.
-                         *  If the resulting 'git diff' is non-empty, then it found something,
-                         *  so error out and display the diff.
-                         */
-                        sh '''#!/bin/bash -ex
-                            git --no-pager diff --name-only HEAD > /tmp/clang-format-diff
-                            if [ -s "/tmp/clang-format-diff" ]; then
-                                echo "clang-format warning found"
-                                git --no-pager diff
-                                exit 1
-                            fi
-                            '''
-
-                        sh '''#!/bin/bash -ex
-                            (cd build && make clang-tidy-all)
-                            if [ -e "fixes.yaml" ]; then
-                                echo "clang-tidy warning found"
-                                exit 1
-                            fi
-                            '''
                     }
                     post {
                         always {

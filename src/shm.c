@@ -11,7 +11,6 @@
  */
 
 #include <assert.h>
-
 #include <swiftnav/constants.h>
 #include <swiftnav/shm.h>
 #include <swiftnav/signal.h>

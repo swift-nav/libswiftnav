@@ -29,6 +29,7 @@ int main(void) {
   srunner_add_suite(sr, pvt_test_suite());
   srunner_add_suite(sr, nav_meas_test_suite());
   srunner_add_suite(sr, sid_set_test_suite());
+  srunner_add_suite(sr, status_report_suite());
   srunner_add_suite(sr, log_suite());
   srunner_add_suite(sr, gnss_time_cpp_test_suite());
 

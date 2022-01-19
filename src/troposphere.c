@@ -11,7 +11,6 @@
  */
 
 #include <math.h>
-
 #include <swiftnav/common.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/troposphere.h>

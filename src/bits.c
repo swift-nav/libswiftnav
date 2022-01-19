@@ -12,7 +12,6 @@
 
 #include <limits.h>
 #include <string.h>
-
 #include <swiftnav/bits.h>
 
 static const u8 bitn[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
@@ -209,6 +208,60 @@ void setbitu(u8 *buff, u32 pos, u32 len, u32 data) {
   }
 }
 
+/** Set bit field in buffer from an
+ * unsigned integer. Packs `len` bits into bit position `pos` from the start of
+ * the buffer. Maximum bit field length is 64 bits, i.e. `len <= 64`.
+ *
+ * \param buff
+ * \param pos Position in buffer of start of bit field in bits.
+ * \param len Length of bit field in bits.
+ * \param data Unsigned integer to be packed into bit field.
+ */
+void setbitul(u8 *buff, u32 pos, u32 len, u64 data) {
+  if ((len <= 0) || (64 < len)) {
+    return;
+  }
+
+  /* skip untouched bytes */
+  buff += pos / 8;
+
+  /* number of bits remaining in pos + len */
+  u8 shift = (uint8_t)((pos % 8) + len);
+  /* round up to get total number of bits we are interested in */
+  u8 count = (uint8_t)(((shift + 7) >> 3) << 3);
+  /* compute difference to nearest multiple of 8 */
+  shift = count - shift;
+
+  /* mask of bits to take from 'data' */
+  u64 data_mask = (len == 64 ? ~UINT64_C(0) : ((UINT64_C(1) << len) - 1));
+  /* in case 'data' has more bits than specified in 'len' */
+  data &= data_mask;
+
+  /* special handling for the case where a ninth output byte is needed
+   * (needed to prevent bits from being lost during shift left) */
+  if (count == 72) {
+    count -= 8;
+
+    u8 mask = (uint8_t)(data_mask >> (count - shift));
+    u8 bits = (uint8_t)(data >> (count - shift));
+
+    *buff = (*buff & ~mask) | bits;
+    buff++;
+  }
+
+  /* main loop: compute a mask of bits to clear and bits to set, then
+   * apply the mask and bits in-place */
+  while (count) {
+    count -= 8;
+
+    u8 mask = (uint8_t)((data_mask << shift) >> count);
+    u8 bits = (uint8_t)((data << shift) >> count);
+
+    *buff = (*buff & ~mask) | bits;
+    buff++;
+  }
+}
+
 /** Set bit field in buffer from a signed integer.
  * Packs `len` bits into bit position `pos` from the start of the buffer.
  * Maximum bit field length is 32 bits, i.e. `len <= 32`.
@@ -220,6 +273,19 @@ void setbitu(u8 *buff, u32 pos, u32 len, u32 data) {
  */
 void setbits(u8 *buff, u32 pos, u32 len, s32 data) {
   setbitu(buff, pos, len, (u32)data);
+}
+
+/** Set bit field in buffer from a signed integer.
+ * Packs `len` bits into bit position `pos` from the start of the buffer.
+ * Maximum bit field length is 64 bits, i.e. `len <= 64`.
+ *
+ * \param buff
+ * \param pos Position in buffer of start of bit field in bits.
+ * \param len Length of bit field in bits.
+ * \param data Signed integer to be packed into bit field.
+ */
+void setbitsl(u8 *buff, u32 pos, u32 len, s64 data) {
+  setbitul(buff, pos, len, (u64)data);
 }
 
 /**

@@ -3,7 +3,6 @@
 
 #include <math.h>
 #include <stdbool.h>
-
 #include <swiftnav/constants.h>
 
 static inline bool double_equal(double a, double b) {

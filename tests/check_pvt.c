@@ -1,10 +1,10 @@
 #include <check.h>
 #include <math.h>
 #include <stdio.h>
-
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
 #include <swiftnav/single_epoch_solver.h>
+
 #include "check_suites.h"
 #include "common/check_utils.h"
 

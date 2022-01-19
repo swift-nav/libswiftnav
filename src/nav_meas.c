@@ -11,7 +11,6 @@
  */
 
 #include <assert.h>
-
 #include <swiftnav/common.h>
 #include <swiftnav/nav_meas.h>
 

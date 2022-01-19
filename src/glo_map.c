@@ -12,7 +12,6 @@
 
 #include <assert.h>
 #include <inttypes.h>
-
 #include <swiftnav/glo_map.h>
 #include <swiftnav/logging.h>
 #include <swiftnav/signal.h>

@@ -1,6 +1,5 @@
 
 #include <check.h>
-
 #include <swiftnav/constants.h>
 #include <swiftnav/gnss_time.h>
 #include <swiftnav/troposphere.h>

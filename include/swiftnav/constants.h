@@ -23,6 +23,10 @@ extern "C" {
  * Useful constants.
  * \{ */
 
+#ifndef M_PI_F
+#define M_PI_F 3.14159265358979323846264338f
+#endif
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338
 #endif
@@ -34,6 +38,10 @@ extern "C" {
 #ifndef M_SQRT2
 #define M_SQRT2 1.41421356237309504880
 #endif
+
+#define R2D_F \
+  (180.0f /   \
+   M_PI_F) /**< (Float literal) conversion factor from radians to degrees. */
 
 #define R2D (180.0 / M_PI) /**< Conversion factor from radians to degrees. */
 #define D2R (M_PI / 180.0) /**< Conversion factor from degrees to radians. */
@@ -352,8 +360,8 @@ extern "C" {
  * See Beidou ICD 1.2.
  * \{ */
 
-/** Centre frequency of Beidou2 B11 */
-#define BDS2_B11_HZ (1.023e6 * (1540 - 14))
+/** Centre frequency of Beidou2 B1I */
+#define BDS2_B1I_HZ (1.023e6 * (1540 - 14))
 
 /** Centre frequency of Beidou2 B2 */
 #define BDS2_B2_HZ (1.023e6 * 1180)
@@ -370,14 +378,14 @@ extern "C" {
 /** Centre frequency of Beidou3 B2a */
 #define BDS3_B5_HZ (115 * 10.23e6)
 
-/** Wavelength of Beidou2 B11 */
-#define BDS2_B11_LAMBDA (GPS_C / BDS2_B11_HZ)
+/** Wavelength of Beidou2 B1I */
+#define BDS2_B1I_LAMBDA (GPS_C / BDS2_B1I_HZ)
 
-/** Wavelength of Beidou2 B11 */
+/** Wavelength of Beidou2 B2 */
 #define BDS2_B2_LAMBDA (GPS_C / BDS2_B2_HZ)
 
-/** Beidou2 B11 chip rate (data) */
-#define BDS2_B11_CHIPPING_RATE (2 * 1.023e6)
+/** Beidou2 B1I chip rate (data) */
+#define BDS2_B1I_CHIPPING_RATE (2 * 1.023e6)
 
 /** Beidou2 B2 chip rate (data) */
 #define BDS2_B2_CHIPPING_RATE (2 * 1.023e6)
@@ -394,8 +402,8 @@ extern "C" {
 /** Beidou3 B2a chip rate */
 #define BDS3_B5_CHIPPING_RATE (10 * 1.023e6)
 
-/** Number of chips in Beidou2 B11 (data) */
-#define BDS2_B11_CHIPS_NUM 2046
+/** Number of chips in Beidou2 B1I (data) */
+#define BDS2_B1I_CHIPS_NUM 2046
 
 /** Number of chips in Beidou2 B2 (data) */
 #define BDS2_B2_CHIPS_NUM 2046
@@ -412,8 +420,8 @@ extern "C" {
 /** Number of chips in Beidou3 B2a */
 #define BDS3_B5_CHIPS_NUM 10230
 
-/** Beidou2 B11 PRN code period */
-#define BDS2_B11_PRN_PERIOD_MS 1
+/** Beidou2 B1I PRN code period */
+#define BDS2_B1I_PRN_PERIOD_MS 1
 
 /** Beidou2 B2 PRN code period */
 #define BDS2_B2_PRN_PERIOD_MS 1
@@ -430,36 +438,36 @@ extern "C" {
 /** Beidou3 B2a PRN code period */
 #define BDS3_B5_PRN_PERIOD_MS 1
 
-/** Beidou2 B11 (data) bit length */
-#define BDS2_B11_BIT_LENGTH_MS 20
+/** Beidou2 B1I (data) bit length */
+#define BDS2_B1I_BIT_LENGTH_MS 20
 
-/** Beidou2 B11 (data) symbol length */
-#define BDS2_B11_SYMB_LENGTH_MS 1
+/** Beidou2 B1I (data) symbol length */
+#define BDS2_B1I_SYMB_LENGTH_MS 1
 
 /** Beidou3 B2aI (data) symbol length */
 #define BDS3_B5_SYMB_LENGTH_MS 1
 
 /** Beidou2 B1 maximum Doppler value [Hz] */
-#define BDS2_B11_DOPPLER_MAX_HZ (+4200.f)
+#define BDS2_B1I_DOPPLER_MAX_HZ (+4200.f)
 
 /** Beidou2 B2 maximum Doppler value [Hz] */
 #define BDS2_B2_DOPPLER_MAX_HZ \
-  (BDS2_B11_DOPPLER_MAX_HZ * BDS2_B2_HZ / BDS2_B11_HZ)
+  (BDS2_B1I_DOPPLER_MAX_HZ * BDS2_B2_HZ / BDS2_B1I_HZ)
 
 /** Beidou3 B1C maximum Doppler value [Hz] */
-#define BDS3_B1C_DOPPLER_MAX_HZ (BDS2_B11_DOPPLER_MAX_HZ)
+#define BDS3_B1C_DOPPLER_MAX_HZ (BDS2_B1I_DOPPLER_MAX_HZ)
 
 /** Beidou3 B3 maximum Doppler value [Hz] */
 #define BDS3_B3_DOPPLER_MAX_HZ \
-  (BDS2_B11_DOPPLER_MAX_HZ * BDS3_B3_HZ / BDS2_B11_HZ)
+  (BDS2_B1I_DOPPLER_MAX_HZ * BDS3_B3_HZ / BDS2_B1I_HZ)
 
 /** Beidou3 B2b maximum Doppler value [Hz] */
 #define BDS3_B7_DOPPLER_MAX_HZ \
-  (BDS2_B11_DOPPLER_MAX_HZ * BDS3_B7_HZ / BDS2_B11_HZ)
+  (BDS2_B1I_DOPPLER_MAX_HZ * BDS3_B7_HZ / BDS2_B1I_HZ)
 
 /** Beidou3 B2a maximum Doppler value [Hz] */
 #define BDS3_B5_DOPPLER_MAX_HZ \
-  (BDS2_B11_DOPPLER_MAX_HZ * BDS3_B5_HZ / BDS2_B11_HZ)
+  (BDS2_B1I_DOPPLER_MAX_HZ * BDS3_B5_HZ / BDS2_B1I_HZ)
 
 /** Earth's gravitational constant [m^3 / s^2] */
 #define BDS2_GM 3.986004418e14

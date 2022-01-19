@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "check_suites.h"
-#include "common/check_utils.h"
-
 #include <swiftnav/constants.h>
 #include <swiftnav/signal.h>
+
+#include "check_suites.h"
+#include "common/check_utils.h"
 
 /* Include singal.c here to have a chance to turn off asserts.
    Otherwise the code lines with asserts cannot be covered by

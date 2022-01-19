@@ -15,7 +15,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <swiftnav/bits.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
@@ -119,13 +118,48 @@ static inline s32 sign_extend24(u32 arg) {
   return BITS_SIGN_EXTEND_32(24, arg);
 }
 
+/**
+ * \page tot_note Regarding the time used to compute satellite state.
+ *
+ * The following calc_sat_state* methods take a time of transmission, tot,
+ * which should be in satellite time (the time of transmission
+ * according to the satellite).  In otherwords, this time MUST include satellite
+ * clock error! So, for example,
+ *
+ *   tot = time_received - pseudorange / C
+ *
+ * is a valid way of determining tot. This is because the pseudorange is
+ * defined as:
+ *
+ *   pseudorange = (time_received_k - tot^s) * C
+ *               = ((tor_gps + dt_k) - (tot_gps + dt^s)) * C
+ *
+ * where _k indicates a receiver specific term and ^s indicates a satellite
+ * specific term and _gps indicates GPS system time and dt represents a clock
+ * error. Notice that using this notation we get:
+ *
+ *   tot = tot_gps + dt^s
+ *
+ * inside these calc_sat_state* methods we will first compute the satellite
+ * clock error (dt^s), remove it from the time of transmission to get the
+ * time of transmission in GPS system time, then compute the satellite position.
+ *
+ * As a result inferring the time of transmission from geometry will require
+ * iteration. Using pseudocode (these functions don't exist) that would be:
+ *
+ *   tot_gps = tor_gps - range / C
+ *   sat_clock_error = calc_sat_clock(tot_gps)
+ *   tot = tot_gps + sat_clock_error
+ *   sat_po = calc_sat_pos(tot_gps, ...)
+ */
+
 /** Calculate satellite position, velocity and clock offset from SBAS ephemeris.
  *
  * References:
  *   -# WAAS Specification FAA-E-2892b 4.4.11
  *
  * \param e Pointer to an ephemeris structure for the satellite of interest
- * \param t GPS time at which to calculate the satellite state
+ * \param t Satellite time at which to calculate the state (See \ref tot_note)
  * \param pos Array into which to write calculated satellite position [m]
  * \param vel Array into which to write calculated satellite velocity [m/s]
  * \param clock_err Pointer to where to store the calculated satellite clock
@@ -214,7 +248,7 @@ static void calc_ecef_vel_acc(double vel_acc[6],
 /** Calculate satellite position, velocity and clock offset from GLO ephemeris.
  *
  * \param e Pointer to an ephemeris structure for the satellite of interest
- * \param t time at which to calculate the satellite state
+ * \param t Satellite time at which to calculate the state (See \ref tot_note)
  * \param pos Array into which to write calculated satellite position [m]
  * \param vel Array into which to write calculated satellite velocity [m/s]
  * \param clock_err Pointer to where to store the calculated satellite clock
@@ -320,7 +354,7 @@ static s8 calc_sat_state_glo(const ephemeris_t *e,
  *    be omega' x_p'.  Each of these can be confirmed by checking units.
  *
  * \param e Pointer to an ephemeris structure for the satellite of interest
- * \param t GPS time at which to calculate the satellite state
+ * \param t Satellite time at which to calculate the state (See \ref tot_note)
  * \param orbit_type satellite orbit type [unitless]
  * \param pos Array into which to write calculated satellite position [m]
  * \param vel Array into which to write calculated satellite velocity [m/s]
@@ -561,7 +595,7 @@ static s8 calc_sat_state_kepler(const ephemeris_t *e,
  * Assuming a MEO satellite
  *
  * \param e Pointer to an ephemeris structure for the satellite of interest
- * \param t GPS time at which to calculate the satellite state
+ * \param t Satellite time at which to calculate the state (See \ref tot_note)
  * \param pos Array into which to write calculated satellite position [m]
  * \param vel Array into which to write calculated satellite velocity [m/s]
  * \param clock_err Pointer to where to store the calculated satellite clock
@@ -594,7 +628,7 @@ s8 calc_sat_state(const ephemeris_t *e,
  * constellation.
  *
  * \param e Pointer to an ephemeris structure for the satellite of interest
- * \param t GPS time at which to calculate the satellite state
+ * \param t Satellite time at which to calculate the state (See \ref tot_note)
  * \param orbit_type satellite orbit type [unitless]
  * \param pos Array into which to write calculated satellite position [m]
  * \param vel Array into which to write calculated satellite velocity [m/s]
@@ -638,7 +672,7 @@ s8 calc_sat_state_orbit_type(const ephemeris_t *e,
  * constellation.
  *
  * \param e Pointer to an ephemeris structure for the satellite of interest
- * \param t GPS time at which to calculate the satellite state
+ * \param t Satellite time at which to calculate the state (See \ref tot_note)
  * \param orbit_type satellite orbit type [unitless]
  * \param pos Array into which to write calculated satellite position [m]
  * \param vel Array into which to write calculated satellite velocity [m/s]
@@ -689,7 +723,7 @@ s8 calc_sat_state_n(const ephemeris_t *e,
  * position given the satellite ephemeris.
  *
  * \param e  Pointer to an ephemeris structure for the satellite of interest.
- * \param t    GPS time at which to calculate the az/el.
+ * \param t  Satellite time at which to calculate the az/el (See \ref tot_note)
  * \param ref  ECEF coordinates of the reference point from which the azimuth
  *             and elevation is to be determined, passed as [X, Y, Z], all in
  *             meters.
@@ -744,7 +778,7 @@ s8 calc_sat_az_el(const ephemeris_t *e,
  * position given the satellite ephemeris.
  *
  * \param e  Pointer to an ephemeris structure for the satellite of interest.
- * \param t  GPS time at which to calculate the doppler value.
+ * \param t  Satellite time at which to calculate doppler (See \ref tot_note)
  * \param ref_pos  ECEF coordinates of the reference point from which the
  *                 Doppler is to be determined, passed as [X, Y, Z], all in
  *                 meters.
@@ -1213,6 +1247,27 @@ u32 decode_fit_interval(u8 fit_interval_flag, u16 iodc) {
 void decode_ephemeris(const u32 frame_words[3][8],
                       ephemeris_t *e,
                       double tot_tow) {
+  decode_ephemeris_with_wn_ref(frame_words, e, tot_tow, GPS_WEEK_REFERENCE);
+}
+
+/** Decode ephemeris from L1 C/A GPS navigation message frames.
+ *
+ * \note This function does not check for parity errors. You should check the
+ *       subframes for parity errors before calling this function.
+ *
+ * References:
+ *   -# IS-GPS-200D, Section 20.3.2 and Figure 20-1
+ *
+ * \param frame_words Array containing words 3 through 10 of subframes
+ *                    1, 2 and 3. Word is in the 30 LSBs of the u32.
+ * \param e Pointer to an ephemeris struct to fill in.
+ * \param tot_tow TOW for time of transmission
+ * \param wn_ref Reference week number that is from some point in the past
+ */
+void decode_ephemeris_with_wn_ref(const u32 frame_words[3][8],
+                                  ephemeris_t *e,
+                                  double tot_tow,
+                                  u16 wn_ref) {
   assert(frame_words != NULL);
   assert(e != NULL);
   assert(IS_GPS(e->sid) || IS_QZSS(e->sid));
@@ -1229,7 +1284,7 @@ void decode_ephemeris(const u32 frame_words[3][8],
    * 1024 binary representation of the current GPS week number
    * at the start of the data set transmission interval. <<<<< IMPORTANT !!!
    */
-  e->toe.wn = gps_adjust_week_cycle(wn_raw, GPS_WEEK_REFERENCE);
+  e->toe.wn = gps_adjust_week_cycle(wn_raw, wn_ref);
 
   /* t_oe: Word 10, bits 1-16 */
   e->toe.tow =

@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <swiftnav/common.h>
 #include <swiftnav/float_equality.h>
 #include <swiftnav/linear_algebra.h>

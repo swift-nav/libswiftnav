@@ -25,6 +25,7 @@ if(libswiftnav_BUILD_TESTS)
       check_shm.c
       check_sid_set.c
       check_signal.c
+      check_subsystem_status_report.c
       check_pvt.c
       check_troposphere.c)
 
@@ -32,7 +33,7 @@ if(libswiftnav_BUILD_TESTS)
     UNIT_TEST
     POST_BUILD
     SRCS ${SRCS}
-    LINK check-utils check Threads::Threads
+    LINK swiftnav::check-utils check Threads::Threads
     )
 
   swift_set_compile_options(
@@ -49,7 +50,7 @@ if(libswiftnav_BUILD_TESTS)
   swift_add_test(test-swiftnav-pedantic
     UNIT_TEST
     SRCS check_pedantic.cc
-    LINK swiftnav
+    LINK swiftnav::swiftnav
   )
   swift_set_compile_options(test-swiftnav-pedantic ADD -pedantic)
 

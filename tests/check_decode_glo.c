@@ -1,9 +1,9 @@
 #include <check.h>
 #include <inttypes.h>
-
 #include <swiftnav/decode_glo.h>
 #include <swiftnav/linear_algebra.h>
 #include <swiftnav/shm.h>
+
 #include "check_suites.h"
 
 #define LOW_TOL 1e-6
