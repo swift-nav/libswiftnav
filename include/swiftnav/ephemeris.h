@@ -216,6 +216,12 @@ u8 ephemeris_params_valid(const gps_time_t *bgn,
 void decode_ephemeris(const u32 frame_words[3][8],
                       ephemeris_t *e,
                       double tot_tow);
+
+void decode_ephemeris_with_wn_ref(const u32 frame_words[3][8],
+                                  ephemeris_t *e,
+                                  double tot_tow,
+                                  u16 wn_ref);
+
 bool ephemeris_equal(const ephemeris_t *a, const ephemeris_t *b);
 bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code);
 

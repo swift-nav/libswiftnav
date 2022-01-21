@@ -9,6 +9,7 @@ set(MAX_CHANNELS "63" CACHE STRING "Maximum number of concurrent GNSS channels t
 configure_file(src/max_channels.h.in max_channels.h)
 
 include(GNUInstallDirs)
+find_package(Python3 COMPONENTS Interpreter)
 
 set(HDRS
     include/swiftnav/almanac.h
@@ -99,3 +100,7 @@ endif()
 if(NOT CMAKE_CROSSCOMPILING AND NOT PIKSI_MULTI_UNIT_TEST)
     add_subdirectory(tests)
 endif(NOT CMAKE_CROSSCOMPILING AND NOT PIKSI_MULTI_UNIT_TEST)
+
+add_custom_target(do-update-leap_seconds
+  COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/scripts/leap_seconds_generator.py ${PROJECT_SOURCE_DIR}/include/swiftnav/leap_seconds.h
+)
