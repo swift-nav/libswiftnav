@@ -128,4 +128,4 @@ if(libswiftnav_BUILD_TESTS OR libswiftnav_BUILD_TEST_LIBS)
 endif()
 
 swift_validate_targets()
-swift_create_clang_tidy_targets()
+swift_create_clang_tidy_targets(DONT_GENERATE_CLANG_TIDY_CONFIG)
