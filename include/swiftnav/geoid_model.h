@@ -23,6 +23,14 @@ extern "C" {
 // range for lon_rad is (-2 * M_PI, 2 * M_PI)
 float get_geoid_offset(double lat_rad, double lon_rad);
 
+typedef enum {
+  GEOID_MODEL_NONE = 0,
+  GEOID_MODEL_EGM96 = 1,
+  GEOID_MODEL_EGM2008 = 2,
+} geoid_model_t;
+
+geoid_model_t get_geoid_model(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

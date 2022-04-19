@@ -53,149 +53,149 @@ START_TEST(test_almanac_equal) {
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.m0 = 1;
+  a.data.kepler.m0 = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (kepler.m0)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.ecc = 1;
+  a.data.kepler.ecc = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (kepler.ecc)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.sqrta = 1;
+  a.data.kepler.sqrta = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (kepler.sqrta)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.omega0 = 1;
+  a.data.kepler.omega0 = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (kepler.omega0)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.omegadot = 1;
+  a.data.kepler.omegadot = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (kepler.omegadot)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.w = 1;
+  a.data.kepler.w = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (kepler.w)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.inc = 1;
+  a.data.kepler.inc = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (kepler.inc)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.af0 = 1;
+  a.data.kepler.af0 = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (kepler.af0)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.af1 = 1;
+  a.data.kepler.af1 = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (kepler.af1)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.pos[0] = 1;
+  a.data.xyz.pos[0] = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (xyz.pos[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.pos[1] = 1;
+  a.data.xyz.pos[1] = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (xyz.pos[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.pos[2] = 1;
+  a.data.xyz.pos[2] = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (xyz.pos[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.vel[0] = 1;
+  a.data.xyz.vel[0] = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (xyz.vel[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.vel[1] = 1;
+  a.data.xyz.vel[1] = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (xyz.vel[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.vel[2] = 1;
+  a.data.xyz.vel[2] = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (xyz.vel[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.acc[0] = 1;
+  a.data.xyz.acc[0] = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (xyz.acc[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.acc[1] = 1;
+  a.data.xyz.acc[1] = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (xyz.acc[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.acc[2] = 1;
+  a.data.xyz.acc[2] = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (xyz.acc[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.lambda = 1;
+  a.data.glo.lambda = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (glo.lambda)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.t_lambda = 1;
+  a.data.glo.t_lambda = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (glo.t_lambda)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.i = 1;
+  a.data.glo.i = 1;
   fail_unless(!almanac_equal(&a, &b), "Almanacs should not be equal (glo.i)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.t = 1;
+  a.data.glo.t = 1;
   fail_unless(!almanac_equal(&a, &b), "Almanacs should not be equal (glo.t)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.t_dot = 1;
+  a.data.glo.t_dot = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (glo.t_dot)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.epsilon = 1;
+  a.data.glo.epsilon = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (glo.epsilon)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.omega = 1;
+  a.data.glo.omega = 1;
   fail_unless(!almanac_equal(&a, &b),
               "Almanacs should not be equal (glo.omega)");
   memset(&a, 0, sizeof(a));

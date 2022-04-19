@@ -1,6 +1,7 @@
 build*
 include/swiftnav/config.h
 *.swp
+.clang-tidy
 
 # IDE files
 .vscode/

@@ -111,11 +111,8 @@ s32 qrdecomp_square(const double *a, u32 rows, double *qt, double *r) {
   s32 sing = 0;
   u32 i, j, k;
 
-  double *c = LSN_ALLOCATE(rows * sizeof(double));
-  assert(c != NULL);
-
-  double *d = LSN_ALLOCATE(rows * sizeof(double));
-  assert(d != NULL);
+  LSN_NEW_ARRAY(c, rows, double);
+  LSN_NEW_ARRAY(d, rows, double);
 
   double scale, sigma, sum, tau;
   memcpy(r, a, rows * rows * sizeof(*r));
@@ -181,9 +178,8 @@ s32 qrdecomp_square(const double *a, u32 rows, double *qt, double *r) {
     }
   }
 
-  LSN_FREE(c);
-  LSN_FREE(d);
-
+  LSN_FREE_ARRAY(c);
+  LSN_FREE_ARRAY(d);
   return sing;
 }
 
@@ -250,11 +246,8 @@ void rsolve(const double *r, u32 rows, u32 cols, const double *b, double *x) {
  *  \return     -1 if a is singular; 0 otherwise.
  */
 s32 qrsolve(const double *a, u32 rows, u32 cols, const double *b, double *x) {
-  double *qt = LSN_ALLOCATE(rows * rows * sizeof(double));
-  assert(qt != NULL);
-
-  double *r = LSN_ALLOCATE(rows * rows * sizeof(double));
-  assert(qt != NULL);
+  LSN_NEW_ARRAY(qt, rows * rows, double);
+  LSN_NEW_ARRAY(r, rows * rows, double);
 
   s32 sing = qrdecomp_square(a, rows, qt, r);
 
@@ -263,8 +256,8 @@ s32 qrsolve(const double *a, u32 rows, u32 cols, const double *b, double *x) {
     rsolve(r, rows, cols, x, x);
   }
 
-  LSN_FREE(qt);
-  LSN_FREE(r);
+  LSN_FREE_ARRAY(qt);
+  LSN_FREE_ARRAY(r);
   return sing;
 }
 
@@ -589,10 +582,9 @@ int matrix_inverse(u32 n, const double *const a, double *b) {
    * we have too few satellites.)  The Cholesky decomposition becomes
    * even more important for unscented filters. */
   assert(n > 0);
-  int res;
-  u32 i, j, k, cols = n * 2;
-  double *m = LSN_ALLOCATE(n * cols * sizeof(double));
-  assert(m != NULL);
+  int res = 0;
+  u32 i = 0, j = 0, k = 0, cols = n * 2;
+  LSN_NEW_ARRAY(m, n * cols, double);
 
   /* For now, we special-case only small matrices.  If we bring back
    * multiple antennas, it won't be hard to auto-generate cases 5 and
@@ -639,7 +631,7 @@ int matrix_inverse(u32 n, const double *const a, double *b) {
       break;
   }
 
-  LSN_FREE(m);
+  LSN_FREE_ARRAY(m);
   return res;
 }
 
@@ -703,7 +695,7 @@ int matrix_pseudoinverse(u32 n, u32 m, const double *a, double *b) {
  */
 inline int matrix_atwaiat(
     u32 n, u32 m, const double *a, const double *w, double *b) {
-  u32 i, j, k;
+  u32 i = 0, j = 0, k = 0;
 
   assert(n > 0 && m > 0);
 
@@ -712,11 +704,8 @@ inline int matrix_atwaiat(
     return -1;
   }
 
-  double *c = LSN_ALLOCATE(m * m * sizeof(double));
-  assert(c != NULL);
-
-  double *inv = LSN_ALLOCATE(m * m * sizeof(double));
-  assert(inv != NULL);
+  LSN_NEW_ARRAY(c, m * m, double);
+  LSN_NEW_ARRAY(inv, m * m, double);
 
   /* The resulting matrix is symmetric, so compute both halves at
    * once */
@@ -752,8 +741,8 @@ inline int matrix_atwaiat(
     }
   }
 
-  LSN_FREE(c);
-  LSN_FREE(inv);
+  LSN_FREE_ARRAY(c);
+  LSN_FREE_ARRAY(inv);
   return res;
 }
 
@@ -774,7 +763,7 @@ inline int matrix_atwaiat(
  */
 inline int matrix_atawati(
     u32 n, u32 m, const double *a, const double *w, double *b) {
-  u32 i, j, k;
+  u32 i = 0, j = 0, k = 0;
 
   assert(n > 0 && m > 0);
 
@@ -783,11 +772,8 @@ inline int matrix_atawati(
     return -1;
   }
 
-  double *c = LSN_ALLOCATE(m * m * sizeof(double));
-  assert(c != NULL);
-
-  double *inv = LSN_ALLOCATE(m * m * sizeof(double));
-  assert(inv != NULL);
+  LSN_NEW_ARRAY(c, m * m, double);
+  LSN_NEW_ARRAY(inv, m * m, double);
 
   /* TODO(MP) -- implement! */
   /* The resulting matrix is symmetric, so compute both halves at
@@ -824,8 +810,8 @@ inline int matrix_atawati(
     }
   }
 
-  LSN_FREE(c);
-  LSN_FREE(inv);
+  LSN_FREE_ARRAY(c);
+  LSN_FREE_ARRAY(inv);
   return res;
 }
 
@@ -842,15 +828,14 @@ inline int matrix_atawati(
  *  \return     -1 if n < m; 0 otherwise
  */
 inline int matrix_ataiat(u32 n, u32 m, const double *a, double *b) {
-  u32 i;
-  int res;
-  double *w = LSN_ALLOCATE(n * sizeof(double));
-  assert(w != NULL);
+  u32 i = 0;
+  int res = 0;
+  LSN_NEW_ARRAY(w, n, double);
   for (i = 0; i < n; i++) {
     w[i] = 1;
   }
   res = matrix_atwaiat(n, m, a, w, b);
-  LSN_FREE(w);
+  LSN_FREE_ARRAY(w);
   return res;
 }
 
@@ -867,15 +852,14 @@ inline int matrix_ataiat(u32 n, u32 m, const double *a, double *b) {
  *  \return     -1 if n >= m or singular; 0 otherwise
  */
 inline int matrix_ataati(u32 n, u32 m, const double *a, double *b) {
-  u32 i;
-  int res;
-  double *w = LSN_ALLOCATE(n * sizeof(double));
-  assert(w != NULL);
+  u32 i = 0;
+  int res = 0;
+  LSN_NEW_ARRAY(w, n, double);
   for (i = 0; i < n; i++) {
     w[i] = 1;
   }
   res = matrix_atawati(n, m, a, w, b);
-  LSN_FREE(w);
+  LSN_FREE_ARRAY(w);
   return res;
 }
 
@@ -895,9 +879,9 @@ inline int matrix_ataati(u32 n, u32 m, const double *a, double *b) {
 inline void matrix_multiply(
     u32 n, u32 m, u32 p, const double *a, const double *b, double *c) {
   u32 i, j, k;
+  memset(c, 0, sizeof(double) * n * p);
   for (i = 0; i < n; i++) {
     for (j = 0; j < p; j++) {
-      c[p * i + j] = 0;
       for (k = 0; k < m; k++) {
         c[p * i + j] += a[m * i + k] * b[p * k + j];
       }
@@ -990,17 +974,10 @@ int matrix_wlsq_solve(u32 n,
     return -1;
   }
 
-  double *P = LSN_ALLOCATE(m * n * sizeof(double));
-  assert(P != NULL);
-
-  double *AtW = LSN_ALLOCATE(n * m * sizeof(double));
-  assert(AtW != NULL);
-
-  double *AtWA = LSN_ALLOCATE(n * n * sizeof(double));
-  assert(AtWA != NULL);
-
-  double *localV = LSN_ALLOCATE(m * m * sizeof(double));
-  assert(localV != NULL);
+  LSN_NEW_ARRAY(P, m * n, double);
+  LSN_NEW_ARRAY(AtW, n * m, double);
+  LSN_NEW_ARRAY(AtWA, n * n, double);
+  LSN_NEW_ARRAY(localV, m * m, double);
 
   /* use local version of V if the output pointer is not assigned */
   if (NULL == V) {
@@ -1030,10 +1007,10 @@ int matrix_wlsq_solve(u32 n,
     matrix_multiply(m, n, 1, P, b, x);
   }
 
-  LSN_FREE(P);
-  LSN_FREE(AtW);
-  LSN_FREE(AtWA);
-  LSN_FREE(localV);
+  LSN_FREE_ARRAY(P);
+  LSN_FREE_ARRAY(AtW);
+  LSN_FREE_ARRAY(AtWA);
+  LSN_FREE_ARRAY(localV);
 
   return res;
 }
@@ -1364,11 +1341,10 @@ void vector_cross(const double a[3], const double b[3], double c[3]) {
  */
 double vector_distance(u32 n, const double *a, const double *b) {
   double res;
-  double *c = LSN_ALLOCATE(n * sizeof(double));
-  assert(c != NULL);
+  LSN_NEW_ARRAY(c, n, double);
   vector_subtract(n, a, b, c);
   res = vector_norm(n, c);
-  LSN_FREE(c);
+  LSN_FREE_ARRAY(c);
   return res;
 }
 

@@ -25,10 +25,10 @@ u8 arr_within_epsilon(u32 n, const double *a, const double *b) {
   return true;
 }
 
-void seed_rng(void) { srandom(time(NULL)); }
+void seed_rng(void) { srand((unsigned int)time(NULL)); }
 
 double frand(double fmin, double fmax) {
-  double f = (double)random() / RAND_MAX;
+  double f = (double)rand() / RAND_MAX;
   return fmin + f * (fmax - fmin);
 }
 
@@ -39,6 +39,6 @@ void arr_frand(u32 n, double fmin, double fmax, double *v) {
 }
 
 u32 sizerand(u32 sizemax) {
-  double f = (double)random() / RAND_MAX;
+  double f = (double)rand() / RAND_MAX;
   return (u32)ceil(f * sizemax);
 }

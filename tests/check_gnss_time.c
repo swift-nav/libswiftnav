@@ -995,6 +995,20 @@ START_TEST(test_gps2utc) {
                 "gps2utc_testcase %zu failed, got second_frac %g expected <1",
                 i,
                 u.second_frac);
+
+    const gps_time_t *g = &testcases[i].t;
+    gps_time_t converted_gps;
+    utc2gps(&u, &converted_gps, testcases[i].p);
+    fail_unless(converted_gps.wn == g->wn,
+                "gps2utc_testcase %zu failed, got wn %u expected %u",
+                i,
+                converted_gps.wn,
+                g->wn);
+    fail_unless(within_epsilon(converted_gps.tow, g->tow),
+                "gps2utc_testcase %zu failed, got tow %.16f expected %.16f",
+                i,
+                converted_gps.tow,
+                g->tow);
   }
 }
 END_TEST

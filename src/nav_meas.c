@@ -15,6 +15,125 @@
 #include <swiftnav/common.h>
 #include <swiftnav/nav_meas.h>
 
+static bool is_float_eq(const double a, const double b) {
+  return fabs(a - b) < FLOAT_EQUALITY_EPS;
+}
+
+bool measurement_std_equal(const measurement_std_t *a,
+                           const measurement_std_t *b) {
+  if (sid_compare(a->sid, b->sid) != 0) {
+    return false;
+  }
+  if (!is_float_eq(a->iono_std, b->iono_std)) {
+    return false;
+  }
+  if (!is_float_eq(a->tropo_std, b->tropo_std)) {
+    return false;
+  }
+  if (!is_float_eq(a->range_std, b->range_std)) {
+    return false;
+  }
+  if (a->flags != b->flags) {
+    return false;
+  }
+  return true;
+}
+
+bool nav_meas_equal(const navigation_measurement_t *a,
+                    const navigation_measurement_t *b) {
+  if (!is_float_eq(a->raw_pseudorange, b->raw_pseudorange)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->pseudorange, b->pseudorange)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->raw_carrier_phase, b->raw_carrier_phase)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->carrier_phase, b->carrier_phase)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->raw_measured_doppler, b->raw_measured_doppler)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->measured_doppler, b->measured_doppler)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->raw_computed_doppler, b->raw_computed_doppler)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->computed_doppler, b->computed_doppler)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->computed_doppler_dt, b->computed_doppler_dt)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->sat_pos[0], b->sat_pos[0]) ||
+      !is_float_eq(a->sat_pos[1], b->sat_pos[1]) ||
+      !is_float_eq(a->sat_pos[2], b->sat_pos[2])) {
+    return false;
+  }
+
+  if (!is_float_eq(a->sat_vel[0], b->sat_vel[0]) ||
+      !is_float_eq(a->sat_vel[1], b->sat_vel[1]) ||
+      !is_float_eq(a->sat_vel[2], b->sat_vel[2])) {
+    return false;
+  }
+
+  if (!is_float_eq(a->sat_acc[0], b->sat_acc[0]) ||
+      !is_float_eq(a->sat_acc[1], b->sat_acc[1]) ||
+      !is_float_eq(a->sat_acc[2], b->sat_acc[2])) {
+    return false;
+  }
+
+  if (a->eph_key != b->eph_key) {
+    return false;
+  }
+
+  if (!is_float_eq(a->sat_clock_err, b->sat_clock_err)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->sat_clock_err_rate, b->sat_clock_err_rate)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->cn0, b->cn0)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->lock_time, b->lock_time)) {
+    return false;
+  }
+
+  if (!is_float_eq(a->elevation, b->elevation)) {
+    return false;
+  }
+
+  if (!is_float_eq(gpsdifftime(&a->tot, &b->tot), 0)) {
+    return false;
+  }
+
+  if (!sid_is_equal(a->sid, b->sid)) {
+    return false;
+  }
+
+  if (a->flags != b->flags) {
+    return false;
+  }
+
+  return true;
+}
+
 /** Compare navigation message by PRN.
  * This function is designed to be used together with qsort() etc.
  */

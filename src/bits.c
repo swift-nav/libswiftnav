@@ -136,7 +136,7 @@ s64 getbitsl(const u8 *buff, u32 pos, u8 len) {
   /* Sign extend, taken from:
    * http://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
    */
-  u64 m = 1ul << (len - 1);
+  u64 m = ((u64)1ul) << (len - 1);
   return (bits ^ m) - m;
 }
 

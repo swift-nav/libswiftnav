@@ -64,63 +64,63 @@ void e_out(void) {
   log_debug("\tFit interval: %u\n", eph.fit_interval);
   log_debug("\tValid: %u\n", eph.valid);
   log_debug("\tHealth bits: 0x%02x\n", eph.health_bits);
-  log_debug("\tgamma: %25.18f\n", eph.glo.gamma);
-  log_debug("\ttau: %25.18f\n", eph.glo.tau);
+  log_debug("\tgamma: %25.18f\n", eph.data.glo.gamma);
+  log_debug("\ttau: %25.18f\n", eph.data.glo.tau);
   log_debug("\tX, Y, Z: %25.18f, %25.18f, %25.18f\n",
-            eph.glo.pos[0],
-            eph.glo.pos[1],
-            eph.glo.pos[2]);
+            eph.data.glo.pos[0],
+            eph.data.glo.pos[1],
+            eph.data.glo.pos[2]);
   log_debug("\tVX, VY, VZ: %25.18f, %25.18f, %25.18f\n",
-            eph.glo.vel[0],
-            eph.glo.vel[1],
-            eph.glo.vel[2]);
+            eph.data.glo.vel[0],
+            eph.data.glo.vel[1],
+            eph.data.glo.vel[2]);
   log_debug("\tAX, AY, AZ: %25.18f, %25.18f, %25.18f\n",
-            eph.glo.acc[0],
-            eph.glo.acc[1],
-            eph.glo.acc[2]);
-  fail_unless(fabs(eph.glo.pos[0] - X) < LOW_TOL,
+            eph.data.glo.acc[0],
+            eph.data.glo.acc[1],
+            eph.data.glo.acc[2]);
+  fail_unless(fabs(eph.data.glo.pos[0] - X) < LOW_TOL,
               "glo.pos[0] %.1f vs %.1f",
-              eph.glo.pos[0],
+              eph.data.glo.pos[0],
               X);
-  fail_unless(fabs(eph.glo.pos[1] - Y) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.pos[1] - Y) < LOW_TOL,
               "glo.pos[1] %.1f vs %.1f",
-              eph.glo.pos[1],
+              eph.data.glo.pos[1],
               Y);
-  fail_unless(fabs(eph.glo.pos[2] - Z) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.pos[2] - Z) < LOW_TOL,
               "glo.pos[1] %.1f vs %.1f",
-              eph.glo.pos[2],
+              eph.data.glo.pos[2],
               Z);
-  fail_unless(fabs(eph.glo.vel[0] - VX) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.vel[0] - VX) < LOW_TOL,
               "glo.vel[0] %.1f vs %.1f",
-              eph.glo.vel[0],
+              eph.data.glo.vel[0],
               VX);
-  fail_unless(fabs(eph.glo.vel[1] - VY) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.vel[1] - VY) < LOW_TOL,
               "glo.vel[1] %.1f vs %.1f",
-              eph.glo.vel[1],
+              eph.data.glo.vel[1],
               VY);
-  fail_unless(fabs(eph.glo.vel[2] - VZ) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.vel[2] - VZ) < LOW_TOL,
               "glo.vel[1] %.1f vs %.1f",
-              eph.glo.vel[2],
+              eph.data.glo.vel[2],
               VZ);
-  fail_unless(fabs(eph.glo.acc[0] - AX) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.acc[0] - AX) < LOW_TOL,
               "glo.acc[0] %.1f vs %.1f",
-              eph.glo.acc[0],
+              eph.data.glo.acc[0],
               AX);
-  fail_unless(fabs(eph.glo.acc[1] - AY) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.acc[1] - AY) < LOW_TOL,
               "glo.acc[1] %.1f vs %.1f",
-              eph.glo.acc[1],
+              eph.data.glo.acc[1],
               AY);
-  fail_unless(fabs(eph.glo.acc[2] - AZ) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.acc[2] - AZ) < LOW_TOL,
               "glo.acc[1] %.1f vs %.1f",
-              eph.glo.acc[02],
+              eph.data.glo.acc[02],
               AZ);
-  fail_unless(fabs(eph.glo.tau - TAU) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.tau - TAU) < LOW_TOL,
               "glo.tau %.1f vs %.1f",
-              eph.glo.tau,
+              eph.data.glo.tau,
               TAU);
-  fail_unless(fabs(eph.glo.gamma - GAMMA) < LOW_TOL,
+  fail_unless(fabs(eph.data.glo.gamma - GAMMA) < LOW_TOL,
               "glo.gamma %.1f vs %.1f",
-              eph.glo.gamma,
+              eph.data.glo.gamma,
               GAMMA);
 }
 

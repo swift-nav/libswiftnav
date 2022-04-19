@@ -17,43 +17,25 @@
 #include <limits.h>
 #include <stdint.h>
 
-#ifdef LSN_USE_HEAP
-#include <stdlib.h>
-#define LSN_ALLOCATE(size) malloc(size)
-#define LSN_FREE(ptr) free((void *)ptr)
-#else /* LSN_USE_HEAP */
 #ifdef _MSC_VER
 #include <malloc.h>
-#define LSN_ALLOCATE(size) _malloca(size)
-#else /* _MSC_VER */
-#ifdef __GLIBC__
-#include <alloca.h> /* glibc has an alloca specific header */
-#else               /* __GLIBC__ */
-#include <stdlib.h>
-#endif /* __GLIBC__ */
-#define LSN_ALLOCATE(size) alloca(size)
-#endif /* _MSC_VER */
-#define LSN_FREE(ptr)
-#endif /* LSN_USE_HEAP */
+#define LSN_NEW_ARRAY(Name, ItemCount, Type)         \
+  Type *Name = _malloca(sizeof(Type) * (ItemCount)); \
+  assert(Name != NULL);                              \
+  memset(Name, 0, sizeof(Type) * (ItemCount))
+#define LSN_FREE_ARRAY(ptr) _freea((void *)ptr)
+#else
+#define LSN_NEW_ARRAY(Name, ItemCount, Type)                         \
+  Type Name[ItemCount];                                              \
+  for (size_t _x_##Name = 0; _x_##Name < (ItemCount); _x_##Name++) { \
+    (Name)[_x_##Name] = 0;                                           \
+  }
+#define LSN_FREE_ARRAY(ptr)
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#if defined(_MSC_VER)
-#if !defined(_WINDLL)
-/* Leave empty when doing non-dll build */
-#define LIBSWIFTNAV_DECLSPEC
-#elif defined(swiftnav_EXPORTS) /* swiftnav_EXTENSION */
-#define LIBSWIFTNAV_DECLSPEC __declspec(dllexport)
-#else /* swiftnav_EXPORTS */
-#define LIBSWIFTNAV_DECLSPEC __declspec(dllimport)
-#endif                  /* swiftnav_EXPORTS */
-#elif defined(__GNUC__) /* _MSC_VER */
-#define LIBSWIFTNAV_DECLSPEC __attribute__((visibility("default")))
-#else /* __GNUC__ */
-#pragma error Unknown dynamic link import / export semantics.
-#endif /* __GNUC__ */
 
 /** \defgroup common Common definitions
  * Common definitions used throughout the library.

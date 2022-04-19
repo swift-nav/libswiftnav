@@ -196,7 +196,7 @@ START_TEST(test_random_wgsllh2ecef2llh) {
   double llh_init[3];
   double llh[3];
 
-  srandom(0);
+  srand(0);
 
   llh_init[0] = D2R * frand(-90, 90);
   llh_init[1] = D2R * frand(-180, 180);
@@ -275,7 +275,7 @@ START_TEST(test_random_wgsecef2llh2ecef) {
   double llh[3];
   double ecef[3];
 
-  srandom(0);
+  srand(0);
 
   ecef_init[0] = frand(-4 * EARTH_A, 4 * EARTH_A);
   ecef_init[1] = frand(-4 * EARTH_A, 4 * EARTH_A);
@@ -354,7 +354,7 @@ START_TEST(test_random_wgsecef2ned_d_0) {
   s32 i, j;
   double ned[3];
 
-  srandom(0);
+  srand(0);
   for (i = 0; i < 222; i++) {
     const double ecef[3] = {
         frand(-1e8, 1e8), frand(-1e8, 1e8), frand(-1e8, 1e8)};

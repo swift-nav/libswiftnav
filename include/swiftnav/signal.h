@@ -234,6 +234,9 @@ const char *sub_constellation_to_string(const sub_constellation_t sub_cons);
 sub_constellation_t sub_constellation_string_to_enum(
     const char *sub_constellation_string);
 
+constellation_t sub_constellation_to_constellation(
+    const sub_constellation_t sub_constellation);
+
 /** Code identifier. */
 typedef enum code_e {
   CODE_INVALID = -1,

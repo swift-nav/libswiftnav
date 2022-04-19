@@ -31,6 +31,10 @@ extern "C" {
 #define M_PI_2 1.5707963267948966192313216
 #endif
 
+#ifndef M_SQRT2
+#define M_SQRT2 1.41421356237309504880
+#endif
+
 #define R2D (180.0 / M_PI) /**< Conversion factor from radians to degrees. */
 #define D2R (M_PI / 180.0) /**< Conversion factor from degrees to radians. */
 #define AS2R (D2R / 3600.0)

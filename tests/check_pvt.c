@@ -158,6 +158,30 @@ static navigation_measurement_t nm11 = {
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
+// Note this is a copy of GPS nm1 but set to code GAL_E1B, do not combine
+// them in the same test case
+static navigation_measurement_t gal_nm1 = {
+    .sid = {.sat = 9, .code = CODE_GAL_E1B},
+    .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
+    .pseudorange = 23946993.888943646,
+    .raw_pseudorange = 23946993.888943646,
+    .sat_pos = {-19477278.087422125, -7649508.9457812719, 16674633.163554827},
+    .lock_time = 5,
+    .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
+             NAV_MEAS_FLAG_PHASE_VALID};
+
+// Note this is a copy of GPS nm2 but set to code GAL_E1B, do not combine
+// them in the same test case
+static navigation_measurement_t gal_nm2 = {
+    .sid = {.sat = 1, .code = CODE_GAL_E1B},
+    .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
+    .pseudorange = 22932174.156858064,
+    .raw_pseudorange = 22932174.156858064,
+    .sat_pos = {-9680013.5408340245, -15286326.354385279, 19429449.383770257},
+    .lock_time = 5,
+    .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
+             NAV_MEAS_FLAG_PHASE_VALID};
+
 START_TEST(test_pvt_failed_repair) {
   u8 n_used = 5;
   gnss_solution soln;
@@ -353,7 +377,6 @@ START_TEST(test_pvt_outlier_gps_l1ca_only) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
-  gnss_signal_t expected_removed_sid = {.code = CODE_GPS_L2CM, .sat = 8};
 
   navigation_measurement_t nms[9] = {
       nm2, nm3, nm4, nm5, nm6, nm7, nm8, nm9, nm10b};
@@ -367,8 +390,11 @@ START_TEST(test_pvt_outlier_gps_l1ca_only) {
                      &soln,
                      &dops,
                      &raim_removed_sids);
-  fail_unless(
-      code == 1, "Return code should be 1 (pvt repair). Saw: %d\n", code);
+
+  fail_unless(code == 0,
+              "Return code should be 0 (Solution converged and verified by "
+              "RAIM). Saw: %d\n",
+              code);
   fail_unless(soln.n_sigs_used == n_gps_l1ca,
               "n_sigs_used should be %u. Saw: %u\n",
               n_gps_l1ca,
@@ -377,10 +403,46 @@ START_TEST(test_pvt_outlier_gps_l1ca_only) {
               "n_sats_used should be %u. Saw: %u\n",
               n_gps_l1ca,
               soln.n_sats_used);
-  fail_unless(sid_set_contains(&raim_removed_sids, expected_removed_sid),
-              "Unexpected RAIM removed SID!\n");
 }
 END_TEST
+
+// Regression test for PIKSI-191
+START_TEST(test_calc_pvt_exclude_gal) {
+  u8 n_used = 8;
+  u8 n_gps_l1ca = 6;
+  gnss_solution soln;
+  dops_t dops;
+  gnss_sid_set_t raim_removed_sids;
+
+  // Mixing GPS and GAL satellites
+  navigation_measurement_t nms[9] = {
+      nm3, gal_nm1, gal_nm2, nm5, nm6, nm7, nm8, nm9};
+
+  // Now using predicate GPS_ONLY would trigger an assert in outlier detection
+  // which is called from within calc_PVT()
+  s8 code = calc_PVT(n_used,
+                     nms,
+                     &tor,
+                     false,
+                     false,
+                     GPS_ONLY,
+                     &soln,
+                     &dops,
+                     &raim_removed_sids);
+
+  fail_unless(code == 0,
+              "Return code should be 0 (Solution converged and verified by "
+              "RAIM). Saw: %d\n",
+              code);
+  fail_unless(soln.n_sigs_used == n_gps_l1ca,
+              "n_sigs_used should be %u. Saw: %u\n",
+              n_gps_l1ca,
+              soln.n_sigs_used);
+  fail_unless(soln.n_sats_used == n_gps_l1ca,
+              "n_sats_used should be %u. Saw: %u\n",
+              n_gps_l1ca,
+              soln.n_sats_used);
+}
 
 START_TEST(test_pvt_flag_outlier_bias) {
   /* 8 L1CA signals and 2 L2CM signals */
@@ -434,10 +496,10 @@ START_TEST(test_pvt_flag_outlier_bias) {
                   &dops,
                   &raim_removed_sids);
 
-  gnss_signal_t expected_removed_sid = {.code = CODE_GPS_L2CM, .sat = 8};
-
-  fail_unless(
-      code == 1, "Return code should be 1 (RAIM repair). Saw: %d\n", code);
+  fail_unless(code == 0,
+              "Return code should be 0 (Solution converged and verified by "
+              "RAIM). Saw: %d\n",
+              code);
   fail_unless(soln.n_sigs_used == n_gps_l1ca,
               "n_sigs_used should be %u. Saw: %u\n",
               n_gps_l1ca,
@@ -446,8 +508,6 @@ START_TEST(test_pvt_flag_outlier_bias) {
               "n_sats_used should be %u. Saw: %u\n",
               n_gps_l1ca,
               soln.n_sats_used);
-  fail_unless(sid_set_contains(&raim_removed_sids, expected_removed_sid),
-              "Unexpected RAIM removed SID!\n");
 }
 END_TEST
 
@@ -637,6 +697,7 @@ Suite *pvt_test_suite(void) {
   tcase_add_test(tc_core, test_pvt_repair_multifailure);
   tcase_add_test(tc_core, test_pvt_raim_gps_l1ca_only);
   tcase_add_test(tc_core, test_pvt_outlier_gps_l1ca_only);
+  tcase_add_test(tc_core, test_calc_pvt_exclude_gal);
   tcase_add_test(tc_core, test_pvt_flag_outlier_bias);
   tcase_add_test(tc_core, test_pvt_failed_repair);
   tcase_add_test(tc_core, test_pvt_raim_singular);

@@ -117,7 +117,7 @@ typedef bool (*sat_sel_predicate)(gnss_signal_t sid,
                                   gnss_sid_set_t sids_used,
                                   u8 n_states);
 
-s8 calc_PVT_pred(const u8 n_used,
+s8 calc_PVT_pred(const u8 n_meas,
                  const navigation_measurement_t nav_meas[],
                  const gps_time_t *tor,
                  const bool disable_raim,

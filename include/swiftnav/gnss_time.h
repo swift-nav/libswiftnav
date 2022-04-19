@@ -307,10 +307,20 @@ void utc2date(const utc_tm *utc_time,
               s32 *hour,
               s32 *min,
               double *sec);
+void utc2gps(const utc_tm *utc, gps_time_t *gps, const utc_params_t *p);
 gps_time_t mjd2gps(double mjd);
+gps_time_t mjd2gps_params(double mjd, const utc_params_t *p);
 double gps2mjd(const gps_time_t *gps_time);
+double gps2mjd_params(const gps_time_t *gps_time, const utc_params_t *p);
 gps_time_t date2gps(
     s32 year, s32 month, s32 day, s32 hour, s32 min, double sec);
+gps_time_t date2gps_params(s32 year,
+                           s32 month,
+                           s32 day,
+                           s32 hour,
+                           s32 min,
+                           double sec,
+                           const utc_params_t *p);
 void gps2date(const gps_time_t *gps_time,
               s32 *year,
               s32 *month,
@@ -318,6 +328,14 @@ void gps2date(const gps_time_t *gps_time,
               s32 *hour,
               s32 *min,
               double *sec);
+void gps2date_params(const gps_time_t *gps_time,
+                     s32 *year,
+                     s32 *month,
+                     s32 *day,
+                     s32 *hour,
+                     s32 *min,
+                     double *sec,
+                     const utc_params_t *p);
 
 /* GPS-UTC time offset at given GPS time */
 double get_gps_utc_offset(const gps_time_t *t, const utc_params_t *p);
@@ -355,6 +373,34 @@ static inline bool operator<=(const gps_time_t &a, const gps_time_t &b) {
 
 static inline double operator-(const gps_time_t &a, const gps_time_t &b) {
   return gpsdifftime(&a, &b);
+}
+
+static inline gps_time_t operator+(const gps_time_t &lhs, double rhs) {
+  gps_time_t t = lhs;
+  add_secs(&t, rhs);
+  return t;
+}
+
+static inline gps_time_t operator+(double lhs, const gps_time_t &rhs) {
+  gps_time_t t = rhs;
+  add_secs(&t, lhs);
+  return t;
+}
+
+static inline gps_time_t operator-(const gps_time_t &lhs, double rhs) {
+  gps_time_t t = lhs;
+  add_secs(&t, -rhs);
+  return t;
+}
+
+static inline gps_time_t &operator+=(gps_time_t &lhs, double rhs) {
+  add_secs(&lhs, rhs);
+  return lhs;
+}
+
+static inline gps_time_t &operator-=(gps_time_t &lhs, double rhs) {
+  add_secs(&lhs, -rhs);
+  return lhs;
 }
 #endif
 

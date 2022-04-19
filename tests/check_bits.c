@@ -6,6 +6,7 @@
 
 #include <swiftnav/bits.h>
 #include "check_suites.h"
+#include "common/check_utils.h"
 
 START_TEST(test_parity) {
   fail_unless(parity(0x00000000) == 0);

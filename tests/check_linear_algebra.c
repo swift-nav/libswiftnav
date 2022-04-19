@@ -22,7 +22,7 @@ START_TEST(test_matrix_inverse_2x2) {
   double B[4];
   double I[4];
 
-  srandom(0);
+  srand(0);
   /* 2x2 inverses */
   for (t = 0; t < LINALG_NUM; t++) {
     do {
@@ -52,7 +52,7 @@ START_TEST(test_matrix_inverse_3x3) {
   double B[9];
   double I[9];
 
-  srandom(0);
+  srand(0);
   /* 3x3 inverses */
   for (t = 0; t < LINALG_NUM; t++) {
     do {
@@ -84,7 +84,7 @@ START_TEST(test_matrix_inverse_4x4) {
   double B[16];
   double I[16];
 
-  srandom(0);
+  srand(0);
   /* 4x4 inverses */
   for (t = 0; t < LINALG_NUM; t++) {
     do {
@@ -120,7 +120,7 @@ START_TEST(test_matrix_inverse_5x5) {
   double B[25];
   double I[25];
 
-  srandom(0);
+  srand(0);
   /* 5x5 inverses */
   for (t = 0; t < LINALG_NUM; t++) {
     do {
@@ -316,7 +316,7 @@ END_TEST
 START_TEST(test_matrix_add_sc) {
   u32 i, j, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     u32 m = sizerand(MSIZE_MAX);
@@ -340,7 +340,7 @@ START_TEST(test_matrix_copy) {
   u32 i, j, t;
   double tmp;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     u32 m = sizerand(MSIZE_MAX);
@@ -361,7 +361,7 @@ END_TEST
 START_TEST(test_matrix_transpose) {
   u32 i, j, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     u32 m = sizerand(MSIZE_MAX);
@@ -385,7 +385,7 @@ END_TEST
 START_TEST(test_vector_dot) {
   u32 i, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     u32 mid;
@@ -421,7 +421,7 @@ END_TEST
 START_TEST(test_vector_mean) {
   u32 i, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     double A[n];
@@ -441,7 +441,7 @@ END_TEST
 START_TEST(test_vector_norm) {
   u32 i, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     double test = mrand / 1e22;
@@ -460,7 +460,7 @@ END_TEST
 START_TEST(test_vector_normalize) {
   u32 i, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     double A[n];
@@ -477,7 +477,7 @@ END_TEST
 START_TEST(test_vector_add_sc) {
   u32 i, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     double A[n], B[n];
@@ -493,7 +493,7 @@ END_TEST
 START_TEST(test_vector_add) {
   u32 i, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     double A[n], B[n], C[n];
@@ -512,7 +512,7 @@ END_TEST
 START_TEST(test_vector_subtract) {
   u32 i, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     double A[n], B[n], C[n];
@@ -531,7 +531,7 @@ END_TEST
 START_TEST(test_vector_cross) {
   u32 i, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     double A[3], B[3], C[3], D[3];
     for (i = 0; i < 3; i++) {
@@ -561,7 +561,7 @@ END_TEST
 START_TEST(test_vector_three) {
   u32 i, t;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     double A[3], B[3], C[3], tmp[3];
     double D, E, F, norm;
@@ -600,7 +600,7 @@ START_TEST(test_qrsolve_consistency) {
   u32 i, j, t;
   double norm;
 
-  srandom(0);
+  srand(0);
   for (t = 0; t < LINALG_NUM; t++) {
     u32 n = sizerand(MSIZE_MAX);
     double x_gauss[n], x_qr[n];
@@ -632,7 +632,7 @@ START_TEST(test_qrsolve_rect) {
                        -0.9929037180867774, -0.1491537478964264};
   double Q[16], R[8];
 
-  double buf[10] __attribute__((unused)) = {22, 22, 22, 22, 22,
+  double buf[10] SWIFT_ATTR_UNUSED = {22, 22, 22, 22, 22,
                                             22, 22, 22, 22, 22};
 
   i = qrdecomp(A, 4, 2, Q, R);

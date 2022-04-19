@@ -23,46 +23,47 @@ static const ephemeris_t gps_eph = {
     .valid = 1,
     .health_bits = 0,
     .source = EPH_SOURCE_GPS_LNAV,
-    .kepler = {.tgd.gps_s = {5.122274160385132E-9, 0.0},
-               .crc = 198.9375,
-               .crs = 10.28125,
-               .cuc = 5.327165126800537E-7,
-               .cus = 9.521842002868652E-6,
-               .cic = -2.3655593395233154E-7,
-               .cis = -3.91155481338501E-8,
-               .dn = 4.5637615275575705E-9,
-               .m0 = 2.167759779416001,
-               .ecc = 0.005649387603625655,
-               .sqrta = 5153.644334793091,
-               .omega0 = 1.8718410336467348,
-               .omegadot = -7.896400345341237E-9,
-               .w = 0.4837085715349947,
-               .inc = 0.9649728717477063,
-               .inc_dot = 6.078824636017362E-10,
-               .af0 = 2.5494489818811417E-5,
-               .af1 = 1.2505552149377763E-12,
-               .af2 = 0.0,
-               .toc = {.wn = 1916, .tow = 14400},
-               .iodc = 2,
-               .iode = 2}};
+    .data.kepler = {.tgd.gps_s = {5.122274160385132E-9, 0.0},
+                    .crc = 198.9375,
+                    .crs = 10.28125,
+                    .cuc = 5.327165126800537E-7,
+                    .cus = 9.521842002868652E-6,
+                    .cic = -2.3655593395233154E-7,
+                    .cis = -3.91155481338501E-8,
+                    .dn = 4.5637615275575705E-9,
+                    .m0 = 2.167759779416001,
+                    .ecc = 0.005649387603625655,
+                    .sqrta = 5153.644334793091,
+                    .omega0 = 1.8718410336467348,
+                    .omegadot = -7.896400345341237E-9,
+                    .w = 0.4837085715349947,
+                    .inc = 0.9649728717477063,
+                    .inc_dot = 6.078824636017362E-10,
+                    .af0 = 2.5494489818811417E-5,
+                    .af1 = 1.2505552149377763E-12,
+                    .af2 = 0.0,
+                    .toc = {.wn = 1916, .tow = 14400},
+                    .iodc = 2,
+                    .iode = 2}};
 
 /* GPS almanac for tests.
  * See scenario ME-45. */
-static const almanac_t gps_alm = {.sid = {.code = CODE_GPS_L1CA, .sat = 1},
-                                  .toa = {.wn = 1916, .tow = 53248},
-                                  .ura = 900,
-                                  .fit_interval = 504000,
-                                  .valid = 1,
-                                  .health_bits = 0,
-                                  .kepler = {.m0 = 1.5509826579560628,
-                                             .ecc = 0.005649566650390625,
-                                             .sqrta = 5153.64453125,
-                                             .omega0 = 1.8715344586823712,
-                                             .omegadot = -7.897471818543825E-9,
-                                             .w = 0.4837084091510879,
-                                             .inc = 0.964996154674105,
-                                             .af0 = 2.574920654296875E-5,
-                                             .af1 = 0.0}};
+static const almanac_t gps_alm = {
+    .sid = {.code = CODE_GPS_L1CA, .sat = 1},
+    .toa = {.wn = 1916, .tow = 53248},
+    .ura = 900,
+    .fit_interval = 504000,
+    .valid = 1,
+    .health_bits = 0,
+    .data.kepler = {.m0 = 1.5509826579560628,
+                    .ecc = 0.005649566650390625,
+                    .sqrta = 5153.64453125,
+                    .omega0 = 1.8715344586823712,
+                    .omegadot = -7.897471818543825E-9,
+                    .w = 0.4837084091510879,
+                    .inc = 0.964996154674105,
+                    .af0 = 2.574920654296875E-5,
+                    .af1 = 0.0}};
 
 START_TEST(test_ephemeris_almanac_divergence) {
   /* See scenario ME-45 description. */
@@ -76,8 +77,8 @@ START_TEST(test_ephemeris_almanac_divergence) {
 
   /* Next, let's modify and diverge the ephemeris.
    * Further modify these if the test case changes. */
-  gps_eph_diverged.kepler.dn = 10.4154338446262e-009;
-  gps_eph_diverged.kepler.m0 = 2.16970122385066e+000;
+  gps_eph_diverged.data.kepler.dn = 10.4154338446262e-009;
+  gps_eph_diverged.data.kepler.m0 = 2.16970122385066e+000;
 
   fail_unless(!ephemeris_equal(&gps_eph, &gps_eph_diverged),
               "Ephemerides should not be equal");
@@ -220,373 +221,373 @@ START_TEST(test_ephemeris_equal) {
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.tgd.gps_s[0] = 1.0;
+  a.data.kepler.tgd.gps_s[0] = 1.0;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.tgd_gps_s)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.crs = 1;
+  a.data.kepler.crs = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.crs)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.crc = 1;
+  a.data.kepler.crc = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.crc)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.cuc = 1;
+  a.data.kepler.cuc = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.cuc)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.cus = 1;
+  a.data.kepler.cus = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.cus)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.cic = 1;
+  a.data.kepler.cic = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.cic)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.cis = 1;
+  a.data.kepler.cis = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.cis)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.dn = 1;
+  a.data.kepler.dn = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.dn)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.m0 = 1;
+  a.data.kepler.m0 = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.m0)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.ecc = 1;
+  a.data.kepler.ecc = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.ecc)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.sqrta = 1;
+  a.data.kepler.sqrta = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.sqrta)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.omega0 = 1;
+  a.data.kepler.omega0 = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.omega0)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.omegadot = 1;
+  a.data.kepler.omegadot = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.omegadot)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.w = 1;
+  a.data.kepler.w = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.w)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.inc = 1;
+  a.data.kepler.inc = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.inc)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.inc_dot = 1;
+  a.data.kepler.inc_dot = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.inc_dot)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.af0 = 1;
+  a.data.kepler.af0 = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.af0)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.af1 = 1;
+  a.data.kepler.af1 = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.af1)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.af2 = 1;
+  a.data.kepler.af2 = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.af2)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.iode = 1;
+  a.data.kepler.iode = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.iode)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.iodc = 1;
+  a.data.kepler.iodc = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.iodc)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.toc.wn = 1;
+  a.data.kepler.toc.wn = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.toc.wn)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GPS_L1CA;
-  a.kepler.toc.tow = 1;
+  a.data.kepler.toc.tow = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (kepler.toc.tow)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.pos[0] = 1;
+  a.data.xyz.pos[0] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.pos[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.pos[1] = 1;
+  a.data.xyz.pos[1] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.pos[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.pos[2] = 1;
+  a.data.xyz.pos[2] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.pos[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.vel[0] = 1;
+  a.data.xyz.vel[0] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.vel[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.vel[1] = 1;
+  a.data.xyz.vel[1] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.vel[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.vel[2] = 1;
+  a.data.xyz.vel[2] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.vel[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.acc[0] = 1;
+  a.data.xyz.acc[0] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.acc[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.acc[1] = 1;
+  a.data.xyz.acc[1] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.acc[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.acc[2] = 1;
+  a.data.xyz.acc[2] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.acc[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.a_gf0 = 1;
+  a.data.xyz.a_gf0 = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.a_gf0)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_SBAS_L1CA;
-  a.xyz.a_gf1 = 1;
+  a.data.xyz.a_gf1 = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (xyz.a_gf1)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.gamma = 1;
+  a.data.glo.gamma = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.gamma)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.tau = 1;
+  a.data.glo.tau = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.tau)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.d_tau = 1;
+  a.data.glo.d_tau = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.d_tau)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.iod = 1;
+  a.data.glo.iod = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.iod)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.fcn = 1;
+  a.data.glo.fcn = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.fcn)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.pos[0] = 1;
+  a.data.glo.pos[0] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.pos[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.pos[1] = 1;
+  a.data.glo.pos[1] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.pos[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.pos[2] = 1;
+  a.data.glo.pos[2] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.pos[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.vel[0] = 1;
+  a.data.glo.vel[0] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.vel[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.vel[1] = 1;
+  a.data.glo.vel[1] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.vel[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.vel[2] = 1;
+  a.data.glo.vel[2] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.vel[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.acc[0] = 1;
+  a.data.glo.acc[0] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.acc[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.acc[1] = 1;
+  a.data.glo.acc[1] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.acc[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L1OF;
-  a.glo.acc[2] = 1;
+  a.data.glo.acc[2] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.acc[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.gamma = 1;
+  a.data.glo.gamma = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.gamma)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.tau = 1;
+  a.data.glo.tau = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.tau)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.d_tau = 1;
+  a.data.glo.d_tau = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.d_tau)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.iod = 1;
+  a.data.glo.iod = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.iod)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.fcn = 1;
+  a.data.glo.fcn = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.fcn)");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.pos[0] = 1;
+  a.data.glo.pos[0] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.pos[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.pos[1] = 1;
+  a.data.glo.pos[1] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.pos[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.pos[2] = 1;
+  a.data.glo.pos[2] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.pos[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.vel[0] = 1;
+  a.data.glo.vel[0] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.vel[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.vel[1] = 1;
+  a.data.glo.vel[1] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.vel[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.vel[2] = 1;
+  a.data.glo.vel[2] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.vel[2])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.acc[0] = 1;
+  a.data.glo.acc[0] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.acc[0])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.acc[1] = 1;
+  a.data.glo.acc[1] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.acc[1])");
   memset(&a, 0, sizeof(a));
 
   a.sid.code = CODE_GLO_L2OF;
-  a.glo.acc[2] = 1;
+  a.data.glo.acc[2] = 1;
   fail_unless(!ephemeris_equal(&a, &b),
               "Ephemerides should not be equal (glo.acc[2])");
   memset(&a, 0, sizeof(a));
@@ -720,7 +721,7 @@ START_TEST(test_ephemeris_bds) {
     .valid = 0,
     .health_bits = 0,
     .source = EPH_SOURCE_BDS_D1_D2_NAV,
-    .kepler = {
+    .data.kepler = {
       .tgd = {
         .bds_s = {-2.99999997e-10, -2.99999997e-10}
       },
@@ -790,7 +791,7 @@ START_TEST(test_ephemeris_gal) {
     .valid = 1,
     .health_bits = 0,
     .source = EPH_SOURCE_GAL_INAV,
-    .kepler = {
+    .data.kepler = {
       .tgd = {
         .gal_s = {-5.5879354476928711e-09, -6.5192580223083496e-09}
       },
@@ -910,26 +911,26 @@ START_TEST(test_ephemeris_valid) {
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_UNHEALTHY);
 
   eph = gps_eph;
-  eph.kepler.iodc = 1;
-  eph.kepler.iode = 3;
+  eph.data.kepler.iodc = 1;
+  eph.data.kepler.iode = 3;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
   eph = gps_eph;
-  eph.kepler.iodc = GPS_IODC_MAX;
-  eph.kepler.iode = GPS_IODE_MAX;
+  eph.data.kepler.iodc = GPS_IODC_MAX;
+  eph.data.kepler.iode = GPS_IODE_MAX;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
 
   eph = gps_eph;
-  eph.kepler.iodc = GPS_IODC_MAX + 1;
-  eph.kepler.iode = 1;
+  eph.data.kepler.iodc = GPS_IODC_MAX + 1;
+  eph.data.kepler.iode = 1;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
   eph = gps_eph;
-  eph.kepler.iodc = GPS_IODC_MAX + 1;
-  eph.kepler.iode = GPS_IODE_MAX + 1;
+  eph.data.kepler.iodc = GPS_IODC_MAX + 1;
+  eph.data.kepler.iode = GPS_IODE_MAX + 1;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
@@ -947,32 +948,32 @@ START_TEST(test_ephemeris_valid) {
   eph = gps_eph;
   eph.sid.code = CODE_QZS_L1CA;
   eph.source = EPH_SOURCE_QZS_LNAV;
-  eph.kepler.iodc = 1;
-  eph.kepler.iode = 3;
+  eph.data.kepler.iodc = 1;
+  eph.data.kepler.iode = 3;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
   eph = gps_eph;
   eph.sid.code = CODE_QZS_L1CA;
   eph.source = EPH_SOURCE_QZS_LNAV;
-  eph.kepler.iodc = GPS_IODC_MAX;
-  eph.kepler.iode = GPS_IODE_MAX;
+  eph.data.kepler.iodc = GPS_IODC_MAX;
+  eph.data.kepler.iode = GPS_IODE_MAX;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
 
   eph = gps_eph;
   eph.sid.code = CODE_QZS_L1CA;
   eph.source = EPH_SOURCE_QZS_LNAV;
-  eph.kepler.iodc = GPS_IODC_MAX + 1;
-  eph.kepler.iode = 1;
+  eph.data.kepler.iodc = GPS_IODC_MAX + 1;
+  eph.data.kepler.iode = 1;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
   eph = gps_eph;
   eph.sid.code = CODE_QZS_L1CA;
   eph.source = EPH_SOURCE_QZS_LNAV;
-  eph.kepler.iodc = GPS_IODC_MAX + 1;
-  eph.kepler.iode = GPS_IODE_MAX + 1;
+  eph.data.kepler.iodc = GPS_IODC_MAX + 1;
+  eph.data.kepler.iode = GPS_IODE_MAX + 1;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
@@ -992,24 +993,24 @@ START_TEST(test_ephemeris_valid) {
   eph = gps_eph;
   eph.sid.code = CODE_GAL_E1B;
   eph.source = EPH_SOURCE_GAL_INAV;
-  eph.kepler.iodc = 1;
-  eph.kepler.iode = 3;
+  eph.data.kepler.iodc = 1;
+  eph.data.kepler.iode = 3;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
   eph = gps_eph;
   eph.sid.code = CODE_GAL_E1B;
   eph.source = EPH_SOURCE_GAL_INAV;
-  eph.kepler.iodc = GAL_IOD_NAV_MAX;
-  eph.kepler.iode = GAL_IOD_NAV_MAX;
+  eph.data.kepler.iodc = GAL_IOD_NAV_MAX;
+  eph.data.kepler.iode = GAL_IOD_NAV_MAX;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
 
   eph = gps_eph;
   eph.sid.code = CODE_GAL_E1B;
   eph.source = EPH_SOURCE_GAL_INAV;
-  eph.kepler.iodc = GAL_IOD_NAV_MAX + 1;
-  eph.kepler.iode = GAL_IOD_NAV_MAX + 1;
+  eph.data.kepler.iodc = GAL_IOD_NAV_MAX + 1;
+  eph.data.kepler.iode = GAL_IOD_NAV_MAX + 1;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
@@ -1029,24 +1030,24 @@ START_TEST(test_ephemeris_valid) {
   eph = gps_eph;
   eph.sid.code = CODE_BDS2_B1;
   eph.source = EPH_SOURCE_BDS_D1_D2_NAV;
-  eph.kepler.iodc = 1;
-  eph.kepler.iode = 3;
+  eph.data.kepler.iodc = 1;
+  eph.data.kepler.iode = 3;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
 
   eph = gps_eph;
   eph.sid.code = CODE_BDS2_B1;
   eph.source = EPH_SOURCE_BDS_D1_D2_NAV;
-  eph.kepler.iodc = BDS2_IODC_MAX;
-  eph.kepler.iode = BDS2_IODE_MAX;
+  eph.data.kepler.iodc = BDS2_IODC_MAX;
+  eph.data.kepler.iode = BDS2_IODE_MAX;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
 
   eph = gps_eph;
   eph.sid.code = CODE_BDS2_B1;
   eph.source = EPH_SOURCE_BDS_D1_D2_NAV;
-  eph.kepler.iodc = BDS2_IODC_MAX + 1;
-  eph.kepler.iode = BDS2_IODE_MAX + 1;
+  eph.data.kepler.iodc = BDS2_IODC_MAX + 1;
+  eph.data.kepler.iode = BDS2_IODE_MAX + 1;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
@@ -1059,24 +1060,24 @@ START_TEST(test_ephemeris_valid) {
   eph = gps_eph;
   eph.sid.code = CODE_BDS3_B1CI;
   eph.source = EPH_SOURCE_BDS_BCNAV1;
-  eph.kepler.iodc = 1;
-  eph.kepler.iode = 3;
+  eph.data.kepler.iodc = 1;
+  eph.data.kepler.iode = 3;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
   eph = gps_eph;
   eph.sid.code = CODE_BDS3_B1CI;
   eph.source = EPH_SOURCE_BDS_BCNAV1;
-  eph.kepler.iodc = BDS3_IODC_MAX;
-  eph.kepler.iode = BDS3_IODE_MAX;
+  eph.data.kepler.iodc = BDS3_IODC_MAX;
+  eph.data.kepler.iode = BDS3_IODE_MAX;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 1);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_VALID);
 
   eph = gps_eph;
   eph.sid.code = CODE_BDS3_B1CI;
   eph.source = EPH_SOURCE_BDS_BCNAV1;
-  eph.kepler.iodc = BDS3_IODC_MAX + 1;
-  eph.kepler.iode = BDS3_IODE_MAX + 1;
+  eph.data.kepler.iodc = BDS3_IODC_MAX + 1;
+  eph.data.kepler.iode = BDS3_IODE_MAX + 1;
   fail_unless(ephemeris_valid(&eph, &t_valid) == 0);
   fail_unless(ephemeris_valid_detailed(&eph, &t_valid) == EPH_INVALID_IOD);
 
