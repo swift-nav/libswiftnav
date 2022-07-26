@@ -14,10 +14,9 @@ context.setRepo("libswiftnav")
 def builder = context.getBuilder()
 
 /**
- * - Mount the ccache to speed up builds
  * - Mount the refrepo to keep git operations functional on a repo that uses ref-repo during clone
  **/
-String dockerMountArgs = "-v /mnt/efs/ccache:/home/jenkins/.ccache -v /mnt/efs/refrepo:/mnt/efs/refrepo"
+String dockerMountArgs = "-v /mnt/efs/refrepo:/mnt/efs/refrepo"
 
 pipeline {
     // Override agent in each stage to make sure we don't share containers among stages.
@@ -40,9 +39,6 @@ pipeline {
         // Default parallelism for make
         MAKEJ='4'
 
-        // Since ~/.ccache is mounted from a shared NFS disk, make sure the temp
-        // dir is local to the container.
-        CCACHE_TEMPDIR='/tmp/ccache_tmp'
     }
 
     stages {
