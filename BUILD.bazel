@@ -1,6 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load(":bazel/configure_file.bzl", "configure_file")
 load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
+load("@rules_swiftnav//cc:defs.bzl", "UNIT", "swift_cc_test")
 
 refresh_compile_commands(
     name = "refresh_compile_commands",
@@ -99,8 +100,9 @@ cc_library(
     deps = ["//:swiftnav"],
 )
 
-cc_test(
+swift_cc_test(
     name = "swiftnav-test",
+    type = UNIT,
     srcs = [
         "tests/check_almanac.c",
         "tests/check_bits.c",
@@ -131,4 +133,10 @@ cc_test(
         "//:swiftnav",
         "@my-check//:check",
     ],
+)
+
+filegroup(
+    name = "clang_format_config",
+    srcs = [".clang-format"],
+    visibility = ["//visibility:public"],
 )
