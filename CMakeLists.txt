@@ -61,6 +61,7 @@ set(HDRS
     include/swiftnav/gnss_capabilities.h
     include/swiftnav/gnss_time.h
     include/swiftnav/ionosphere.h
+    include/swiftnav/leap_seconds.h
     include/swiftnav/linear_algebra.h
     include/swiftnav/logging.h
     include/swiftnav/macro_overload.h
