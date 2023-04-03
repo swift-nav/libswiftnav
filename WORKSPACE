@@ -1,12 +1,24 @@
 workspace(name = "root")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_swiftnav",
+    strip_prefix = "rules_swiftnav-9a47006cf0f0ea3fa65773957e737b5e7812cd8d",
+    url = "https://github.com/swift-nav/rules_swiftnav/archive/9a47006cf0f0ea3fa65773957e737b5e7812cd8d.tar.gz",
+)
+
 new_local_repository(
-    name = "my-check",
-    build_file = "bazel/check.BUILD",
+    name = "check",
+    build_file = "@rules_swiftnav//third_party:check.BUILD",
     path = "third_party/check",
 )
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+new_local_repository(
+    name = "check-cmake",
+    build_file = "@rules_swiftnav//third_party:check.BUILD",
+    path = "third_party/check",
+)
 
 http_archive(
     name = "rules_foreign_cc",
