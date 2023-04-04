@@ -14,7 +14,7 @@ on:
 jobs:
 
   ubuntu-codecov:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
 
       - name: Checkout source
@@ -102,9 +102,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - {os: ubuntu-18.04, cc: "gcc-6", cxx: "g++-6", test_suite: "unit"}
-          - {os: ubuntu-18.04, cc: "clang-6.0", cxx: "clang++-6.0", test_suite: "lint"}
-          - {os: ubuntu-18.04, cc: "gcc-11", cxx: "g++-11", test_suite: "unit"}
+          - {os: ubuntu-20.04, cc: "gcc-6", cxx: "g++-6", test_suite: "unit"}
+          - {os: ubuntu-20.04, cc: "clang-6.0", cxx: "clang++-6.0", test_suite: "lint"}
+          - {os: ubuntu-20.04, cc: "gcc-11", cxx: "g++-11", test_suite: "unit"}
           - {os: macos-10.15, cc: "clang", cxx: "clang++", test_suite: "unit"}
 
     runs-on: ${{ matrix.os }}
@@ -118,7 +118,7 @@ jobs:
           ssh-key: ${{ secrets.SSH_KEY }}
 
       - name: Add base packages and toolchain repository (Linux)
-        if: matrix.os == 'ubuntu-18.04'
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           sudo apt-get update
           sudo apt-get install build-essential software-properties-common -y
@@ -126,22 +126,22 @@ jobs:
           sudo apt-get update
 
       - name: Install gcc-6 (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'gcc-6'
+        if: matrix.os == 'ubuntu-20.04' && matrix.cc == 'gcc-6'
         run: |
           sudo apt-get install -y gcc-6 g++-6
 
       - name: Install gcc-11 (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'gcc-11'
+        if: matrix.os == 'ubuntu-20.04' && matrix.cc == 'gcc-11'
         run: |
           sudo apt-get install -y gcc-11 g++-11
 
       - name: Install clang-6.0 (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'clang-6.0'
+        if: matrix.os == 'ubuntu-20.04' && matrix.cc == 'clang-6.0'
         run: |
           sudo apt-get install -y clang-6.0 libc++-dev libc++abi-dev
 
       - name: Install clang-{format,tidy} (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'clang-6.0' && matrix.test_suite == 'lint'
+        if: matrix.os == 'ubuntu-20.04' && matrix.cc == 'clang-6.0' && matrix.test_suite == 'lint'
         run: |
           sudo apt-get install -y clang-format-6.0 clang-tidy-6.0
 
