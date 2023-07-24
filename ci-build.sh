@@ -93,6 +93,8 @@ function build_codecov() {
         -Dsonar.cfamily.cache.enabled=false \
         -Dsonar.sourceEncoding=UTF-8"
 
+    set -x
+
     # shellcheck disable=SC2086
     sonar-scanner \
         "-Dsonar.cfamily.llvm-cov.reportPath=./build/ccov/coverage.txt" \
