@@ -334,6 +334,52 @@ END_TEST
 #pragma clang diagnostic pop
 #endif
 
+START_TEST(test_endianess) {
+#ifdef __BYTE_ORDER__  // Available on gcc and clang, proabbly not other
+                       // compilers
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+  enum endianess expected_endianess = SWIFT_LITTLE_ENDIAN;
+  u16 u16_values[] = {0x1234, 0x3412, 0x3412};
+  u32 u32_values[] = {0x12345678, 0x78563412, 0x78563412};
+  u64 u64_values[] = {
+      0x123456789abcdef0, 0xf0debc9a78563412, 0xf0debc9a78563412};
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  enum endianess expected_endianess = SWIFT_BIG_ENDIAN;
+  u16 u16_values[] = {0x1234, 0x3412, 0x1234};
+  u32 u32_values[] = {0x12345678, 0x78563412, 0x12345678};
+  u64 u64_values[] = {
+      0x123456789abcdef0, 0xf0debc9a78563412, 0x123456789abcdef0};
+#else
+#error "__BYTE_ORDER__ not set properly by compiler"
+#endif
+  fail_unless(get_endianess() == expected_endianess);
+  // Order of elements in value array is big, little, host
+  fail_unless(byte_swap_16(u16_values[0]) == u16_values[1]);
+  fail_unless(byte_swap_16(u16_values[1]) == u16_values[0]);
+  fail_unless(betoh_16(u16_values[0]) == u16_values[2]);
+  fail_unless(letoh_16(u16_values[1]) == u16_values[2]);
+  fail_unless(htobe_16(u16_values[2]) == u16_values[0]);
+  fail_unless(htole_16(u16_values[2]) == u16_values[1]);
+
+  fail_unless(byte_swap_32(u32_values[0]) == u32_values[1]);
+  fail_unless(byte_swap_32(u32_values[1]) == u32_values[0]);
+  fail_unless(betoh_32(u32_values[0]) == u32_values[2]);
+  fail_unless(letoh_32(u32_values[1]) == u32_values[2]);
+  fail_unless(htobe_32(u32_values[2]) == u32_values[0]);
+  fail_unless(htole_32(u32_values[2]) == u32_values[1]);
+
+  fail_unless(byte_swap_64(u64_values[0]) == u64_values[1]);
+  fail_unless(byte_swap_64(u64_values[1]) == u64_values[0]);
+  fail_unless(betoh_64(u64_values[0]) == u64_values[2]);
+  fail_unless(letoh_64(u64_values[1]) == u64_values[2]);
+  fail_unless(htobe_64(u64_values[2]) == u64_values[0]);
+  fail_unless(htole_64(u64_values[2]) == u64_values[1]);
+#else
+// No compiler indication of endianess, tests disabled
+#endif
+}
+END_TEST
+
 Suite *bits_suite(void) {
   Suite *s = suite_create("Bit Utils");
 
@@ -350,6 +396,7 @@ Suite *bits_suite(void) {
   tcase_add_test(tc_core, test_count_bits_x);
   tcase_add_test(tc_core, test_sign_extend32);
   tcase_add_test(tc_core, test_sign_extend64);
+  tcase_add_test(tc_core, test_endianess);
   suite_add_tcase(s, tc_core);
 
   return s;

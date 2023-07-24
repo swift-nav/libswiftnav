@@ -249,8 +249,10 @@ START_TEST(test_gps2utc_time) {
 END_TEST
 
 START_TEST(test_gps2utc_date) {
-  /* test make_utc_tm from 1980 to 2080 with (1 day + 1 s) increments*/
-  gmtime_test("make_utc_tm_century", 0, 100L * 365 * DAY_SECS, DAY_SECS + 1);
+  /* test make_utc_tm from 1980 to 2048 with (1 day + 1 s) increments
+   * (68 years is 2144448000, which is just below the maximum value of a
+   * signed 32-bit number, i.e. 2147483648) */
+  gmtime_test("make_utc_tm_rollover", 0, 68L * 365 * DAY_SECS, DAY_SECS + 1);
 }
 END_TEST
 

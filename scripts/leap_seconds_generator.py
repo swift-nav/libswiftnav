@@ -34,6 +34,8 @@ JINJA_GNSS_TIME_LATEST_TEMPLATE = """/**
 #ifndef LIBSWIFTNAV_LEAP_SECONDS_H
 #define LIBSWIFTNAV_LEAP_SECONDS_H
 
+#include <swiftnav/common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

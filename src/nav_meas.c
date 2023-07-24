@@ -44,15 +44,7 @@ bool nav_meas_equal(const navigation_measurement_t *a,
     return false;
   }
 
-  if (!is_float_eq(a->pseudorange, b->pseudorange)) {
-    return false;
-  }
-
   if (!is_float_eq(a->raw_carrier_phase, b->raw_carrier_phase)) {
-    return false;
-  }
-
-  if (!is_float_eq(a->carrier_phase, b->carrier_phase)) {
     return false;
   }
 
@@ -60,19 +52,7 @@ bool nav_meas_equal(const navigation_measurement_t *a,
     return false;
   }
 
-  if (!is_float_eq(a->measured_doppler, b->measured_doppler)) {
-    return false;
-  }
-
   if (!is_float_eq(a->raw_computed_doppler, b->raw_computed_doppler)) {
-    return false;
-  }
-
-  if (!is_float_eq(a->computed_doppler, b->computed_doppler)) {
-    return false;
-  }
-
-  if (!is_float_eq(a->computed_doppler_dt, b->computed_doppler_dt)) {
     return false;
   }
 
@@ -208,4 +188,22 @@ double decode_lock_time(u8 sbp_lock_time) {
 
   /* Convert to seconds */
   return (double)ms_lock_time / SECS_MS;
+}
+
+double nav_meas_cor_sat_clk_on_pseudorange(
+    const navigation_measurement_t *nav_meas) {
+  return (nav_meas->raw_pseudorange + GPS_C * nav_meas->sat_clock_err);
+}
+
+double nav_meas_cor_sat_clk_on_measured_doppler(
+    const navigation_measurement_t *nav_meas) {
+  double carrier_freq = sid_to_carr_freq(nav_meas->sid);
+  return (nav_meas->raw_measured_doppler +
+          nav_meas->sat_clock_err_rate * carrier_freq);
+}
+
+double nav_meas_cor_sat_clk_on_carrier_phase(
+    const navigation_measurement_t *nav_meas) {
+  double carrier_freq = sid_to_carr_freq(nav_meas->sid);
+  return (nav_meas->raw_carrier_phase + nav_meas->sat_clock_err * carrier_freq);
 }

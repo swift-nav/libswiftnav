@@ -3,7 +3,8 @@ load(":bazel/configure_file.bzl", "configure_file")
 load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
 
 refresh_compile_commands(
-    name = "refresh_compile_commands",
+    name = "gen_compile_commands",
+    visibility = ["//visibility:public"],
 )
 
 configure_file(
@@ -19,7 +20,6 @@ cc_library(
         "src/almanac.c",
         "src/bits.c",
         "src/coord_system.c",
-        "src/correct_iono_tropo.c",
         "src/decode_glo.c",
         "src/edc.c",
         "src/ephemeris.c",
@@ -55,7 +55,6 @@ cc_library(
         "include/swiftnav/common.h",
         "include/swiftnav/constants.h",
         "include/swiftnav/coord_system.h",
-        "include/swiftnav/correct_iono_tropo.h",
         "include/swiftnav/decode_glo.h",
         "include/swiftnav/edc.h",
         "include/swiftnav/ephemeris.h",
@@ -131,4 +130,10 @@ cc_test(
         "//:swiftnav",
         "@my-check//:check",
     ],
+)
+
+filegroup(
+    name = "clang_format_config",
+    srcs = [".clang-format"],
+    visibility = ["//visibility:public"],
 )

@@ -14,8 +14,22 @@ on:
 jobs:
 
   ubuntu-codecov:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    container: ubuntu:18.04
+
     steps:
+
+      - name: Setup container
+        run: |
+          apt-get update
+          apt-get install -y gpg wget curl software-properties-common unzip
+          add-apt-repository -y ppa:git-core/ppa
+          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - \
+            | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+          echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic-rc main' \
+            | tee -a /etc/apt/sources.list.d/kitware.list >/dev/null
+          apt-get update
+          apt-get install -y git cmake build-essential clang llvm
 
       - name: Checkout source
         uses: actions/checkout@v2
@@ -23,10 +37,6 @@ jobs:
           fetch-depth: 0
           submodules: recursive
           ssh-key: ${{ secrets.SSH_KEY }}
-
-      - name: Install llvm-cov
-        run: |
-          sudo apt-get update && sudo apt-get install llvm -y
 
       - name: Run build
         env:
@@ -36,8 +46,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ORGANIZATION: swift-nav
-          SONAR_PROJECT_KEY: swift-nav_libswiftnav
-          SONAR_PROJECT_NAME: libswiftnav
+          SONAR_PROJECT_KEY: swift-nav_libswiftnav-private
+          SONAR_PROJECT_NAME: libswiftnav-private
           SONAR_HOST_URL: https://sonarcloud.io
           SONAR_SCANNER_VERSION: 4.2.0.1873
 
@@ -102,48 +112,40 @@ jobs:
     strategy:
       matrix:
         include:
-          - {os: ubuntu-18.04, cc: "gcc-6", cxx: "g++-6", test_suite: "unit"}
-          - {os: ubuntu-18.04, cc: "clang-6.0", cxx: "clang++-6.0", test_suite: "lint"}
-          - {os: ubuntu-18.04, cc: "gcc-11", cxx: "g++-11", test_suite: "unit"}
-          - {os: macos-10.15, cc: "clang", cxx: "clang++", test_suite: "unit"}
+          - {cc: "gcc-6", cxx: "g++-6", test_suite: "unit",
+             package: "gcc-6 g++-6", runs_on: "ubuntu-latest", container: "ubuntu:18.04"}
+          - {cc: "clang-6.0", cxx: "clang++-6.0", test_suite: "lint",
+             package: "clang-6.0 libc++-dev libc++abi-dev clang-format-6.0 clang-tidy-6.0",
+             runs_on: "ubuntu-latest", container: "ubuntu:18.04"}
+          - {cc: "gcc-11", cxx: "g++-11", test_suite: "unit",
+             package: "gcc-11 g++-11", runs_on: "ubuntu-latest", container: "ubuntu:18.04"}
+          - {cc: "clang", cxx: "clang++", test_suite: "unit",
+             runs_on: "macos-11", container: ~}
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runs_on }}
+    container: ${{ matrix.container }}
 
     steps:
+
+      - name: Setup container
+        if: matrix.container == 'ubuntu:18.04'
+        run: |
+          apt-get update
+          apt-get install -y gpg wget curl software-properties-common zip
+          add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          add-apt-repository -y ppa:git-core/ppa
+          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
+            | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+          echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic-rc main' \
+            | tee -a /etc/apt/sources.list.d/kitware.list >/dev/null
+          apt-get update
+          apt-get install -y libeigen3-dev libserialport-dev git cmake build-essential ${{ matrix.package }}
 
       - name: Checkout source
         uses: actions/checkout@v2
         with:
           submodules: recursive
           ssh-key: ${{ secrets.SSH_KEY }}
-
-      - name: Add base packages and toolchain repository (Linux)
-        if: matrix.os == 'ubuntu-18.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install build-essential software-properties-common -y
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-          sudo apt-get update
-
-      - name: Install gcc-6 (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'gcc-6'
-        run: |
-          sudo apt-get install -y gcc-6 g++-6
-
-      - name: Install gcc-11 (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'gcc-11'
-        run: |
-          sudo apt-get install -y gcc-11 g++-11
-
-      - name: Install clang-6.0 (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'clang-6.0'
-        run: |
-          sudo apt-get install -y clang-6.0 libc++-dev libc++abi-dev
-
-      - name: Install clang-{format,tidy} (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'clang-6.0' && matrix.test_suite == 'lint'
-        run: |
-          sudo apt-get install -y clang-format-6.0 clang-tidy-6.0
 
       - name: Run build
         env:

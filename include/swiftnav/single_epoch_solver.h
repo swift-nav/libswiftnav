@@ -103,11 +103,21 @@ typedef struct {
   u8 n_sigs_used;
 } gnss_solution;
 
+typedef struct {
+  bool enable;
+  float threshold_dbhz;
+} cn0_mask_t;
+
+typedef struct {
+  cn0_mask_t cn0_mask;
+} obs_mask_config_t;
+
 s8 calc_PVT(const u8 n_used,
             const navigation_measurement_t nav_meas[],
             const gps_time_t *tor,
             const bool disable_raim,
             const bool disable_velocity,
+            const obs_mask_config_t *obs_mask_config,
             enum processing_strategy_t strategy,
             gnss_solution *soln,
             dops_t *dops,
@@ -122,6 +132,7 @@ s8 calc_PVT_pred(const u8 n_meas,
                  const gps_time_t *tor,
                  const bool disable_raim,
                  const bool disable_velocity,
+                 const obs_mask_config_t *obs_mask_config,
                  sat_sel_predicate pred,
                  gnss_solution *soln,
                  dops_t *dops,

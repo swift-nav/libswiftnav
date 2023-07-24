@@ -5,7 +5,6 @@
 #include <swiftnav/common.h>
 #include <swiftnav/constants.h>
 #include <swiftnav/coord_system.h>
-#include <swiftnav/correct_iono_tropo.h>
 #include <swiftnav/decode_glo.h>
 #include <swiftnav/edc.h>
 #include <swiftnav/ephemeris.h>

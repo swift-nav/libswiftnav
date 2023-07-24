@@ -63,11 +63,6 @@ extern "C" {
 
 #define GLO_IOD_MAX 0x7F
 
-#ifndef GAL_WEEK_TO_GPS_WEEK
-/** GST week offset to GPS */
-#define GAL_WEEK_TO_GPS_WEEK 1024
-#endif
-
 #ifndef GAL_FIT_INTERVAL_SECONDS
 /**
  * Galileo fit_interval definition
@@ -297,8 +292,6 @@ typedef gps_time_t (*glo2gps_with_utc_params_t)(const glo_time_t *glo_t);
 
 /** \} */
 
-extern const float g_bds_ura_table[16];
-
 /* BDS satellites can be either geostationary (GEO), geosynchronous (IGSO) or
  medium earth orbit (MEO) */
 typedef enum { GEO, IGSO, MEO } satellite_orbit_type_t;
@@ -374,6 +367,10 @@ bool ephemeris_healthy(const ephemeris_t *ephe, const code_t code);
 
 u8 encode_ura(float ura);
 float decode_ura_index(const u8 index);
+float decode_sisa_index(u8 sisa);
+float decode_bds_ura_index(const u8 index);
+
+u32 decode_fit_interval(u8 fit_interval_flag, u16 iodc);
 
 u32 get_bds2_iod_crc(const ephemeris_t *eph);
 

@@ -27,10 +27,7 @@ extern "C" {
 /* truncate satellite elevations near or below zero [deg] */
 #define MIN_SAT_ELEVATION 0.1
 
-double calc_troposphere(const gps_time_t *t_gps,
-                        double lat,
-                        double h,
-                        double el);
+double calc_troposphere(const double doy, double lat, double h, double el);
 
 #ifdef __cplusplus
 } /* extern "C" */
