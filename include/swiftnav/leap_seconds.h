@@ -14,7 +14,7 @@
  * Automatically generated from scripts/leap_seconds_generator.py. Please do  *
  * not hand edit!                                                             *
  *                                                                            *
- * Updated: 29-06-2022                                                        *
+ * Updated: 30-03-2023                                                        *
  ******************************************************************************/
 
 #ifndef LIBSWIFTNAV_LEAP_SECONDS_H
@@ -52,11 +52,11 @@ static const s32 utc_leaps[][3] = {
     {1930, 17, 18},     /* 01-01-2017 */
 };
 
-/** GPS time when the utc_leaps table expires 28-12-2022 */
-static const s32 gps_time_utc_leaps_expiry[2] = {2242, 259218};
+/** GPS time when the utc_leaps table expires 28-12-2023 */
+static const s32 gps_time_utc_leaps_expiry[2] = {2294, 345618};
 
-/** UNIX time when the utc_leaps table expires 28-12-2022 */
-static const s64 unix_time_utc_leaps_expiry = 1672185600;
+/** UNIX time when the utc_leaps table expires 28-12-2023 */
+static const s64 unix_time_utc_leaps_expiry = 1703721600;
 
 #ifdef __cplusplus
 }

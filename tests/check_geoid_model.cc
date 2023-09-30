@@ -57,7 +57,7 @@ float geoidh_emb(const double& lat,
 
 // directly include the 1 degree geoid for testing purposes
 namespace geoid_1_degree {
-#include "../src/geoid_model_1_degree.inc"
+#include "src/geoid_model_1_degree.inc"
 inline float geoidh_emb(const double& lat, const double& lon) {
   return ::geoidh_emb(
       lat, lon, GEOID, LAT_GRID_SPACING_DEG, LON_GRID_SPACING_DEG);
@@ -66,7 +66,7 @@ inline float geoidh_emb(const double& lat, const double& lon) {
 
 // directly include the 0.25 degree geoid for testing purposes
 namespace geoid_15_minute {
-#include "../src/geoid_model_15_minute.inc"
+#include "src/geoid_model_15_minute.inc"
 inline float geoidh_emb(const double& lat, const double& lon) {
   return ::geoidh_emb(
       lat, lon, GEOID, LAT_GRID_SPACING_DEG, LON_GRID_SPACING_DEG);
@@ -80,14 +80,14 @@ inline float geoidh_emb(const double& lat, const double& lon) {
 // directly include our implementation with 1 degree geoid for testing purposes
 namespace src_geoid_model_1_degree {
 #undef GEOID_MODEL_15_MINUTE_RESOLUTION
-#include "../src/geoid_model.c"
+#include "src/geoid_model.c"
 }  // namespace src_geoid_model_1_degree
 
 // directly include our implementation with 0.25 degree geoid for testing
 // purposes
 namespace src_geoid_model_15_minute {
 #define GEOID_MODEL_15_MINUTE_RESOLUTION
-#include "../src/geoid_model.c"
+#include "src/geoid_model.c"
 }  // namespace src_geoid_model_15_minute
 
 #ifdef __cplusplus

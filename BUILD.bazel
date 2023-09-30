@@ -1,25 +1,42 @@
-load("@rules_cc//cc:defs.bzl", "cc_library")
-load(":bazel/configure_file.bzl", "configure_file")
 load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
+load("@rules_swiftnav//cc:defs.bzl", "UNIT", "swift_c_library", "swift_cc_test", "swift_cc_test_library")
+load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "bool_flag")
+load("//bazel:max_channels_config.bzl", "max_channels_config")
 
 refresh_compile_commands(
-    name = "refresh_compile_commands",
+    name = "gen_compile_commands",
+    visibility = ["//visibility:public"],
 )
 
-configure_file(
+int_flag(
     name = "max_channels",
-    out = "max_channels.h",
-    template = "src/max_channels.h.in",
-    vars = {"MAX_CHANNELS": "63"},
+    build_setting_default = 63,
 )
 
-cc_library(
+bool_flag(
+    name = "enable_stderr_logging",
+    build_setting_default = True,
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "_enable_stderr_logging",
+    flag_values = {"enable_stderr_logging": "true"},
+)
+
+max_channels_config(
+    name = "max_channels_h",
+    out = "max_channels.h",
+    max_channels = ":max_channels",
+    template = "src/max_channels.h.in",
+)
+
+swift_c_library(
     name = "swiftnav",
     srcs = [
         "src/almanac.c",
         "src/bits.c",
         "src/coord_system.c",
-        "src/correct_iono_tropo.c",
         "src/decode_glo.c",
         "src/edc.c",
         "src/ephemeris.c",
@@ -43,7 +60,7 @@ cc_library(
         "src/single_epoch_solver.c",
         "src/subsystem_status_report.c",
         "src/troposphere.c",
-        ":max_channels",
+        ":max_channels_h",
     ],
     hdrs = [
         "include/swiftnav/almanac.h",
@@ -55,7 +72,6 @@ cc_library(
         "include/swiftnav/common.h",
         "include/swiftnav/constants.h",
         "include/swiftnav/coord_system.h",
-        "include/swiftnav/correct_iono_tropo.h",
         "include/swiftnav/decode_glo.h",
         "include/swiftnav/edc.h",
         "include/swiftnav/ephemeris.h",
@@ -85,21 +101,31 @@ cc_library(
         "include/swiftnav/swift_strnlen.h",
         "include/swiftnav/troposphere.h",
     ],
+    copts = ["-UNDEBUG"],
+    local_defines = select({
+        "_enable_stderr_logging": ["LIBSWIFTNAV_ENABLE_STDERR_LOGGING=ON"],
+        "//conditions:default": [],
+    }),
     includes = ["include"],
+    nocopts = [
+        "-Wconversion",
+        "-Wstack-protector",
+    ],
     textual_hdrs = [
         "src/signal.c",
         "src/geoid_model.c",
     ],
+    visibility = ["//visibility:public"],
 )
 
-cc_library(
+swift_cc_test_library(
     name = "check-utils",
     srcs = ["tests/common/check_utils.c"],
     hdrs = ["tests/common/check_utils.h"],
     deps = ["//:swiftnav"],
 )
 
-cc_test(
+swift_cc_test(
     name = "swiftnav-test",
     srcs = [
         "tests/check_almanac.c",
@@ -126,9 +152,16 @@ cc_test(
         "tests/check_suites.h",
         "tests/check_troposphere.c",
     ],
+    type = UNIT,
     deps = [
         "//:check-utils",
         "//:swiftnav",
-        "@my-check//:check",
+        "@check",
     ],
+)
+
+filegroup(
+    name = "clang_format_config",
+    srcs = [".clang-format"],
+    visibility = ["//visibility:public"],
 )

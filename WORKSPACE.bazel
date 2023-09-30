@@ -1,12 +1,12 @@
-workspace(name = "root")
-
-new_local_repository(
-    name = "my-check",
-    build_file = "bazel/check.BUILD",
-    path = "third_party/check",
-)
+workspace(name = "libswiftnav")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_swiftnav",
+    strip_prefix = "rules_swiftnav-26426be6b89a5b9f0489158098599b9fcd973ed4",
+    url = "https://github.com/swift-nav/rules_swiftnav/archive/26426be6b89a5b9f0489158098599b9fcd973ed4.tar.gz",
+)
 
 http_archive(
     name = "rules_foreign_cc",
@@ -30,3 +30,9 @@ http_archive(
 load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
 
 hedron_compile_commands_setup()
+
+new_local_repository(
+    name = "check",
+    build_file = "@rules_swiftnav//third_party:check.BUILD",
+    path = "third_party/check",
+)

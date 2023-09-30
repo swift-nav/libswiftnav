@@ -18,11 +18,7 @@ START_TEST(test_calc_troposphere) {
   double el = 45 * D2R;
   double d_true = 2.8567;
 
-  /* GPS week 1669 starts on 1.1.2012, so easier to generate given doy */
-  gps_time_t t = {.wn = 1669, .tow = doy * DAY_SECS};
-  normalize_gps_time(&t);
-
-  double d_tropo = calc_troposphere(&t, lat, h, el);
+  double d_tropo = calc_troposphere(doy, lat, h, el);
 
   fail_unless(
       fabs(d_tropo - d_true) < d_tol,
@@ -36,11 +32,7 @@ START_TEST(test_calc_troposphere) {
   el = 20 * D2R;
   d_true = 7.4942;
 
-  t.wn = 1669;
-  t.tow = doy * DAY_SECS;
-  normalize_gps_time(&t);
-
-  d_tropo = calc_troposphere(&t, lat, h, el);
+  d_tropo = calc_troposphere(doy, lat, h, el);
 
   fail_unless(
       fabs(d_tropo - d_true) < d_tol,
@@ -52,13 +44,9 @@ START_TEST(test_calc_troposphere) {
   h = 0.0;
   doy = 50.5;
   el = 10 * D2R;
-  d_true = 12.9004;
+  d_true = 12.90073;
 
-  t.wn = 1669;
-  t.tow = doy * DAY_SECS;
-  normalize_gps_time(&t);
-
-  d_tropo = calc_troposphere(&t, lat, h, el);
+  d_tropo = calc_troposphere(doy, lat, h, el);
 
   fail_unless(
       fabs(d_tropo - d_true) < d_tol,
@@ -69,7 +57,7 @@ START_TEST(test_calc_troposphere) {
   /* altitude sanity tests */
   double max_tropo_correction = 30.0;
   h = -5000;
-  d_tropo = calc_troposphere(&t, lat, h, el);
+  d_tropo = calc_troposphere(doy, lat, h, el);
 
   fail_unless(fabs(d_tropo) < max_tropo_correction,
               "Sanity test fail at altitude %0.5f. : Correction was %.5f\n",
@@ -77,7 +65,7 @@ START_TEST(test_calc_troposphere) {
               d_tropo);
 
   h = 12000;
-  d_tropo = calc_troposphere(&t, lat, h, el);
+  d_tropo = calc_troposphere(doy, lat, h, el);
 
   fail_unless(fabs(d_tropo) < max_tropo_correction,
               "Sanity test fail at altitude %0.5f. : Correction was %.5f\n",
@@ -91,7 +79,7 @@ START_TEST(test_calc_troposphere) {
 
   for (u8 i = 0; i < sizeof(elevation_testcases) / sizeof(double); i++) {
     el = elevation_testcases[i];
-    d_tropo = calc_troposphere(&t, lat, h, el);
+    d_tropo = calc_troposphere(doy, lat, h, el);
     fail_unless(fabs(d_tropo) < max_tropo_correction,
                 "Sanity test fail at satellite elevation %0.5f. : Correction "
                 "was %.5f\n",

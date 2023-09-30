@@ -49,7 +49,6 @@ set(HDRS
     include/swiftnav/common.h
     include/swiftnav/constants.h
     include/swiftnav/coord_system.h
-    include/swiftnav/correct_iono_tropo.h
     include/swiftnav/decode_glo.h
     include/swiftnav/edc.h
     include/swiftnav/ephemeris.h
@@ -82,7 +81,6 @@ set(SRCS
     src/almanac.c
     src/bits.c
     src/coord_system.c
-    src/correct_iono_tropo.c
     src/decode_glo.c
     src/edc.c
     src/ephemeris.c

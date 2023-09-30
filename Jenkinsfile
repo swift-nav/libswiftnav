@@ -54,31 +54,25 @@ pipeline {
                 stage('Bazel Build') {
                     agent {
                         docker {
-                            image '571934480752.dkr.ecr.us-west-2.amazonaws.com/swift-build-bazel:2022-09-09'
+                            image '571934480752.dkr.ecr.us-west-2.amazonaws.com/swift-build-bazel:2023-06-21'
                         }
                     }
                     steps {
                         gitPrep()
                         script {
-                            try {
-                                sh('''#!/bin/bash -ex
-                                    | CC=gcc-8 CXX=g++-8 bazel build --subcommands //...
-                                    | bazel run //:refresh_compile_commands
-                                    | bazel run //:swiftnav-test
-                                    |'''.stripMargin())
-                            } catch(e) {
-                                // Notify bazel-alerts when master fails
-                                if (context.isBranchPush(branches: ["master"])) {
-                                    slackSend(
-                                        channel: "#bazel-alerts",
-                                        color: 'danger',
-                                        message: 'FAILURE'
-                                            + " on master "
-                                            + ": <${env.RUN_DISPLAY_URL}|${env.JOB_NAME} #${env.BUILD_NUMBER}>"
-                                            + " - "
-                                            + currentBuild.durationString.replace(' and counting', ''))
-                                }
-                            }
+                            sh('''#!/bin/bash -ex
+                                | CC=gcc-8 CXX=g++-8 bazel build --subcommands //...
+                                | bazel run //:gen_compile_commands
+                                | bazel run //:swiftnav-test
+                                | bazel coverage --collect_code_coverage --combined_report=lcov //...
+                                | genhtml bazel-out/_coverage/_coverage_report.dat -o coverage
+                                | tar -zcvf coverage.tar.gz coverage/
+                                |'''.stripMargin())
+                        }
+                    }
+                    post {
+                        always {
+                            archiveArtifacts(artifacts: 'coverage.tar.gz', allowEmptyArchive: true)
                         }
                     }
                 }

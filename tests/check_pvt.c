@@ -17,69 +17,69 @@ static const gps_time_t tor = {.wn = TOR_WN, .tow = TOR_TOW};
 static navigation_measurement_t nm1 = {
     .sid = {.sat = 9, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 23946993.888943646,
     .raw_pseudorange = 23946993.888943646,
     .sat_pos = {-19477278.087422125, -7649508.9457812719, 16674633.163554827},
     .lock_time = 5,
+    .cn0 = 41.0,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm1_no_doppler = {
     .sid = {.sat = 9, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 23946993.888943646,
     .raw_pseudorange = 23946993.888943646,
     .sat_pos = {-19477278.087422125, -7649508.9457812719, 16674633.163554827},
     .lock_time = 5,
+    .cn0 = 39.0,
     .flags = NAV_MEAS_FLAG_CODE_VALID};
 
 static navigation_measurement_t nm2 = {
     .sid = {.sat = 1, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 22932174.156858064,
     .raw_pseudorange = 22932174.156858064,
     .sat_pos = {-9680013.5408340245, -15286326.354385279, 19429449.383770257},
     .lock_time = 5,
+    .cn0 = 43.0,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm3 = {
     .sid = {.sat = 2, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 24373231.648055989,
     .raw_pseudorange = 24373231.648055989,
     .sat_pos = {-19858593.085281931, -3109845.8288993631, 17180320.439503901},
     .lock_time = 5,
+    .cn0 = 35.0,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm4 = {
     .sid = {.sat = 3, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 24779663.252316438,
     .raw_pseudorange = 24779663.252316438,
     .sat_pos = {6682497.8716542246, -14006962.389166718, 21410456.275678463},
     .lock_time = 5,
+    .cn0 = 27.0,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm5 = {
     .sid = {.sat = 4, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 26948717.022331879,
     .raw_pseudorange = 26948717.022331879,
     .sat_pos = {7415370.9916331079, -24974079.044485383, -3836019.0262199985},
     .lock_time = 5,
+    .cn0 = 39.0,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm6 = {
     .sid = {.sat = 5, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 23327405.435463827,
     .raw_pseudorange = 23327405.435463827,
     .sat_pos = {-2833466.1648670658, -22755197.793894723, 13160322.082875408},
     .lock_time = 5,
+    .cn0 = 38.0,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
@@ -87,53 +87,52 @@ static navigation_measurement_t nm6 = {
 static navigation_measurement_t nm6b = {
     .sid = {.sat = 5, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 23327405.435463827,
     .raw_pseudorange = 23327405.435463827,
     .sat_pos = {-2833466.1648670658, -22755197.793894723, 13160322.082875408},
     .sat_vel = {0, 0, 0},
     .cn0 = 40,
     .lock_time = 5,
-    .measured_doppler = 10000, /* Doppler outlier */
+    .raw_measured_doppler = 10000, /* Doppler outlier */
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID | NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm7 = {
     .sid = {.sat = 6, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 27371419.016328193,
     .raw_pseudorange = 27371419.016328193,
     .sat_pos = {14881660.383624561, -5825253.4316490609, 21204679.68313824},
     .lock_time = 5,
+    .cn0 = 42.3,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm8 = {
     .sid = {.sat = 7, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 26294221.697782904,
     .raw_pseudorange = 26294221.697782904,
     .sat_pos = {12246530.477279386, -22184711.955107089, 7739084.2855069181},
     .lock_time = 5,
+    .cn0 = 45.1,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm9 = {
     .sid = {.sat = 8, .code = CODE_GPS_L1CA},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 25781999.479948733,
     .raw_pseudorange = 25781999.479948733,
     .sat_pos = {-25360766.249484103, -1659033.490658124, 7821492.0398916304},
     .lock_time = 5,
+    .cn0 = 37.3,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm10 = {
     .sid = {.sat = 8, .code = CODE_GPS_L2CM},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 25781999.479948733,
     .raw_pseudorange = 25781999.479948733,
     .sat_pos = {-25360766.249484103, -1659033.490658124, 7821492.0398916304},
     .lock_time = 5,
+    .cn0 = 41.0,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
@@ -141,20 +140,20 @@ static navigation_measurement_t nm10 = {
 static navigation_measurement_t nm10b = {
     .sid = {.sat = 8, .code = CODE_GPS_L2CM},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 25781999.479948733 + 30000,
-    .raw_pseudorange = 25781999.479948733,
+    .raw_pseudorange = 25781999.479948733 + 30000,
     .sat_pos = {-25360766.249484103, -1659033.490658124, 7821492.0398916304},
     .lock_time = 5,
+    .cn0 = 39.2,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
 static navigation_measurement_t nm11 = {
     .sid = {.sat = 11, .code = CODE_GPS_L2CM},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 25781999.479948733,
     .raw_pseudorange = 25781999.479948733,
     .sat_pos = {-25360766.249484103, -1659033.490658124, 7821492.0398916304},
     .lock_time = 5,
+    .cn0 = 45.4,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
@@ -163,10 +162,10 @@ static navigation_measurement_t nm11 = {
 static navigation_measurement_t gal_nm1 = {
     .sid = {.sat = 9, .code = CODE_GAL_E1B},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 23946993.888943646,
     .raw_pseudorange = 23946993.888943646,
     .sat_pos = {-19477278.087422125, -7649508.9457812719, 16674633.163554827},
     .lock_time = 5,
+    .cn0 = 41.1,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
@@ -175,10 +174,10 @@ static navigation_measurement_t gal_nm1 = {
 static navigation_measurement_t gal_nm2 = {
     .sid = {.sat = 1, .code = CODE_GAL_E1B},
     .tot = {.wn = TOR_WN, .tow = TOR_TOW - 0.077},
-    .pseudorange = 22932174.156858064,
     .raw_pseudorange = 22932174.156858064,
     .sat_pos = {-9680013.5408340245, -15286326.354385279, 19429449.383770257},
     .lock_time = 5,
+    .cn0 = 39.7,
     .flags = NAV_MEAS_FLAG_CODE_VALID | NAV_MEAS_FLAG_MEAS_DOPPLER_VALID |
              NAV_MEAS_FLAG_PHASE_VALID};
 
@@ -187,6 +186,7 @@ START_TEST(test_pvt_failed_repair) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
 
   navigation_measurement_t nms[9] = {nm1, nm2, nm3, nm4, nm5, nm6, nm7, nm8};
 
@@ -195,6 +195,7 @@ START_TEST(test_pvt_failed_repair) {
            &tor,
            false,
            true,
+           &obs_mask_config,
            ALL_CONSTELLATIONS,
            &soln,
            &dops,
@@ -209,6 +210,7 @@ START_TEST(test_pvt_repair) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
   gnss_signal_t expected_removed_sid = {.code = CODE_GPS_L1CA, .sat = 9};
 
   navigation_measurement_t nms[9] = {
@@ -219,6 +221,7 @@ START_TEST(test_pvt_repair) {
                      &tor,
                      false,
                      true,
+                     &obs_mask_config,
                      ALL_CONSTELLATIONS,
                      &soln,
                      &dops,
@@ -245,11 +248,12 @@ START_TEST(test_pvt_raim_singular) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
 
   navigation_measurement_t nm1_broken = nm1;
   navigation_measurement_t nm2_broken = nm2;
-  nm1_broken.pseudorange += 5e8;
-  nm2_broken.pseudorange -= 2e7;
+  nm1_broken.raw_pseudorange += 5e8;
+  nm2_broken.raw_pseudorange -= 2e7;
 
   navigation_measurement_t nms[9] = {
       nm1_broken, nm2_broken, nm3, nm4, nm5, nm6, nm7, nm9, nm10};
@@ -259,6 +263,7 @@ START_TEST(test_pvt_raim_singular) {
                      &tor,
                      false,
                      true,
+                     &obs_mask_config,
                      ALL_CONSTELLATIONS,
                      &soln,
                      &dops,
@@ -273,6 +278,7 @@ START_TEST(test_pvt_vel_repair) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
   gnss_signal_t expected_removed_sid = {.code = CODE_GPS_L1CA, .sat = 5};
 
   navigation_measurement_t nms[6] = {nm2, nm3, nm4, nm5, nm6b, nm7};
@@ -282,6 +288,7 @@ START_TEST(test_pvt_vel_repair) {
                      &tor,
                      false,
                      false,
+                     &obs_mask_config,
                      ALL_CONSTELLATIONS,
                      &soln,
                      &dops,
@@ -306,6 +313,7 @@ START_TEST(test_pvt_repair_multifailure) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
   gnss_signal_t expected_removed_sid = {.code = CODE_GPS_L1CA, .sat = 9};
 
   navigation_measurement_t nms[8] = {nm1, nm2, nm3, nm7, nm10b, nm5, nm6, nm7};
@@ -315,6 +323,7 @@ START_TEST(test_pvt_repair_multifailure) {
                      &tor,
                      false,
                      false,
+                     &obs_mask_config,
                      ALL_CONSTELLATIONS,
                      &soln,
                      &dops,
@@ -341,6 +350,7 @@ START_TEST(test_pvt_raim_gps_l1ca_only) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{false, 25}};
   gnss_signal_t expected_removed_sid = {.code = CODE_GPS_L1CA, .sat = 9};
 
   navigation_measurement_t nms[10] = {
@@ -351,6 +361,7 @@ START_TEST(test_pvt_raim_gps_l1ca_only) {
                      &tor,
                      false,
                      false,
+                     &obs_mask_config,
                      GPS_L1CA_WHEN_POSSIBLE,
                      &soln,
                      &dops,
@@ -377,6 +388,7 @@ START_TEST(test_pvt_outlier_gps_l1ca_only) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
 
   navigation_measurement_t nms[9] = {
       nm2, nm3, nm4, nm5, nm6, nm7, nm8, nm9, nm10b};
@@ -386,6 +398,7 @@ START_TEST(test_pvt_outlier_gps_l1ca_only) {
                      &tor,
                      false,
                      false,
+                     &obs_mask_config,
                      GPS_L1CA_WHEN_POSSIBLE,
                      &soln,
                      &dops,
@@ -413,6 +426,7 @@ START_TEST(test_calc_pvt_exclude_gal) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
 
   // Mixing GPS and GAL satellites
   navigation_measurement_t nms[9] = {
@@ -425,6 +439,7 @@ START_TEST(test_calc_pvt_exclude_gal) {
                      &tor,
                      false,
                      false,
+                     &obs_mask_config,
                      GPS_ONLY,
                      &soln,
                      &dops,
@@ -451,13 +466,14 @@ START_TEST(test_pvt_flag_outlier_bias) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
 
   navigation_measurement_t nm10_bias = nm10;
   navigation_measurement_t nm11_bias = nm11;
 
   /* add a common bias of 120 m to the L2CM measurements */
-  nm10_bias.pseudorange += 120;
-  nm11_bias.pseudorange += 120;
+  nm10_bias.raw_pseudorange += 120;
+  nm11_bias.raw_pseudorange += 120;
 
   /* healthy measurements, with bias on L2 */
   navigation_measurement_t nms[9] = {
@@ -468,6 +484,7 @@ START_TEST(test_pvt_flag_outlier_bias) {
                      &tor,
                      false,
                      false,
+                     &obs_mask_config,
                      GPS_L1CA_WHEN_POSSIBLE,
                      &soln,
                      &dops,
@@ -483,7 +500,7 @@ START_TEST(test_pvt_flag_outlier_bias) {
               soln.n_sats_used);
 
   /* add outlier to one of the L2 measurements  */
-  nm11_bias.pseudorange += 1000;
+  nm11_bias.raw_pseudorange += 1000;
   nms[8] = nm11_bias;
 
   code = calc_PVT(n_used,
@@ -491,6 +508,7 @@ START_TEST(test_pvt_flag_outlier_bias) {
                   &tor,
                   false,
                   false,
+                  &obs_mask_config,
                   GPS_L1CA_WHEN_POSSIBLE,
                   &soln,
                   &dops,
@@ -516,6 +534,7 @@ START_TEST(test_disable_pvt_raim) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{false, 25}};
 
   navigation_measurement_t nms[9] = {
       nm1, nm2, nm3, nm4, nm5, nm6, nm7, nm8, nm9};
@@ -526,6 +545,7 @@ START_TEST(test_disable_pvt_raim) {
                      &tor,
                      true,
                      true,
+                     &obs_mask_config,
                      ALL_CONSTELLATIONS,
                      &soln,
                      &dops,
@@ -541,6 +561,7 @@ START_TEST(test_disable_pvt_velocity) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
 
   navigation_measurement_t nms[9] = {
       nm1_no_doppler, nm2, nm3, nm4, nm5, nm6, nm7, nm8, nm9};
@@ -550,6 +571,7 @@ START_TEST(test_disable_pvt_velocity) {
                      &tor,
                      false,
                      true,
+                     &obs_mask_config,
                      ALL_CONSTELLATIONS,
                      &soln,
                      &dops,
@@ -579,6 +601,7 @@ START_TEST(test_count_sats) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{false, 25}};
 
   navigation_measurement_t nms[10] = {
       nm1, nm2, nm3, nm4, nm5, nm6, nm7, nm8, nm9, nm10};
@@ -589,6 +612,7 @@ START_TEST(test_count_sats) {
                      &tor,
                      true,
                      false,
+                     &obs_mask_config,
                      ALL_CONSTELLATIONS,
                      &soln,
                      &dops,
@@ -610,6 +634,7 @@ START_TEST(test_count_sats_l1ca_only) {
   gnss_solution soln;
   dops_t dops;
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
 
   /* 10 signals of which one is GPS L2 and others GPS L1 */
   navigation_measurement_t nms[10] = {
@@ -621,6 +646,7 @@ START_TEST(test_count_sats_l1ca_only) {
                      &tor,
                      true,
                      false,
+                     &obs_mask_config,
                      GPS_L1CA_WHEN_POSSIBLE,
                      &soln,
                      &dops,
@@ -647,6 +673,7 @@ START_TEST(test_dops) {
                      .hdop = 1.76157,
                      .vdop = 2.04559};
   gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{false, 25}};
 
   const double dop_tol = 1e-3;
 
@@ -658,6 +685,7 @@ START_TEST(test_dops) {
                      &tor,
                      false,
                      true,
+                     &obs_mask_config,
                      ALL_CONSTELLATIONS,
                      &soln,
                      &dops,
@@ -688,6 +716,57 @@ START_TEST(test_dops) {
 }
 END_TEST
 
+START_TEST(test_pvt_successful_repair_with_cn0_mask) {
+  /* Emulate TES-238 scenario */
+
+  u8 n_used = 9;
+  gnss_solution soln;
+  dops_t dops;
+  gnss_sid_set_t raim_removed_sids;
+  obs_mask_config_t obs_mask_config = {{true, 25}};
+
+  // Given erroneous pseudorange measurement with C/N0 above mask threshold (sat
+  // 2)
+  navigation_measurement_t nm3_bias = nm3;
+  nm3_bias.raw_pseudorange += 4350;
+
+  // Given erroneous measurement with C/N0 below mask threshold and pseudorange
+  // that if processed, does not allow for successful RAIM repair
+  navigation_measurement_t nm4_bias_low_cn0 = nm4;
+  nm4_bias_low_cn0.raw_pseudorange += 4134;
+  nm4_bias_low_cn0.cn0 = 21;
+
+  // When calc_PVT is attempted with measurements defined above and C/N0
+  // observation masking enabled
+  navigation_measurement_t nms[9] = {
+      nm1, nm2, nm3_bias, nm4_bias_low_cn0, nm5, nm6, nm7, nm8, nm9};
+  s8 code = calc_PVT(n_used,
+                     nms,
+                     &tor,
+                     false,
+                     true,
+                     &obs_mask_config,
+                     ALL_CONSTELLATIONS,
+                     &soln,
+                     &dops,
+                     &raim_removed_sids);
+
+  // Expect successful RAIM repair
+  gnss_signal_t expected_removed_sid_1 = {.code = CODE_GPS_L1CA, .sat = 9};
+  gnss_signal_t expected_removed_sid_2 = {.code = CODE_GPS_L1CA, .sat = 2};
+  fail_unless(
+      code == 1, "Return code should be 1 (pvt repair). Saw: %d\n", code);
+  fail_unless(soln.n_sigs_used == n_used - 3,
+              "n_sigs_used should be %u. Saw: %u\n",
+              n_used - 3,
+              soln.n_sigs_used);
+  fail_unless(sid_set_contains(&raim_removed_sids, expected_removed_sid_1),
+              "Unexpected RAIM removed SID!\n");
+  fail_unless(sid_set_contains(&raim_removed_sids, expected_removed_sid_2),
+              "Unexpected RAIM removed SID!\n");
+}
+END_TEST
+
 Suite *pvt_test_suite(void) {
   Suite *s = suite_create("PVT Solver");
 
@@ -706,6 +785,7 @@ Suite *pvt_test_suite(void) {
   tcase_add_test(tc_core, test_count_sats);
   tcase_add_test(tc_core, test_count_sats_l1ca_only);
   tcase_add_test(tc_core, test_dops);
+  tcase_add_test(tc_core, test_pvt_successful_repair_with_cn0_mask);
   suite_add_tcase(s, tc_core);
 
   return s;

@@ -138,6 +138,10 @@ extern "C" {
 #define GLO_EPOCH_WN 834
 #define GLO_EPOCH_TOW 75610.0
 
+/** Constant difference of Galileo time from GPS time */
+#define GAL_WEEK_TO_GPS_WEEK 1024
+#define GAL_SECOND_TO_GPS_SECOND 0
+
 /** Constant difference of Beidou time from GPS time */
 #define BDS_WEEK_TO_GPS_WEEK 1356
 #define BDS_SECOND_TO_GPS_SECOND 14

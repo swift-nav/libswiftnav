@@ -340,7 +340,8 @@ static s8 vel_solve(const u8 n_used,
 
     /* Store the observed minus predicted residual */
     lsq_data->omp_doppler[j] =
-        -nav_meas[j]->measured_doppler * wavelength - pdot_pred;
+        -nav_meas_cor_sat_clk_on_measured_doppler(nav_meas[j]) * wavelength -
+        pdot_pred;
   }
 
   if (0 == res) {
@@ -356,7 +357,8 @@ static s8 vel_solve(const u8 n_used,
     /* Update the residuals with the solved velocity and drift */
     for (u8 j = 0; j < n_used; j++) {
       lsq_data->omp_doppler[j] =
-          -nav_meas[j]->measured_doppler * sid_to_lambda(nav_meas[j]->sid) -
+          -nav_meas_cor_sat_clk_on_measured_doppler(nav_meas[j]) *
+              sid_to_lambda(nav_meas[j]->sid) -
           compute_predicted_doppler(n_states, lsq_data->rx_state, nav_meas[j]);
     }
   }
@@ -486,7 +488,8 @@ static s8 pvt_solve(const u8 n_used,
      * prediction error vector (or innovation vector in Kalman/LS
      * filtering terms).
      */
-    lsq_data->omp_range[j] = nav_meas[j]->pseudorange - p_pred;
+    lsq_data->omp_range[j] =
+        nav_meas_cor_sat_clk_on_pseudorange(nav_meas[j]) - p_pred;
 
     double pseudorange_var = 0.0;
     calc_measurement_noises(nav_meas[j], &pseudorange_var, NULL);
@@ -719,7 +722,8 @@ static bool flag_outliers(const u8 n_used,
 
     double p_pred = compute_predicted_pseudorange(
         clock_map, rx_state, nav_meas[i], line_of_sight);
-    range_residual[i] = nav_meas[i]->pseudorange - p_pred;
+    range_residual[i] =
+        nav_meas_cor_sat_clk_on_pseudorange(nav_meas[i]) - p_pred;
 
     /* compute running average of residuals for this code, excluding obvious
      * outliers */
@@ -757,7 +761,9 @@ static bool flag_outliers(const u8 n_used,
       double pdot_pred =
           compute_predicted_doppler(n_states, rx_state, nav_meas[i]);
       double doppler_residual =
-          -nav_meas[i]->measured_doppler * sid_to_lambda(sid) - pdot_pred;
+          -nav_meas_cor_sat_clk_on_measured_doppler(nav_meas[i]) *
+              sid_to_lambda(sid) -
+          pdot_pred;
       if (fabs(doppler_residual) > DOPPLER_RESIDUAL_THRESHOLD_M_S) {
         if (0 == signals_flagged) {
           /* log only the first flagged signal */
@@ -1072,15 +1078,17 @@ static s8 pvt_repair(const u8 n_used,
         double p_pred = compute_predicted_pseudorange(
             clock_map, lsq_data->rx_state, nav_meas[bad_sat], los);
 
-        residual = nav_meas[bad_sat]->pseudorange - p_pred;
+        residual =
+            nav_meas_cor_sat_clk_on_pseudorange(nav_meas[bad_sat]) - p_pred;
 
         if (!disable_velocity) {
           double pdot_pred = compute_predicted_doppler(
               n_states, lsq_data->rx_state, nav_meas[bad_sat]);
 
-          vel_residual = -nav_meas[bad_sat]->measured_doppler *
-                             sid_to_lambda(nav_meas[bad_sat]->sid) -
-                         pdot_pred;
+          vel_residual =
+              -nav_meas_cor_sat_clk_on_measured_doppler(nav_meas[bad_sat]) *
+                  sid_to_lambda(nav_meas[bad_sat]->sid) -
+              pdot_pred;
         }
       }
       sid_set_remove(removed_sids, nav_meas[i]->sid);
@@ -1284,6 +1292,14 @@ static bool l1_only(gnss_signal_t sid, gnss_sid_set_t sids_used, u8 n_states) {
   return false;
 }
 
+static bool obs_mask_check_passed(const obs_mask_config_t *obs_mask_config,
+                                  const double cn0) {
+  if (obs_mask_config->cn0_mask.enable) {
+    return cn0 > obs_mask_config->cn0_mask.threshold_dbhz;
+  }
+  return true;
+}
+
 /**
  * Try to calculate a single point GNSS solution
  *
@@ -1320,6 +1336,7 @@ static s8 calc_PVT_pred_internal(const u8 n_meas,
                                  const gps_time_t *tor,
                                  const bool disable_raim,
                                  const bool disable_velocity,
+                                 const obs_mask_config_t *obs_mask_config,
                                  sat_sel_predicate pred,
                                  gnss_solution *soln,
                                  dops_t *dops,
@@ -1339,17 +1356,22 @@ static s8 calc_PVT_pred_internal(const u8 n_meas,
       processed_nav_meas_ptrs, n_meas, const navigation_measurement_t *);
 
   for (u8 i = 0; i < n_meas; ++i) {
-    if (pred(nav_meas[i]->sid, sids_used, n_states)) {
-      const gnss_signal_t sid = nav_meas[i]->sid;
-      const constellation_t constellation = sid_to_constellation(sid);
-      processed_nav_meas_ptrs[n_processed_meas_used] = nav_meas[i];
-      sid_set_add(&sids_used, sid);
-      if (clock_map[constellation] == -1) {
-        clock_map[constellation] = n_states;
-        ++n_states;
-      }
-      ++n_processed_meas_used;
+    if (!pred(nav_meas[i]->sid, sids_used, n_states)) {
+      continue;
     }
+    if (!obs_mask_check_passed(obs_mask_config, nav_meas[i]->cn0)) {
+      continue;
+    }
+
+    const gnss_signal_t sid = nav_meas[i]->sid;
+    const constellation_t constellation = sid_to_constellation(sid);
+    processed_nav_meas_ptrs[n_processed_meas_used] = nav_meas[i];
+    sid_set_add(&sids_used, sid);
+    if (clock_map[constellation] == -1) {
+      clock_map[constellation] = n_states;
+      ++n_states;
+    }
+    ++n_processed_meas_used;
   }
 
   /* Initial state is the center of the Earth with zero velocity and zero
@@ -1484,6 +1506,7 @@ static s8 calc_PVT_pred_internal(const u8 n_meas,
                                    tor,
                                    disable_raim,
                                    disable_velocity,
+                                   obs_mask_config,
                                    &all_constellations,
                                    soln,
                                    dops,
@@ -1541,6 +1564,7 @@ s8 calc_PVT_pred(const u8 n_meas,
                  const gps_time_t *tor,
                  const bool disable_raim,
                  const bool disable_velocity,
+                 const obs_mask_config_t *obs_mask_config,
                  sat_sel_predicate pred,
                  gnss_solution *soln,
                  dops_t *dops,
@@ -1554,6 +1578,7 @@ s8 calc_PVT_pred(const u8 n_meas,
                                   tor,
                                   disable_raim,
                                   disable_velocity,
+                                  obs_mask_config,
                                   pred,
                                   soln,
                                   dops,
@@ -1570,6 +1595,7 @@ s8 calc_PVT(const u8 n_used,
             const gps_time_t *tor,
             const bool disable_raim,
             const bool disable_velocity,
+            const obs_mask_config_t *obs_mask_config,
             enum processing_strategy_t strategy,
             gnss_solution *soln,
             dops_t *dops,
@@ -1581,6 +1607,7 @@ s8 calc_PVT(const u8 n_used,
                            tor,
                            disable_raim,
                            disable_velocity,
+                           obs_mask_config,
                            gps_only,
                            soln,
                            dops,
@@ -1592,6 +1619,7 @@ s8 calc_PVT(const u8 n_used,
                            tor,
                            disable_raim,
                            disable_velocity,
+                           obs_mask_config,
                            gps_l1ca_when_possible,
                            soln,
                            dops,
@@ -1603,6 +1631,7 @@ s8 calc_PVT(const u8 n_used,
                            tor,
                            disable_raim,
                            disable_velocity,
+                           obs_mask_config,
                            l1_only,
                            soln,
                            dops,
@@ -1615,6 +1644,7 @@ s8 calc_PVT(const u8 n_used,
                            tor,
                            disable_raim,
                            disable_velocity,
+                           obs_mask_config,
                            all_constellations,
                            soln,
                            dops,

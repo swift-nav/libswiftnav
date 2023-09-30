@@ -35,10 +35,11 @@ if(libswiftnav_BUILD_TESTS)
     SRCS ${SRCS}
     LINK swiftnav::check-utils check Threads::Threads
     )
+  target_include_directories(test-swiftnav-common PRIVATE ${PROJECT_SOURCE_DIR})
 
   swift_set_compile_options(
     test-swiftnav-common 
-    REMOVE 
+    REMOVE
       -Wconversion
       -Wstack-protector
       -Wfloat-equal
