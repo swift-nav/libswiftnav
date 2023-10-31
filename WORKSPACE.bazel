@@ -4,15 +4,16 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_swiftnav",
-    strip_prefix = "rules_swiftnav-26426be6b89a5b9f0489158098599b9fcd973ed4",
-    url = "https://github.com/swift-nav/rules_swiftnav/archive/26426be6b89a5b9f0489158098599b9fcd973ed4.tar.gz",
+    sha256 = "4feaefe3c1cf0007b0ce8c1af296884a7a1ac052fd79410943d4a4dd96e9f94b",
+    strip_prefix = "rules_swiftnav-eb7e182d1663d1803f37ac0e9798ce91de3b6722",
+    url = "https://github.com/swift-nav/rules_swiftnav/archive/eb7e182d1663d1803f37ac0e9798ce91de3b6722.tar.gz",
 )
 
-http_archive(
-    name = "rules_foreign_cc",
-    strip_prefix = "rules_foreign_cc-c65e8cfbaa002bcd1ce9c26e9fec63b0b866c94b",
-    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/c65e8cfbaa002bcd1ce9c26e9fec63b0b866c94b.tar.gz",
-)
+load("@rules_swiftnav//cc:repositories.bzl", "swift_cc_toolchain")
+
+swift_cc_toolchain()
+
+register_swift_cc_toolchains()
 
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
 
