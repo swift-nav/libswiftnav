@@ -332,7 +332,8 @@ gps_time_t time2gps_t(const time_t t_unix) {
 }
 
 /** Checks if GPS time t is within begin and end */
-bool gpstime_in_range(const gps_time_t *bgn, const gps_time_t *end,
+bool gpstime_in_range(const gps_time_t *bgn,
+                      const gps_time_t *end,
                       const gps_time_t *t) {
   assert(bgn);
   assert((int)bgn->tow != TOW_UNKNOWN);
@@ -391,7 +392,8 @@ double gpsdifftime(const gps_time_t *end, const gps_time_t *beginning) {
  * \return True, if the time difference could be computed, false otherwise, e.g.
  * for end or start times with unknown week numbers.
  */
-bool gpsdifftime_week_second(const gps_time_t *end, const gps_time_t *beginning,
+bool gpsdifftime_week_second(const gps_time_t *end,
+                             const gps_time_t *beginning,
                              gps_time_duration_t *dt) {
   dt->seconds = 0;
   dt->weeks = 0;
@@ -441,8 +443,8 @@ bool gps_time_match_weeks_safe(gps_time_t *t, const gps_time_t *ref) {
   }
 
   if (!gps_time_valid(t)) {
-    log_info("t=(%lf,%d) ref=(%lf,%d)", t->tow, (int)t->wn, ref->tow,
-             (int)ref->wn);
+    log_info(
+        "t=(%lf,%d) ref=(%lf,%d)", t->tow, (int)t->wn, ref->tow, (int)ref->wn);
     return false;
   }
 
@@ -766,7 +768,8 @@ bool decode_utc_parameters(const u32 words[8], utc_params_t *u) {
  * \retval true  UTC parameters have been decoded.
  * \retval false Decoding error.
  */
-bool decode_utc_parameters_with_wn_ref(const u32 words[8], utc_params_t *u,
+bool decode_utc_parameters_with_wn_ref(const u32 words[8],
+                                       utc_params_t *u,
                                        u16 wn_ref) {
   bool retval = false;
 
@@ -849,7 +852,12 @@ double date2mjd(s32 year, s32 month, s32 day, s32 hour, s32 min, double sec) {
  */
 /* NOTE: This function will be inaccurate by up to a second on the day of a leap
  * second. */
-void mjd2date(double mjd, s32 *year, s32 *month, s32 *day, s32 *hour, s32 *min,
+void mjd2date(double mjd,
+              s32 *year,
+              s32 *month,
+              s32 *day,
+              s32 *hour,
+              s32 *min,
               double *sec) {
   s32 J, C, Y, M;
 
@@ -889,8 +897,12 @@ utc_tm mjd2utc(double mjd) {
  * second. */
 double utc2mjd(const utc_tm *utc_time) {
   double secs = (double)utc_time->second_int + utc_time->second_frac;
-  return date2mjd(utc_time->year, utc_time->month, utc_time->month_day,
-                  utc_time->hour, utc_time->minute, secs);
+  return date2mjd(utc_time->year,
+                  utc_time->month,
+                  utc_time->month_day,
+                  utc_time->hour,
+                  utc_time->minute,
+                  secs);
 }
 
 /* NOTE: This function will be inaccurate by up to a second on the week of a
@@ -900,8 +912,13 @@ utc_tm date2utc(s32 year, s32 month, s32 day, s32 hour, s32 min, double sec) {
   return mjd2utc(mjd);
 }
 
-void utc2date(const utc_tm *utc_time, s32 *year, s32 *month, s32 *day,
-              s32 *hour, s32 *min, double *sec) {
+void utc2date(const utc_tm *utc_time,
+              s32 *year,
+              s32 *month,
+              s32 *day,
+              s32 *hour,
+              s32 *min,
+              double *sec) {
   *year = utc_time->year;
   *month = utc_time->month;
   *day = utc_time->month_day;
@@ -951,23 +968,38 @@ double gps2mjd_params(const gps_time_t *gps_time, const utc_params_t *p) {
 
 /* NOTE: This function will be inaccurate by up to a second on the week of a
  * leap second. */
-gps_time_t date2gps(s32 year, s32 month, s32 day, s32 hour, s32 min,
-                    double sec) {
+gps_time_t date2gps(
+    s32 year, s32 month, s32 day, s32 hour, s32 min, double sec) {
   return date2gps_params(year, month, day, hour, min, sec, NULL);
 }
 
-gps_time_t date2gps_params(s32 year, s32 month, s32 day, s32 hour, s32 min,
-                           double sec, const utc_params_t *p) {
+gps_time_t date2gps_params(s32 year,
+                           s32 month,
+                           s32 day,
+                           s32 hour,
+                           s32 min,
+                           double sec,
+                           const utc_params_t *p) {
   return mjd2gps_params(date2mjd(year, month, day, hour, min, sec), p);
 }
 
-void gps2date(const gps_time_t *gps_time, s32 *year, s32 *month, s32 *day,
-              s32 *hour, s32 *min, double *sec) {
+void gps2date(const gps_time_t *gps_time,
+              s32 *year,
+              s32 *month,
+              s32 *day,
+              s32 *hour,
+              s32 *min,
+              double *sec) {
   gps2date_params(gps_time, year, month, day, hour, min, sec, NULL);
 }
 
-void gps2date_params(const gps_time_t *gps_time, s32 *year, s32 *month,
-                     s32 *day, s32 *hour, s32 *min, double *sec,
+void gps2date_params(const gps_time_t *gps_time,
+                     s32 *year,
+                     s32 *month,
+                     s32 *day,
+                     s32 *hour,
+                     s32 *min,
+                     double *sec,
                      const utc_params_t *p) {
   utc_tm utc_time;
   gps2utc(gps_time, &utc_time, p);
@@ -976,8 +1008,8 @@ void gps2date_params(const gps_time_t *gps_time, s32 *year, s32 *month,
 
 /** Return the number of days in given month */
 u8 days_in_month(u16 year, u8 month) {
-  static u8 days_in_month_lookup[13] = {0,  31, 28, 31, 30, 31, 30,
-                                        31, 31, 30, 31, 30, 31};
+  static u8 days_in_month_lookup[13] = {
+      0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
   if (month == 2 && is_leap_year(year)) {
     return 29;
   }
