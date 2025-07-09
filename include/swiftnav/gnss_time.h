@@ -272,28 +272,8 @@ void gps_time_match_weeks(gps_time_t *t, const gps_time_t *ref);
 u16 gps_adjust_week_cycle(u16 wn_raw, u16 wn_ref);
 u16 gps_adjust_week_cycle256(u16 wn_raw, u16 wn_ref);
 
-/**
- * @brief Converts a decimal year to a MJD (modified Julian date).
- *
- * @param epoch_years The epoch in decimal years representation.
- * @return The epoch in MJD representation.
- */
 double decimal_year_to_mjd(const double epoch_years);
-
-/**
- * @brief Converts a GPS time to a decimal year.
- *
- * @param gps_time The GPS epoch to convert.
- * @return The epoch in decimal years representation.
- */
 double gps_time_to_decimal_years(const gps_time_t *time);
-
-/**
- * @brief Converts a epoch represented as a decimal year to a GPS time.
- *
- * @param years The epoch in decimal years representation.
- * @return The epoch in GPS time representation.
- */
 gps_time_t decimal_years_to_gps_time(const double years);
 
 static inline bool is_leap_year(s32 year) {

@@ -507,6 +507,12 @@ u16 gps_adjust_week_cycle256(u16 wn_raw, u16 wn_ref) {
   return wn_raw + 256 * ((wn_ref + 255 - wn_raw) / 256);
 }
 
+/**
+ * Converts a decimal year to a MJD (modified Julian date).
+ *
+ * \param epoch_years The epoch in decimal years representation.
+ * \return The epoch in MJD representation.
+ */
 double decimal_year_to_mjd(const double epoch_years) {
   const double integer_year = floor(epoch_years);
   const double fractional_year = epoch_years - integer_year;
@@ -519,6 +525,12 @@ double decimal_year_to_mjd(const double epoch_years) {
   return epoch_mjd;
 }
 
+/**
+ * Converts a GPS time to a decimal year.
+ *
+ * \param gps_time The GPS epoch to convert.
+ * \return The epoch in decimal years representation.
+ */
 double gps_time_to_decimal_years(const gps_time_t *time) {
   utc_tm utc;
   make_utc_tm(time, &utc);
@@ -531,6 +543,12 @@ double gps_time_to_decimal_years(const gps_time_t *time) {
   return (double)utc.year + (double)utc.year_day / days_in_year;
 }
 
+/**
+ * Converts a epoch represented as a decimal year to a GPS time.
+ *
+ * \param years The epoch in decimal years representation.
+ * \return The epoch in GPS time representation.
+ */
 gps_time_t decimal_years_to_gps_time(const double years) {
   const double mjd = decimal_year_to_mjd(years);
   return mjd2gps(mjd);
