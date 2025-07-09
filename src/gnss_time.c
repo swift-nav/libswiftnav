@@ -529,6 +529,11 @@ double gps_time_to_decimal_years(const gps_time_t *time) {
   return (double)utc.year + (double)utc.year_day / days_in_year;
 }
 
+gps_time_t decimal_years_to_gps_time(const double years) {
+  const double mjd = decimal_year_to_mjd(years);
+  return mjd2gps(mjd);
+}
+
 /** Transformation of GLONASS-M current data information into gps_time_t.
  *
  *  Reference: GLONASS ICD Edition 5.1 2008
