@@ -507,6 +507,53 @@ u16 gps_adjust_week_cycle256(u16 wn_raw, u16 wn_ref) {
   return wn_raw + 256 * ((wn_ref + 255 - wn_raw) / 256);
 }
 
+/**
+ * Converts a decimal year to a MJD (modified Julian date).
+ *
+ * \param epoch_years The epoch in decimal years representation.
+ * \return The epoch in MJD representation.
+ */
+double decimal_year_to_mjd(const double epoch_years) {
+  const double integer_year = floor(epoch_years);
+  const double fractional_year = epoch_years - integer_year;
+  const double mjd_start_of_year =
+      date2mjd((int32_t)integer_year, 1, 1, 0, 0, 0);
+  const double mjd_start_of_following_year =
+      date2mjd((int32_t)integer_year + 1, 1, 1, 0, 0, 0);
+  const double mjd_per_year = mjd_start_of_following_year - mjd_start_of_year;
+  const double epoch_mjd = mjd_start_of_year + (fractional_year * mjd_per_year);
+  return epoch_mjd;
+}
+
+/**
+ * Converts a GPS time to a decimal year.
+ *
+ * \param gps_time The GPS epoch to convert.
+ * \return The epoch in decimal years representation.
+ */
+double gps_time_to_decimal_years(const gps_time_t *time) {
+  utc_tm utc;
+  make_utc_tm(time, &utc);
+  double days_in_year = YEAR_DAYS;
+
+  if (is_leap_year(utc.year)) {
+    days_in_year = LEAP_YEAR_DAYS;
+  }
+
+  return (double)utc.year + (double)utc.year_day / days_in_year;
+}
+
+/**
+ * Converts a epoch represented as a decimal year to a GPS time.
+ *
+ * \param years The epoch in decimal years representation.
+ * \return The epoch in GPS time representation.
+ */
+gps_time_t decimal_years_to_gps_time(const double years) {
+  const double mjd = decimal_year_to_mjd(years);
+  return mjd2gps(mjd);
+}
+
 /** Transformation of GLONASS-M current data information into gps_time_t.
  *
  *  Reference: GLONASS ICD Edition 5.1 2008

@@ -22,6 +22,8 @@ extern "C" {
 // range for lat_rad is (-M_PI_2, M_PI_2)
 // range for lon_rad is (-2 * M_PI, 2 * M_PI)
 float get_geoid_offset(double lat_rad, double lon_rad);
+float get_geoid_offset_1_degree(double lat_rad, double lon_rad);
+float get_geoid_offset_15_minute(double lat_rad, double lon_rad);
 
 typedef enum {
   GEOID_MODEL_NONE = 0,

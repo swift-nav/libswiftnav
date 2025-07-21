@@ -76,16 +76,10 @@ typedef u16 nav_meas_flags_t;
 typedef struct {
   double raw_pseudorange;      /**< Raw pseudorange: time of flight
                                 *   multiplied by speed of light [m] */
-  double pseudorange;          /**< Corrected pseudorange [m] */
   double raw_carrier_phase;    /**< Raw carrier phase [cycle] */
-  double carrier_phase;        /**< Corrected carrier phase [cycle] */
   double raw_measured_doppler; /**< Raw doppler from tracker [Hz] */
-  double measured_doppler;     /**< Corrected doppler from tracker [Hz]*/
   double raw_computed_doppler; /**< Raw doppler from time difference of
                                 *   carrier phase [Hz] */
-  double computed_doppler;     /**< Corrected doppler from time
-                                *   difference of carrier phase [Hz] */
-  double computed_doppler_dt;  /**< Time difference for computed doppler [s] */
   double sat_pos[3];           /**< SV ECEF position [m] */
   double sat_vel[3];           /**< SV ECEF velocity [m/s] */
   double sat_acc[3];           /**< SV ECEF accel [m/s/s] */
@@ -128,6 +122,12 @@ bool pseudorange_valid(const navigation_measurement_t *meas);
 
 u8 encode_lock_time(double nm_lock_time);
 double decode_lock_time(u8 sbp_lock_time);
+double nav_meas_cor_sat_clk_on_pseudorange(
+    const navigation_measurement_t *nav_meas);
+double nav_meas_cor_sat_clk_on_measured_doppler(
+    const navigation_measurement_t *nav_meas);
+double nav_meas_cor_sat_clk_on_carrier_phase(
+    const navigation_measurement_t *nav_meas);
 
 static inline bool not_l2p_sid(navigation_measurement_t a) {
   return a.sid.code != CODE_GPS_L2P;

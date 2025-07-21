@@ -35,8 +35,9 @@ extern "C" {
  *
  * \return 32-bit signed integer with 2-complement of \a n_bits in \a arg
  */
-#define BITS_SIGN_EXTEND_32(n_bits, arg) \
-  ((struct { s32 bits : (n_bits); }){.bits = (arg)}.bits)
+#define BITS_SIGN_EXTEND_32(n_bits, arg) sign_extend_32(n_bits, arg)
+int32_t sign_extend_32(uint8_t n_bits, uint32_t arg);
+
 /**
  * Sign extension macro for 64-bit integers.
  *
@@ -45,8 +46,8 @@ extern "C" {
  *
  * \return 64-bit signed integer with 2-complement of \a n_bits in \a arg
  */
-#define BITS_SIGN_EXTEND_64(n_bits, arg) \
-  ((struct { s64 bits : (n_bits); }){.bits = (arg)}.bits)
+#define BITS_SIGN_EXTEND_64(n_bits, arg) sign_extend_64(n_bits, arg)
+int64_t sign_extend_64(uint8_t n_bits, uint64_t arg);
 
 u8 parity(u32 x);
 u16 bytes_interleave(const u8 x, const u8 y);
@@ -65,6 +66,79 @@ u8 count_bits_u64(u64 v, u8 bv);
 u8 count_bits_u32(u32 v, u8 bv);
 u8 count_bits_u16(u16 v, u8 bv);
 u8 count_bits_u8(u8 v, u8 bv);
+
+enum endianess {
+  SWIFT_LITTLE_ENDIAN = 0,  // So that a zero'd out value (eg in a struct)
+                            // defaults to little endian
+  SWIFT_BIG_ENDIAN,
+};
+
+static inline enum endianess get_endianess(void) {
+  u16 v = 1;
+  u8 *ptr = (u8 *)&v;
+  return (*ptr == 1) ? SWIFT_LITTLE_ENDIAN : SWIFT_BIG_ENDIAN;
+}
+
+static inline u16 byte_swap_16(u16 v) { return (u16)((v >> 8) | (v << 8)); }
+
+static inline u32 byte_swap_32(u32 v) {
+  return (v >> 24) | ((v >> 8) & 0xff00) | ((v << 8) & 0xff0000) | (v << 24);
+}
+
+static inline u64 byte_swap_64(u64 v) {
+  return (v >> 56) | ((v >> 40) & 0xff00) | ((v >> 24) & 0xff0000) |
+         ((v >> 8) & 0xff000000) | ((v << 8) & 0xff00000000) |
+         ((v << 24) & 0xff0000000000) | ((v << 40) & 0xff000000000000) |
+         ((v << 56) & 0xff00000000000000);
+}
+
+static inline u16 htobe_16(u16 v) {
+  return get_endianess() == SWIFT_BIG_ENDIAN ? v : byte_swap_16(v);
+}
+
+static inline u16 htole_16(u16 v) {
+  return get_endianess() == SWIFT_LITTLE_ENDIAN ? v : byte_swap_16(v);
+}
+
+static inline u32 htobe_32(u32 v) {
+  return get_endianess() == SWIFT_BIG_ENDIAN ? v : byte_swap_32(v);
+}
+
+static inline u32 htole_32(u32 v) {
+  return get_endianess() == SWIFT_LITTLE_ENDIAN ? v : byte_swap_32(v);
+}
+
+static inline u64 htobe_64(u64 v) {
+  return get_endianess() == SWIFT_BIG_ENDIAN ? v : byte_swap_64(v);
+}
+
+static inline u64 htole_64(u64 v) {
+  return get_endianess() == SWIFT_LITTLE_ENDIAN ? v : byte_swap_64(v);
+}
+
+static inline u16 betoh_16(u16 v) {
+  return get_endianess() == SWIFT_BIG_ENDIAN ? v : byte_swap_16(v);
+}
+
+static inline u16 letoh_16(u16 v) {
+  return get_endianess() == SWIFT_LITTLE_ENDIAN ? v : byte_swap_16(v);
+}
+
+static inline u32 betoh_32(u32 v) {
+  return get_endianess() == SWIFT_BIG_ENDIAN ? v : byte_swap_32(v);
+}
+
+static inline u32 letoh_32(u32 v) {
+  return get_endianess() == SWIFT_LITTLE_ENDIAN ? v : byte_swap_32(v);
+}
+
+static inline u64 betoh_64(u64 v) {
+  return get_endianess() == SWIFT_BIG_ENDIAN ? v : byte_swap_64(v);
+}
+
+static inline u64 letoh_64(u64 v) {
+  return get_endianess() == SWIFT_LITTLE_ENDIAN ? v : byte_swap_64(v);
+}
 
 #ifdef __cplusplus
 } /* extern "C" */

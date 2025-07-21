@@ -48,6 +48,8 @@
 #define EPHEMERIS_INVALID_IOD_LOG_MESSAGE \
   "invalid IOD ephemeris (v:%d, fi:%d, [%d, %f], iodc:%d, iode:%d), [%d, %f]"
 
+const double SBAS_FIT_INTERVAL_SECONDS = 360.0;
+
 /* Galileo OS SIS ICD, Table 71 */
 enum gal_data_validity_status_t {
   GAL_DVS_NAVIGATION_DATA_VALID,
@@ -62,28 +64,25 @@ enum gal_health_status_t {
   GAL_HS_SIGNAL_COMPONENT_IN_TEST
 };
 
-u32 decode_fit_interval(u8 fit_interval_flag, u16 iodc);
-
 /**
  * Beidou URA table.
  * Reference: BDS-SIS-ICD-2.1
  */
-const float g_bds_ura_table[16] = {[0] = 2.0f,
-                                   [1] = 2.8f,
-                                   [2] = 4.0f,
-                                   [3] = 5.7f,
-                                   [4] = 8.0f,
-                                   [5] = 11.3f,
-                                   [6] = 16.0f,
-                                   [7] = 32.0f,
-                                   [8] = 64.0f,
-                                   [9] = 128.0f,
-                                   [10] = 256.0f,
-                                   [11] = 512.0f,
-                                   [12] = 1024.0f,
-                                   [13] = 2048.0f,
-                                   [14] = 4096.0f,
-                                   [15] = INVALID_URA_VALUE};
+static const float bds_ura_table[15] = {[0] = 2.0f,
+                                        [1] = 2.8f,
+                                        [2] = 4.0f,
+                                        [3] = 5.7f,
+                                        [4] = 8.0f,
+                                        [5] = 11.3f,
+                                        [6] = 16.0f,
+                                        [7] = 32.0f,
+                                        [8] = 64.0f,
+                                        [9] = 128.0f,
+                                        [10] = 256.0f,
+                                        [11] = 512.0f,
+                                        [12] = 1024.0f,
+                                        [13] = 2048.0f,
+                                        [14] = 4096.0f};
 
 /**
  * Helper to sign extend 14-bit value
@@ -939,6 +938,39 @@ ephemeris_status_t get_ephemeris_status_t(const ephemeris_t *e) {
   return EPH_VALID;
 }
 
+/** Calculates the beginning and end of the ephemeris validity window. Given a
+ * reference gps time to ensure the week numbers align.
+ *
+ * \param e Ephemeris struct
+ * \param t The current GPS time. This is used to align gps week number.
+ */
+ephemeris_validity_window_t ephemeris_validity_window(const ephemeris_t *e,
+                                                      gps_time_t *t) {
+  gps_time_t toe = e->toe;
+  fake_gps_wns(&toe, t);
+
+  gps_time_t bgn = toe;
+  gps_time_t end = toe;
+
+  if (IS_GPS(e->sid) || IS_QZSS(e->sid) || IS_GLO(e->sid)) {
+    /* TOE is a middle of ephemeris validity interval */
+    bgn.tow -= e->fit_interval / 2;
+    end.tow += e->fit_interval / 2;
+  } else if (IS_BDS2(e->sid) || IS_GAL(e->sid)) {
+    /* TOE is the beginning of ephemeris validity interval */
+    end.tow += e->fit_interval;
+  } else if (IS_SBAS(e->sid)) {
+    end.tow += SBAS_FIT_INTERVAL_SECONDS;
+  } else {
+    assert(0);
+  }
+  normalize_gps_time(t);
+  normalize_gps_time(&bgn);
+  normalize_gps_time(&end);
+
+  return (ephemeris_validity_window_t){bgn, end};
+}
+
 /** Used internally by other ephemeris valid functions. Given a valid ephemeris,
  * is this ephemeris valid at gps time t?
  *
@@ -1164,7 +1196,7 @@ static const float gps_ura_values[URA_VALUE_TABLE_LEN] = {
     [15] = 6144.0f,
 };
 
-/** Convert a GPS URA index into a value.
+/** Convert a GPS URA index into a URA value.
  *
  * \param index URA index.
  * \return the URA in meters.
@@ -1445,6 +1477,18 @@ void decode_ephemeris_with_wn_ref(const u32 frame_words[3][8],
   e->source = EPH_SOURCE_GPS_LNAV;
 }
 
+/** Convert a BDS URA index into a URA value.
+ *
+ * \param index URA index.
+ * \return the URA in meters.
+ */
+float decode_bds_ura_index(u8 index) {
+  if (index >= sizeof(bds_ura_table) / sizeof(float)) {
+    return INVALID_URA_VALUE;
+  }
+  return bds_ura_table[index];
+}
+
 /**
  * Decodes Beidou D1 ephemeris.
  * \param words subframes (FraID) 1,2,3.
@@ -1477,7 +1521,7 @@ void decode_bds_d1_ephemeris(const u32 words[3][10],
   /* Ephemeris params */
   ephe->sid = sid;
   ephe->health_bits = sath1;
-  ephe->ura = g_bds_ura_table[urai];
+  ephe->ura = decode_bds_ura_index(urai);
   ephe->toe.wn = BDS_WEEK_TO_GPS_WEEK + weekno;
   /* Keplerian params */
   k->tgd.bds_s[0] = BITS_SIGN_EXTEND_32(10, tgd1) * 1e-10f;
@@ -1563,7 +1607,12 @@ void decode_bds_d1_ephemeris(const u32 words[3][10],
   ephe->source = EPH_SOURCE_BDS_D1_D2_NAV;
 }
 
-static float sisa_map(u8 sisa) {
+/** Convert a GAL SISA index into a URA value.
+ *
+ * \param sisa SISA index.
+ * \return the URA in meters.
+ */
+float decode_sisa_index(u8 sisa) {
   float ura = INVALID_URA_VALUE;
   if (sisa < 50) {
     ura = sisa * 0.01f;
@@ -1629,7 +1678,7 @@ bool decode_gal_ephemeris_safe(const u8 page[5][GAL_INAV_CONTENT_BYTE],
   kep->cus = BITS_SIGN_EXTEND_32(16, cus) * C_1_2P29;
   kep->crc = BITS_SIGN_EXTEND_32(16, crc) * C_1_2P5;
   kep->crs = BITS_SIGN_EXTEND_32(16, crs) * C_1_2P5;
-  eph->ura = sisa_map(sisa);
+  eph->ura = decode_sisa_index((u8)sisa);
   /* word type 4 */
   u32 sat = getbitu(page[3], 16, 6);
   u32 cic = getbitu(page[3], 22, 16);
@@ -2050,9 +2099,18 @@ s8 get_tgd_correction(const ephemeris_t *eph,
       }
       return 0;
     case CONSTELLATION_BDS:
-      if (CODE_BDS2_B1 == sid->code) {
+      // As BeiDou CNAV ephemeris is not yet available, use BeiDou B1i group
+      // delay for B1C. It is not a perfect way and there may still be a meter
+      // level error.
+      if (CODE_BDS2_B1 == sid->code || CODE_BDS3_B1CI == sid->code) {
         *tgd = eph->data.kepler.tgd.bds_s[0];
+      } else if (CODE_BDS3_B3I == sid->code || CODE_BDS3_B3Q == sid->code ||
+                 CODE_BDS3_B3X == sid->code) {
+        // BDS B3I signal is the reference broadcast clock so its TGD is 0 by
+        // definition
+        *tgd = 0.0f;
       } else {
+        // Fallback to B2I TGD for all other signals (including B2a)
         *tgd = eph->data.kepler.tgd.bds_s[1];
       }
       return 0;

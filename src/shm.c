@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <swiftnav/constants.h>
+#include <swiftnav/logging.h>
 #include <swiftnav/shm.h>
 #include <swiftnav/signal.h>
 
@@ -220,8 +221,13 @@ static shm_state_t check_6bit_health(const u8 health_bits, const code_t code) {
     case CODE_QZS_L5X:
       return SHM_STATE_HEALTHY;
 
+    case CODE_GPS_L1CQ:
+      log_debug(
+          "GPS L1CQ signal health not supported yet in check_6bit_health()");
+      return SHM_STATE_UNKNOWN;
+
     default:
-      assert(!"Unsupported code");
+      log_debug("Unknown code %d in check_6bit_health()", code);
       return SHM_STATE_UNKNOWN;
   }
 }
@@ -236,8 +242,9 @@ static shm_state_t check_6bit_health(const u8 health_bits, const code_t code) {
  *          true otherwise
  */
 bool check_6bit_health_word(const u8 health_bits, const code_t code) {
-  /* Currently check_6bit_health() will return SHM_STATE_UNKNOWN for GPS L5
-   * signals only, until proper health status support is implemented. */
+  /* Currently check_6bit_health() will return SHM_STATE_UNKNOWN for GPS L1CQ
+   * signals, until proper health status support is implemented. This will
+   * result in it being reported as healthy by this function */
   return (SHM_STATE_UNHEALTHY != check_6bit_health(health_bits, code));
 }
 

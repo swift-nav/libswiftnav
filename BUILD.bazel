@@ -1,19 +1,37 @@
-load("@rules_cc//cc:defs.bzl", "cc_library")
-load(":bazel/configure_file.bzl", "configure_file")
 load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
+load("@rules_swiftnav//cc:defs.bzl", "UNIT", "swift_c_library", "swift_cc_test", "swift_cc_test_library")
+load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "bool_flag")
+load("//bazel:max_channels_config.bzl", "max_channels_config")
 
 refresh_compile_commands(
-    name = "refresh_compile_commands",
+    name = "gen_compile_commands",
+    visibility = ["//visibility:public"],
 )
 
-configure_file(
+int_flag(
     name = "max_channels",
-    out = "max_channels.h",
-    template = "src/max_channels.h.in",
-    vars = {"MAX_CHANNELS": "63"},
+    build_setting_default = 63,
 )
 
-cc_library(
+bool_flag(
+    name = "enable_stderr_logging",
+    build_setting_default = True,
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "_enable_stderr_logging",
+    flag_values = {"enable_stderr_logging": "true"},
+)
+
+max_channels_config(
+    name = "max_channels_h",
+    out = "max_channels.h",
+    max_channels = ":max_channels",
+    template = "src/max_channels.h.in",
+)
+
+swift_c_library(
     name = "swiftnav",
     srcs = [
         "src/almanac.c",
@@ -25,7 +43,10 @@ cc_library(
         "src/ephemeris.c",
         "src/fifo_byte.c",
         "src/geoid_model.c",
+        "src/geoid_model.h",
+        "src/geoid_model_15_minute.c",
         "src/geoid_model_15_minute.inc",
+        "src/geoid_model_1_degree.c",
         "src/geoid_model_1_degree.inc",
         "src/glo_map.c",
         "src/glonass_phase_biases.c",
@@ -43,7 +64,7 @@ cc_library(
         "src/single_epoch_solver.c",
         "src/subsystem_status_report.c",
         "src/troposphere.c",
-        ":max_channels",
+        ":max_channels_h",
     ],
     hdrs = [
         "include/swiftnav/almanac.h",
@@ -62,6 +83,7 @@ cc_library(
         "include/swiftnav/fifo_byte.h",
         "include/swiftnav/float_equality.h",
         "include/swiftnav/geoid_model.h",
+        "include/swiftnav/get_unaligned.h",
         "include/swiftnav/glo_map.h",
         "include/swiftnav/glonass_phase_biases.h",
         "include/swiftnav/gnss_capabilities.h",
@@ -85,50 +107,61 @@ cc_library(
         "include/swiftnav/swift_strnlen.h",
         "include/swiftnav/troposphere.h",
     ],
+    copts = ["-UNDEBUG"],
+    local_defines = select({
+        "_enable_stderr_logging": ["LIBSWIFTNAV_ENABLE_STDERR_LOGGING=ON"],
+        "//conditions:default": [],
+    }),
     includes = ["include"],
+    nocopts = [
+        "-Wconversion",
+        "-Wstack-protector",
+    ],
     textual_hdrs = [
         "src/signal.c",
         "src/geoid_model.c",
     ],
+    visibility = ["//visibility:public"],
 )
 
-cc_library(
-    name = "check-utils",
-    srcs = ["tests/common/check_utils.c"],
-    hdrs = ["tests/common/check_utils.h"],
-    deps = ["//:swiftnav"],
-)
-
-cc_test(
+swift_cc_test(
     name = "swiftnav-test",
     srcs = [
-        "tests/check_almanac.c",
-        "tests/check_bits.c",
-        "tests/check_coord_system.c",
-        "tests/check_decode_glo.c",
-        "tests/check_edc.c",
-        "tests/check_ephemeris.c",
-        "tests/check_geoid_model.cc",
-        "tests/check_glo_map.c",
-        "tests/check_gnss_time.c",
-        "tests/check_gnss_time_cpp.cc",
-        "tests/check_ionosphere.c",
-        "tests/check_linear_algebra.c",
-        "tests/check_log.c",
-        "tests/check_main.c",
-        "tests/check_nav_meas.c",
-        "tests/check_pvt.c",
-        "tests/check_set.c",
-        "tests/check_shm.c",
-        "tests/check_sid_set.c",
-        "tests/check_signal.c",
-        "tests/check_subsystem_status_report.c",
-        "tests/check_suites.h",
-        "tests/check_troposphere.c",
+        "tests/check_utils.h",
+        "tests/test_almanac.cc",
+        "tests/test_bits.cc",
+        "tests/test_coord_system.cc",
+        "tests/test_correct_iono_tropo.cc",
+        "tests/test_data.h",
+        "tests/test_decode_glo.cc",
+        "tests/test_edc.cc",
+        "tests/test_ephemeris.cc",
+        "tests/test_geoid_model.cc",
+        "tests/test_glo_map.cc",
+        "tests/test_gnss_time.cc",
+        "tests/test_gnss_time_cpp.cc",
+        "tests/test_ionosphere.cc",
+        "tests/test_linear_algebra.cc",
+        "tests/test_log.cc",
+        "tests/test_nav_meas.cc",
+        "tests/test_pvt.cc",
+        "tests/test_set.cc",
+        "tests/test_shm.cc",
+        "tests/test_sid_set.cc",
+        "tests/test_signal.cc",
+        "tests/test_subsystem_status_report.cc",
+        "tests/test_troposphere.cc",
     ],
+    type = UNIT,
+    timeout="short",
     deps = [
-        "//:check-utils",
         "//:swiftnav",
-        "@my-check//:check",
+        "@gtest//:gtest_main",
     ],
+)
+
+filegroup(
+    name = "clang_format_config",
+    srcs = [".clang-format"],
+    visibility = ["//visibility:public"],
 )

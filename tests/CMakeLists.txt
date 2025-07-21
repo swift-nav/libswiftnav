@@ -1,57 +1,41 @@
-if(libswiftnav_BUILD_TEST_LIBS)
-  add_subdirectory(common)
-endif()
-
 if(libswiftnav_BUILD_TESTS)
-  find_package(Threads)
-
-  set(SRCS
-      check_almanac.c
-      check_bits.c
-      check_coord_system.c
-      check_decode_glo.c
-      check_edc.c
-      check_ephemeris.c
-      check_geoid_model.cc
-      check_glo_map.c
-      check_gnss_time.c
-      check_gnss_time_cpp.cc
-      check_ionosphere.c
-      check_linear_algebra.c
-      check_log.c
-      check_main.c
-      check_nav_meas.c
-      check_set.c
-      check_shm.c
-      check_sid_set.c
-      check_signal.c
-      check_subsystem_status_report.c
-      check_pvt.c
-      check_troposphere.c)
-
-  swift_add_test(test-swiftnav-common
-    UNIT_TEST
-    POST_BUILD
-    SRCS ${SRCS}
-    LINK swiftnav::check-utils check Threads::Threads
-    )
-
-  swift_set_compile_options(
-    test-swiftnav-common 
-    REMOVE 
-      -Wconversion
-      -Wstack-protector
-      -Wfloat-equal
-      -Wsign-compare
-    ADD
-      -Wno-format-extra-args
-  )
-
   swift_add_test(test-swiftnav-pedantic
     UNIT_TEST
     SRCS check_pedantic.cc
     LINK swiftnav::swiftnav
   )
   swift_set_compile_options(test-swiftnav-pedantic ADD -pedantic)
+
+
+swift_add_test(test-swiftnav-common
+  UNIT_TEST
+  SRCS
+    test_almanac.cc
+    test_bits.cc
+    test_coord_system.cc
+    test_correct_iono_tropo.cc
+    test_decode_glo.cc
+    test_edc.cc
+    test_ephemeris.cc
+    test_geoid_model.cc
+    test_glo_map.cc
+    test_gnss_time.cc
+    test_gnss_time_cpp.cc
+    test_ionosphere.cc
+    test_linear_algebra.cc
+    test_log.cc
+    test_nav_meas.cc
+    test_pvt.cc
+    test_set.cc
+    test_shm.cc
+    test_sid_set.cc
+    test_signal.cc
+    test_subsystem_status_report.cc
+    test_troposphere.cc
+  LINK
+    swiftnav::swiftnav
+    gtest
+    gtest_main
+)
 
 endif(libswiftnav_BUILD_TESTS)

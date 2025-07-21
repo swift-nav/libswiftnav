@@ -4,29 +4,38 @@ on:
   pull_request:
   push:
     branches:
-      - 'master'
-      - 'starling-v*-release'
-      - 'v*-release'
+      - "master"
+      - "starling-v*-release"
+      - "v*-release"
     tags:
-      - 'v*'
-      - 'starling-v*'
+      - "v*"
+      - "starling-v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
-
   ubuntu-codecov:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    container: "ubuntu:24.04"
+
     steps:
+      - name: Setup container
+        run: |
+          apt-get update
+          apt-get install -y gpg wget curl software-properties-common unzip git cmake build-essential clang llvm
 
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4.1.7
         with:
           fetch-depth: 0
           submodules: recursive
           ssh-key: ${{ secrets.SSH_KEY }}
-
-      - name: Install llvm-cov
-        run: |
-          sudo apt-get update && sudo apt-get install llvm -y
 
       - name: Run build
         env:
@@ -39,7 +48,7 @@ jobs:
           SONAR_PROJECT_KEY: swift-nav_libswiftnav
           SONAR_PROJECT_NAME: libswiftnav
           SONAR_HOST_URL: https://sonarcloud.io
-          SONAR_SCANNER_VERSION: 4.2.0.1873
+          SONAR_SCANNER_VERSION: 5.0.1.3006
 
         run: |
           bash ./ci-build.sh
@@ -48,16 +57,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - {env: "MSVC", arch: "Win32"}
-          - {env: "MSVC", arch: "x64"}
-          - {env: "MinGW"}
+          - { env: "MSVC", arch: "Win32" }
+          - { env: "MSVC", arch: "x64" }
+          - { env: "MinGW" }
 
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     steps:
+      - name: Configure git
+        run: git config --global http.postBuffer 1048576000
 
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
           ssh-key: ${{ secrets.SSH_KEY }}
@@ -82,7 +93,7 @@ jobs:
       - name: Run build (MSVC)
         if: matrix.env == 'MSVC'
         env:
-          CMAKE_GENERATOR: "Visual Studio 16 2019"
+          CMAKE_GENERATOR: "Visual Studio 17 2022"
         run: |
           cmake -G "$env:CMAKE_GENERATOR" -A ${{ matrix.arch }} -S . -B build;
           cmake --build build --config Release;
@@ -102,48 +113,52 @@ jobs:
     strategy:
       matrix:
         include:
-          - {os: ubuntu-18.04, cc: "gcc-6", cxx: "g++-6", test_suite: "unit"}
-          - {os: ubuntu-18.04, cc: "clang-6.0", cxx: "clang++-6.0", test_suite: "lint"}
-          - {os: ubuntu-18.04, cc: "gcc-11", cxx: "g++-11", test_suite: "unit"}
-          - {os: macos-10.15, cc: "clang", cxx: "clang++", test_suite: "unit"}
-
-    runs-on: ${{ matrix.os }}
+          - {
+              cc: "gcc-10",
+              cxx: "g++-10",
+              test_suite: "unit",
+              package: "gcc-10 g++-10",
+              runs_on: "ubuntu-latest",
+              container: "ubuntu:24.04",
+            }
+          - {
+              cc: "clang-14",
+              cxx: "clang++-14",
+              test_suite: "lint",
+              package: "clang-14 libc++-dev libc++abi-dev clang-format-14 clang-tidy-14",
+              runs_on: "ubuntu-latest",
+              container: "ubuntu:24.04",
+            }
+          - {
+              cc: "gcc-14",
+              cxx: "g++-14",
+              test_suite: "unit",
+              package: "gcc-14 g++-14",
+              runs_on: "ubuntu-latest",
+              container: "ubuntu:24.04",
+            }
+          - {
+              cc: "clang",
+              cxx: "clang++",
+              test_suite: "unit",
+              runs_on: "macos-latest",
+              container: ~,
+            }
+    runs-on: ${{ matrix.runs_on }}
+    container: ${{ matrix.container }}
 
     steps:
+      - name: Setup container
+        if: matrix.container == 'ubuntu:24.04'
+        run: |
+          apt-get update
+          apt-get install -y gpg wget curl software-properties-common zip libeigen3-dev libserialport-dev git cmake build-essential ${{ matrix.package }}
 
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4.1.7
         with:
           submodules: recursive
           ssh-key: ${{ secrets.SSH_KEY }}
-
-      - name: Add base packages and toolchain repository (Linux)
-        if: matrix.os == 'ubuntu-18.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install build-essential software-properties-common -y
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-          sudo apt-get update
-
-      - name: Install gcc-6 (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'gcc-6'
-        run: |
-          sudo apt-get install -y gcc-6 g++-6
-
-      - name: Install gcc-11 (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'gcc-11'
-        run: |
-          sudo apt-get install -y gcc-11 g++-11
-
-      - name: Install clang-6.0 (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'clang-6.0'
-        run: |
-          sudo apt-get install -y clang-6.0 libc++-dev libc++abi-dev
-
-      - name: Install clang-{format,tidy} (Linux)
-        if: matrix.os == 'ubuntu-18.04' && matrix.cc == 'clang-6.0' && matrix.test_suite == 'lint'
-        run: |
-          sudo apt-get install -y clang-format-6.0 clang-tidy-6.0
 
       - name: Run build
         env:
@@ -153,3 +168,17 @@ jobs:
           TESTENV: c
         run: |
           bash ./ci-build.sh
+
+  dependabot:
+    name: "Dependabot"
+    needs: [unix]
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'}} # Detect that the PR author is dependabot
+    steps:
+      - name: Enable auto-merge for Dependabot PRs
+        run: |
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

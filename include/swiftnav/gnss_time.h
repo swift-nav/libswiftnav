@@ -138,6 +138,10 @@ extern "C" {
 #define GLO_EPOCH_WN 834
 #define GLO_EPOCH_TOW 75610.0
 
+/** Constant difference of Galileo time from GPS time */
+#define GAL_WEEK_TO_GPS_WEEK 1024
+#define GAL_SECOND_TO_GPS_SECOND 0
+
 /** Constant difference of Beidou time from GPS time */
 #define BDS_WEEK_TO_GPS_WEEK 1356
 #define BDS_SECOND_TO_GPS_SECOND 14
@@ -268,6 +272,10 @@ void gps_time_match_weeks(gps_time_t *t, const gps_time_t *ref);
 u16 gps_adjust_week_cycle(u16 wn_raw, u16 wn_ref);
 u16 gps_adjust_week_cycle256(u16 wn_raw, u16 wn_ref);
 
+double decimal_year_to_mjd(const double epoch_years);
+double gps_time_to_decimal_years(const gps_time_t *time);
+gps_time_t decimal_years_to_gps_time(const double years);
+
 static inline bool is_leap_year(s32 year) {
   return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
 }
@@ -352,6 +360,10 @@ static inline bool operator==(const gps_time_t &a, const gps_time_t &b) {
     return false;
   }
   return fabs(gpsdifftime(&a, &b)) < FLOAT_EQUALITY_EPS;
+}
+
+static inline bool operator!=(const gps_time_t &a, const gps_time_t &b) {
+  return !(a == b);
 }
 
 static inline bool operator<(const gps_time_t &a, const gps_time_t &b) {
