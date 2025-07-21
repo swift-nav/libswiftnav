@@ -4,8 +4,8 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_swiftnav",
-    strip_prefix = "rules_swiftnav-26426be6b89a5b9f0489158098599b9fcd973ed4",
-    url = "https://github.com/swift-nav/rules_swiftnav/archive/26426be6b89a5b9f0489158098599b9fcd973ed4.tar.gz",
+    strip_prefix = "rules_swiftnav-cb82c790d50dd87f301df67b710161906dafb0c2",
+    url = "https://github.com/swift-nav/rules_swiftnav/archive/cb82c790d50dd87f301df67b710161906dafb0c2.tar.gz",
 )
 
 http_archive(
@@ -15,6 +15,12 @@ http_archive(
 )
 
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+
+load("@rules_swiftnav//cc:repositories.bzl", "register_swift_cc_toolchains", "swift_cc_toolchain")
+
+swift_cc_toolchain()
+
+register_swift_cc_toolchains()
 
 rules_foreign_cc_dependencies()
 
@@ -31,8 +37,7 @@ load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_
 
 hedron_compile_commands_setup()
 
-new_local_repository(
-    name = "check",
-    build_file = "@rules_swiftnav//third_party:check.BUILD",
-    path = "third_party/check",
+local_repository(
+    name = "gtest",
+    path = "third_party/googletest",
 )

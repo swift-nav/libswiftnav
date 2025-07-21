@@ -84,6 +84,13 @@ extern "C" {
 #define GAL_INAV_CONTENT_BYTE ((GAL_INAV_CONTENT_BIT + CHAR_BIT - 1) / CHAR_BIT)
 #endif
 
+/**
+ * SBAS ephemeris - En route seconds for GEO Navigation Data
+ * according to SBAS MOPS (aviation GPS receiver specification)
+ * https://gssc.esa.int/navipedia/index.php/The_EGNOS_SBAS_Message_Format_Explained#Message_time-outs
+ */
+extern const double SBAS_FIT_INTERVAL_SECONDS;
+
 /** \addtogroup ephemeris
  * \{ */
 
@@ -279,6 +286,13 @@ typedef struct {
   } data;
 } ephemeris_t;
 
+/** Structure containing the beginning and end of an ephemeris validity window.
+ */
+typedef struct {
+  gps_time_t bgn; /**< Begin time of validity window. */
+  gps_time_t end; /**< End time of validity window. */
+} ephemeris_validity_window_t;
+
 #define GLO_NAV_STR_BITS 85 /**< Length of GLO navigation string */
 #define GLO_NAV_STR_WORDS 3 /**< Number of u32 words for nav string buffer */
 
@@ -291,10 +305,6 @@ typedef struct {
 typedef gps_time_t (*glo2gps_with_utc_params_t)(const glo_time_t *glo_t);
 
 /** \} */
-
-/* BDS satellites can be either geostationary (GEO), geosynchronous (IGSO) or
- medium earth orbit (MEO) */
-typedef enum { GEO, IGSO, MEO } satellite_orbit_type_t;
 
 s8 calc_sat_state(const ephemeris_t *e,
                   const gps_time_t *t,
@@ -336,6 +346,8 @@ ephemeris_status_t get_ephemeris_status_t(const ephemeris_t *e);
 ephemeris_status_t ephemeris_valid_detailed(const ephemeris_t *e,
                                             const gps_time_t *t);
 u8 ephemeris_valid(const ephemeris_t *e, const gps_time_t *t);
+ephemeris_validity_window_t ephemeris_validity_window(const ephemeris_t *e,
+                                                      gps_time_t *t);
 u8 ephemeris_params_valid(const gps_time_t *bgn,
                           const gps_time_t *end,
                           const gps_time_t *toc,

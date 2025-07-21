@@ -334,6 +334,7 @@ typedef enum sbas_system_e {
   SBAS_WAAS = 0,
   SBAS_EGNOS,
   SBAS_GAGAN,
+  SBAS_KASS,
   SBAS_MSAS,
   SBAS_COUNT
 } sbas_system_t;
@@ -461,6 +462,44 @@ static inline int cmp_sid_sid(const void *a, const void *b) {
 /** Signal equality function. */
 static inline bool sid_is_equal(const gnss_signal_t a, const gnss_signal_t b) {
   return sid_hash(a) == sid_hash(b);
+}
+
+/* BDS satellites can be either geostationary (GEO), geosynchronous (IGSO) or
+ medium earth orbit (MEO) */
+typedef enum satellite_orbit_type_e { GEO, IGSO, MEO } satellite_orbit_type_t;
+
+/** Determine the orbit type of a given BDS satellite
+ *
+ * \param PRN number of a BDS satellite
+ * \return orbit type of BDS satellite
+ */
+static inline satellite_orbit_type_t get_bds_orbit_type(u8 prn) {
+  satellite_orbit_type_t orbit = MEO;
+
+  if (((prn >= 1) && (prn <= 5)) || ((prn >= 59) && (prn <= 60))) {
+    orbit = GEO;
+  } else if (((prn >= 6) && (prn <= 10)) || ((prn >= 38) && (prn <= 40))) {
+    orbit = IGSO;
+  }
+
+  return orbit;
+}
+
+/** Determine the generation of a given BDS satellite
+ *
+ * \param PRN number of a BDS satellite
+ * \return BDS satellite generation (2 or 3) or -1 if unknown
+ */
+static inline int get_bds_generation(u8 prn) {
+  int generation = -1;
+
+  if ((prn >= 19) && (prn <= 60)) {
+    generation = 3;
+  } else if ((prn >= 1) && (prn <= 18)) {
+    generation = 2;
+  }
+
+  return generation;
 }
 
 #define _LOG_SIDn(func, sid, format, ...)         \

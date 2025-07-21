@@ -10,6 +10,8 @@
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+#include "geoid_model.h"
+
 #include <assert.h>
 #include <swiftnav/common.h>
 #include <swiftnav/constants.h>
@@ -23,25 +25,19 @@
 #define MIN_LAT (-90)
 #define MAX_LAT 90
 
-#ifdef GEOID_MODEL_15_MINUTE_RESOLUTION
-/* Geoid model with geoid heights derived from EGM2008 (0.25 x 0.25 deg grid) */
-#include "geoid_model_15_minute.inc"
-#else
-/* Geoid model with geoid heights derived from EGM2008 (1 x 1 deg grid) */
-#include "geoid_model_1_degree.inc"
-#endif /* GEOID_MODEL_15_MINUTE_RESOLUTION */
-
 /*
  * Get GEOID[x][y], accounting for wrap-around of longitude values
  */
-static inline float get_geoid_val(int x, int y) {
-  if (x >= (MAX_LON - MIN_LON) / LON_GRID_SPACING_DEG) {
-    x -= (int)((MAX_LON - MIN_LON) / LON_GRID_SPACING_DEG);
+static inline float get_geoid_val(const struct GeoidModel *model,
+                                  int x,
+                                  int y) {
+  if (x >= (MAX_LON - MIN_LON) / model->lon_spacing) {
+    x -= (int)((MAX_LON - MIN_LON) / model->lon_spacing);
   } else if (x < 0) {
-    x += (int)((MAX_LON - MIN_LON) / LON_GRID_SPACING_DEG);
+    x += (int)((MAX_LON - MIN_LON) / model->lon_spacing);
   }
 
-  return GEOID[x][y];
+  return model->data[x * model->n_lat + y];
 }
 
 /*
@@ -55,12 +51,13 @@ static inline float get_geoid_val(int x, int y) {
  * 'fx' and 'fy' specify the fractional offset with respect to the (x,y)
  * corner.
  */
-static float bilinear_interpolation(int x, int y, float fx, float fy) {
+static float bilinear_interpolation(
+    const struct GeoidModel *model, int x, int y, float fx, float fy) {
   /* Get the values at the four corners */
-  float southwest = get_geoid_val(x, y);
-  float southeast = get_geoid_val(x + 1, y);
-  float northwest = get_geoid_val(x, y + 1);
-  float northeast = get_geoid_val(x + 1, y + 1);
+  float southwest = get_geoid_val(model, x, y);
+  float southeast = get_geoid_val(model, x + 1, y);
+  float northwest = get_geoid_val(model, x, y + 1);
+  float northeast = get_geoid_val(model, x + 1, y + 1);
 
   /* Bilinear interpolation */
   return (1 - fy) * ((1 - fx) * southwest + fx * southeast) +
@@ -84,7 +81,9 @@ static double cubic_interpolation(double p[4], double x) {
 geoid_model_t get_geoid_model(void) { return GEOID_MODEL_EGM2008; }
 
 /* Return the geoid offset */
-float get_geoid_offset(double lat_rad, double lon_rad) {
+static float get_geoid_offset_internal(const struct GeoidModel *model,
+                                       double lat_rad,
+                                       double lon_rad) {
   /* Convert to degrees, returning 0.0 if out of bounds */
   float lat_deg = (float)(R2D * lat_rad);
   if (lat_deg > MAX_LAT || lat_deg < MIN_LAT) {
@@ -104,8 +103,8 @@ float get_geoid_offset(double lat_rad, double lon_rad) {
   float fx, fy;    // fractional offset from cell corners
   float ixf, iyf;  // integer offset of cell corners
 
-  fy = modff((lat_deg - MIN_LAT) / LAT_GRID_SPACING_DEG, &iyf);
-  fx = modff((lon_deg - MIN_LON) / LON_GRID_SPACING_DEG, &ixf);
+  fy = modff((lat_deg - MIN_LAT) / model->lat_spacing, &iyf);
+  fx = modff((lon_deg - MIN_LON) / model->lon_spacing, &ixf);
 
   int ix = (int)ixf;
   int iy = (int)iyf;
@@ -114,8 +113,8 @@ float get_geoid_offset(double lat_rad, double lon_rad) {
    * Special Case 1: if lat is +90 then use the geoid value directly (note:
    * at this latitude, height is same regardless of value of x)
    */
-  if (iy == (int)((MAX_LAT - MIN_LAT) / LAT_GRID_SPACING_DEG)) {
-    return GEOID[ix][iy];
+  if (iy == (int)((MAX_LAT - MIN_LAT) / model->lat_spacing)) {
+    return model->data[ix * model->n_lat + iy];
   }
 
   /*
@@ -142,10 +141,10 @@ float get_geoid_offset(double lat_rad, double lon_rad) {
    * (ix-1,iy  ) (ix  ,iy  ) (ix+1,iy  ) (ix+2,iy  )
    * (ix-1,iy-1) (ix  ,iy-1) (ix+1,iy-1) (ix+2,iy-1)
    */
-  if (iy > 0 && iy < (MAX_LAT - MIN_LAT) / LAT_GRID_SPACING_DEG - 1) {
+  if (iy > 0 && iy < (MAX_LAT - MIN_LAT) / model->lat_spacing - 1) {
     int y0, y1, y2, y3;
 
-    if (iy == (int)((MAX_LAT - MIN_LAT) / LAT_GRID_SPACING_DEG - 2)) {
+    if (iy == (int)((MAX_LAT - MIN_LAT) / model->lat_spacing - 2)) {
       /*
        * Special Case 2: for latitudes in range
        * [90 - 2 * LAT_GRID_SPACING, 90 - LAT_GRID_SPACING)
@@ -170,22 +169,22 @@ float get_geoid_offset(double lat_rad, double lon_rad) {
       y3 = iy + 2;
     }
 
-    double heights[4][4] = {{get_geoid_val(ix - 1, y0),
-                             get_geoid_val(ix - 1, y1),
-                             get_geoid_val(ix - 1, y2),
-                             get_geoid_val(ix - 1, y3)},
-                            {get_geoid_val(ix, y0),
-                             get_geoid_val(ix, y1),
-                             get_geoid_val(ix, y2),
-                             get_geoid_val(ix, y3)},
-                            {get_geoid_val(ix + 1, y0),
-                             get_geoid_val(ix + 1, y1),
-                             get_geoid_val(ix + 1, y2),
-                             get_geoid_val(ix + 1, y3)},
-                            {get_geoid_val(ix + 2, y0),
-                             get_geoid_val(ix + 2, y1),
-                             get_geoid_val(ix + 2, y2),
-                             get_geoid_val(ix + 2, y3)}};
+    double heights[4][4] = {{get_geoid_val(model, ix - 1, y0),
+                             get_geoid_val(model, ix - 1, y1),
+                             get_geoid_val(model, ix - 1, y2),
+                             get_geoid_val(model, ix - 1, y3)},
+                            {get_geoid_val(model, ix, y0),
+                             get_geoid_val(model, ix, y1),
+                             get_geoid_val(model, ix, y2),
+                             get_geoid_val(model, ix, y3)},
+                            {get_geoid_val(model, ix + 1, y0),
+                             get_geoid_val(model, ix + 1, y1),
+                             get_geoid_val(model, ix + 1, y2),
+                             get_geoid_val(model, ix + 1, y3)},
+                            {get_geoid_val(model, ix + 2, y0),
+                             get_geoid_val(model, ix + 2, y1),
+                             get_geoid_val(model, ix + 2, y2),
+                             get_geoid_val(model, ix + 2, y3)}};
 
     double arr[4] = {cubic_interpolation(heights[0], fy),
                      cubic_interpolation(heights[1], fy),
@@ -197,5 +196,19 @@ float get_geoid_offset(double lat_rad, double lon_rad) {
      * is in range [-90,-90 + LAT_GRID_SPACING_DEG) or
      * [90 - LAT_GRID_SPACING, 90) */
 
-  return bilinear_interpolation(ix, iy, fx, fy);
+  return bilinear_interpolation(model, ix, iy, fx, fy);
+}
+
+float get_geoid_offset(double lat_rad, double lon_rad) {
+  return get_geoid_offset_1_degree(lat_rad, lon_rad);
+}
+
+float get_geoid_offset_1_degree(double lat_rad, double lon_rad) {
+  return get_geoid_offset_internal(
+      get_geoid_model_1_degree(), lat_rad, lon_rad);
+}
+
+float get_geoid_offset_15_minute(double lat_rad, double lon_rad) {
+  return get_geoid_offset_internal(
+      get_geoid_model_15_minute(), lat_rad, lon_rad);
 }

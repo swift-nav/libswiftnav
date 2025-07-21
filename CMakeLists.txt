@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.13)
 project(libswiftnav)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/" "${CMAKE_CURRENT_LIST_DIR}/cmake/common")
@@ -25,7 +25,7 @@ swift_create_project_options(
     HAS_TESTS
     HAS_TEST_LIBS
     DISABLE_TEST_COMPONENTS ${disable_tests}
-    TEST_PACKAGES "Check"
+    TEST_PACKAGES "Googletest"
     )
 
 include(ClangFormat)
@@ -49,6 +49,7 @@ set(HDRS
     include/swiftnav/common.h
     include/swiftnav/constants.h
     include/swiftnav/coord_system.h
+    include/swiftnav/correct_iono_tropo.h
     include/swiftnav/decode_glo.h
     include/swiftnav/edc.h
     include/swiftnav/ephemeris.h
@@ -81,11 +82,14 @@ set(SRCS
     src/almanac.c
     src/bits.c
     src/coord_system.c
+    src/correct_iono_tropo.c
     src/decode_glo.c
     src/edc.c
     src/ephemeris.c
     src/fifo_byte.c
     src/geoid_model.c
+    src/geoid_model_1_degree.c
+    src/geoid_model_15_minute.c
     src/glo_map.c
     src/glonass_phase_biases.c
     src/gnss_time.c

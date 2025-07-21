@@ -13,6 +13,9 @@ def context = new Context(context: this)
 context.setRepo("libswiftnav")
 def builder = context.getBuilder()
 
+bazelDockerImage = '571934480752.dkr.ecr.us-west-2.amazonaws.com/swift-build-bazel:2024-05-29'
+modernDockerImage = '571934480752.dkr.ecr.us-west-2.amazonaws.com/swift-build-modern:2024-05-29'
+
 /**
  * - Mount the refrepo to keep git operations functional on a repo that uses ref-repo during clone
  **/
@@ -34,37 +37,41 @@ pipeline {
             parallel {
                 stage('Unit Test') {
                     agent {
-                        dockerfile {
+                        docker {
+                            image modernDockerImage
                             args dockerMountArgs
                         }
+                    }
+                    environment {
+                      CC = "gcc-11"
+                      CXX = "g++-11"
                     }
                     steps {
                         gitPrep()
                         script {
                             builder.cmake()
-                            builder.make(workDir: "build")
+                            builder.make(workDir: "build", target: "build-all-tests")
                         }
+                        sh("./build/tests/test-swiftnav-common --gtest_output=xml")
                         // Convert the test results into a Jenkins-parsable junit-XML format
-                        sh("./tools/check2junit.py build/tests/test_results.xml > build/tests/test_results_junit.xml")
+                        //sh("./tools/check2junit.py test_detail.xml > build/tests/test_results_junit.xml")
                         stash(
                                 name: 'libswiftnavUnit',
-                                includes: 'build/tests/test_results_junit.xml')
+                                includes: 'test_detail.xml')
                     }
                 }
                 stage('Bazel Build') {
                     agent {
                         docker {
-                            image '571934480752.dkr.ecr.us-west-2.amazonaws.com/swift-build-bazel:2023-06-21'
+                            image bazelDockerImage
                         }
                     }
                     steps {
                         gitPrep()
                         script {
                             sh('''#!/bin/bash -ex
-                                | CC=gcc-8 CXX=g++-8 bazel build --subcommands //...
-                                | bazel run //:gen_compile_commands
-                                | bazel run //:swiftnav-test
-                                | bazel coverage --collect_code_coverage --combined_report=lcov //...
+                                | bazel build --subcommands --config=system //...
+                                | bazel coverage --collect_code_coverage --combined_report=lcov --config=system //...
                                 | genhtml bazel-out/_coverage/_coverage_report.dat -o coverage
                                 | tar -zcvf coverage.tar.gz coverage/
                                 |'''.stripMargin())
@@ -76,10 +83,30 @@ pipeline {
                         }
                     }
                 }
+                stage('ASAN') {
+                    agent {
+                        docker {
+                            image bazelDockerImage
+                        }
+                    }
+                    steps {
+                        gitPrep()
+                        script {
+                            sh('''#!/bin/bash -ex
+                                | bazel test --config asan //...
+                                |'''.stripMargin())
+                        }
+                    }
+                    post {
+                        always {
+                            archiveArtifacts(artifacts: 'coverage.tar.gz', allowEmptyArchive: true)
+                        }
+                    }
+                }
                 stage('Format & Lint') {
                     agent {
-                        dockerfile {
-                            filename "Dockerfile.modern"
+                        docker {
+                            image modernDockerImage
                             args dockerMountArgs
                         }
                     }
@@ -99,9 +126,14 @@ pipeline {
                 }
                 stage('Code Coverage') {
                     agent {
-                        dockerfile {
+                        docker {
+                            image modernDockerImage
                             args dockerMountArgs
                         }
+                    }
+                    environment {
+                      CC = "gcc-11"
+                      CXX = "g++-11"
                     }
                     steps {
                         gitPrep()
@@ -125,7 +157,7 @@ pipeline {
         always {
             node('linux') {
                 unstash(name: "libswiftnavUnit")
-                junit('build/tests/*.xml')
+                junit('*.xml')
             }
             script {
                 context.slackNotify()

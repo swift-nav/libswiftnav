@@ -48,6 +48,8 @@
 #define EPHEMERIS_INVALID_IOD_LOG_MESSAGE \
   "invalid IOD ephemeris (v:%d, fi:%d, [%d, %f], iodc:%d, iode:%d), [%d, %f]"
 
+const double SBAS_FIT_INTERVAL_SECONDS = 360.0;
+
 /* Galileo OS SIS ICD, Table 71 */
 enum gal_data_validity_status_t {
   GAL_DVS_NAVIGATION_DATA_VALID,
@@ -934,6 +936,39 @@ ephemeris_status_t get_ephemeris_status_t(const ephemeris_t *e) {
       return EPH_INVALID_SID;
   }
   return EPH_VALID;
+}
+
+/** Calculates the beginning and end of the ephemeris validity window. Given a
+ * reference gps time to ensure the week numbers align.
+ *
+ * \param e Ephemeris struct
+ * \param t The current GPS time. This is used to align gps week number.
+ */
+ephemeris_validity_window_t ephemeris_validity_window(const ephemeris_t *e,
+                                                      gps_time_t *t) {
+  gps_time_t toe = e->toe;
+  fake_gps_wns(&toe, t);
+
+  gps_time_t bgn = toe;
+  gps_time_t end = toe;
+
+  if (IS_GPS(e->sid) || IS_QZSS(e->sid) || IS_GLO(e->sid)) {
+    /* TOE is a middle of ephemeris validity interval */
+    bgn.tow -= e->fit_interval / 2;
+    end.tow += e->fit_interval / 2;
+  } else if (IS_BDS2(e->sid) || IS_GAL(e->sid)) {
+    /* TOE is the beginning of ephemeris validity interval */
+    end.tow += e->fit_interval;
+  } else if (IS_SBAS(e->sid)) {
+    end.tow += SBAS_FIT_INTERVAL_SECONDS;
+  } else {
+    assert(0);
+  }
+  normalize_gps_time(t);
+  normalize_gps_time(&bgn);
+  normalize_gps_time(&end);
+
+  return (ephemeris_validity_window_t){bgn, end};
 }
 
 /** Used internally by other ephemeris valid functions. Given a valid ephemeris,

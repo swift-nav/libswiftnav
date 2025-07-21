@@ -1,16 +1,16 @@
 docker-image:
-	docker-compose build libswiftnav
+	docker compose build libswiftnav
 
 docker: docker-image
-	docker-compose run libswiftnav
+	docker compose run libswiftnav
 
 docker-build: docker-image
 	mkdir -p build
-	docker-compose run -T libswiftnav /bin/bash -c "cd build && cmake .. && make -j4"
+	docker compose run -T libswiftnav /bin/bash -c "cd build && cmake .. && make -j4"
 
 docker-lint: docker-image
 	mkdir -p build
-	docker-compose run -T libswiftnav /bin/bash -c "cd build && cmake .. && make -j4 clang-format-all"
+	docker compose run -T libswiftnav /bin/bash -c "cd build && cmake .. && make -j4 clang-format-all"
 
 do-all-unit-tests:
 	bazel test --test_tag_filters=unit --test_output=all //...
