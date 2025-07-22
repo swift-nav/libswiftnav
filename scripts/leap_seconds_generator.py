@@ -144,7 +144,7 @@ with urllib.request.urlopen("https://hpiers.obspm.fr/eoppc/bul/bulc/ntp/leap-sec
             utc_leap_list.append(UtcClock(int(entries[0]), int(entries[1])))
 
 utc_leap_list_expires = UtcClock(utc_leap_list_expires_utc_time, utc_leap_list[-1].tai_utc_offset())
-now = UtcClock((datetime.datetime.utcnow() - UTC_EPOCH).total_seconds(), utc_leap_list[-1].tai_utc_offset())
+now = UtcClock((datetime.datetime.now(datetime.timezone.utc) - UTC_EPOCH).total_seconds(), utc_leap_list[-1].tai_utc_offset())
 
 gnss_time_latest_template = jinja2.Template(JINJA_GNSS_TIME_LATEST_TEMPLATE)
 gnss_time_latest_render = gnss_time_latest_template.render({
