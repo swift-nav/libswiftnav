@@ -60,7 +60,7 @@ jobs:
           SONAR_PROJECT_KEY: swift-nav_libswiftnav
           SONAR_PROJECT_NAME: libswiftnav
           SONAR_HOST_URL: https://sonarcloud.io
-          SONAR_SCANNER_VERSION: 5.0.1.3006
+          SONAR_SCANNER_VERSION: 7.2.0.5079
 
         run: |
           bash ./ci-build.sh
