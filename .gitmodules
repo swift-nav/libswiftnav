@@ -1,6 +1,6 @@
 [submodule "cmake/common"]
 	path = cmake/common
 	url = https://github.com/swift-nav/cmake.git
-[submodule "third_party/check"]
-	path = third_party/check
-	url = https://github.com/swift-nav/check.git
+[submodule "third_party/googletest"]
+	path = third_party/googletest
+	url = git@github.com:google/googletest.git

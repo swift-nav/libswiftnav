@@ -112,6 +112,13 @@
 #define SWIFT_ATTR_NORETURN __attribute__((noreturn))
 #define SWIFT_DECLSPEC __attribute__((visibility("default")))
 
+// This attribute has sporadic compatibility with GCC, but since
+// we always use clang to run UBSAN we can safely restrict it
+// to just clang here
+#if defined(__clang__)
+#define SWIFT_ATTR_NO_SANITIZE_ENUM __attribute__((no_sanitize("enum")))
+#endif
+
 #elif defined(_MSC_VER)
 /*
  * MSVC
@@ -192,6 +199,9 @@
 #endif
 #if !defined(SWIFT_DECLSPEC)
 #define SWIFT_DECLSPEC
+#endif
+#if !defined(SWIFT_ATTR_NO_SANITIZE_ENUM)
+#define SWIFT_ATTR_NO_SANITIZE_ENUM
 #endif
 
 #endif

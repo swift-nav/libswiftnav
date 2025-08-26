@@ -1490,7 +1490,9 @@ static s8 calc_PVT_pred_internal(const u8 n_meas,
   soln->clock_offset = lsq_data.rx_state[3] / GPS_C;
   soln->clock_drift = lsq_data.rx_state[3 + n_states] / GPS_C;
   soln->clock_offset_var = lsq_data.V[3 * n_states + 3] / GPS_C / GPS_C;
-  soln->clock_drift_var = lsq_data.V_vel[3 * n_states + 3] / GPS_C / GPS_C;
+  if (!disable_velocity) {
+    soln->clock_drift_var = lsq_data.V_vel[3 * n_states + 3] / GPS_C / GPS_C;
+  }
 
   /* Correct the time of reception with the solved bias to get solution time */
   soln->time = *tor;

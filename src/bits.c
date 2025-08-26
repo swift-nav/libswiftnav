@@ -139,6 +139,34 @@ s64 getbitsl(const u8 *buff, u32 pos, u8 len) {
   return (bits ^ m) - m;
 }
 
+int32_t sign_extend_32(uint8_t n_bits, uint32_t arg) {
+  uint32_t mask;
+  if (n_bits == 32) {
+    mask = 0xffffffffu;
+  } else {
+    mask = 1u;
+    mask <<= n_bits;
+    mask--;
+  }
+  int32_t bits = (int32_t)(arg & mask);
+  uint32_t m = ((uint32_t)1ul) << (n_bits - 1);
+  return (bits ^ m) - m;
+}
+
+int64_t sign_extend_64(uint8_t n_bits, uint64_t arg) {
+  uint64_t mask;
+  if (n_bits == 64) {
+    mask = 0xffffffffffffffffu;
+  } else {
+    mask = 1u;
+    mask <<= n_bits;
+    mask--;
+  }
+  int64_t bits = (int64_t)(arg & mask);
+  uint64_t m = ((uint64_t)1ul) << (n_bits - 1);
+  return (bits ^ m) - m;
+}
+
 /** Set bit field in buffer from an unsigned integer.
  * Packs `len` bits into bit position `pos` from the start of the buffer.
  * Maximum bit field length is 32 bits, i.e. `len <= 32`.
@@ -179,7 +207,7 @@ void setbitu(u8 *buff, u32 pos, u32 len, u32 data) {
   shift = count - shift;
 
   /* mask of bits to take from 'data' */
-  u32 data_mask = (len == 32 ? ~0 : ((1 << len) - 1));
+  u32 data_mask = (len == 32u ? ~0u : ((1u << len) - 1u));
   /* in case 'data' has more bits than specified in 'len' */
   data &= data_mask;
 
